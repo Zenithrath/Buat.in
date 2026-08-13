@@ -1,0 +1,46 @@
+import type { ComponentManifest } from "@/lib/registry/types";
+
+export const productGridManifest: Omit<
+  ComponentManifest,
+  "previewRenderer" | "exportAdapter"
+> = {
+  id: "product-grid-basic",
+  name: "Grid Produk Dasar",
+  category: "product",
+  description: "Grid produk 4 kolom dengan gambar, nama, dan harga.",
+  tier: "free",
+  priceKey: "product-grid-basic",
+  version: "1.0.0",
+  defaultProps: {
+    title: "Produk Unggulan",
+    subtitle: "",
+    product1Name: "Produk 1",
+    product1Price: "Rp 99.000",
+    product1ImageUrl: "",
+    product2Name: "Produk 2",
+    product2Price: "Rp 149.000",
+    product2ImageUrl: "",
+    product3Name: "Produk 3",
+    product3Price: "Rp 199.000",
+    product3ImageUrl: "",
+    product4Name: "Produk 4",
+    product4Price: "Rp 249.000",
+    product4ImageUrl: "",
+  },
+  contentControls: [
+    { key: "title", label: "Judul", group: "Umum", type: "text" },
+    { key: "subtitle", label: "Subjudul", group: "Umum", type: "textarea" },
+    { key: "product1Name", label: "Nama", group: "Produk 1", type: "text" },
+    { key: "product1Price", label: "Harga", group: "Produk 1", type: "text" },
+    { key: "product1ImageUrl", label: "URL Gambar", group: "Produk 1", type: "image" },
+    { key: "product2Name", label: "Nama", group: "Produk 2", type: "text" },
+    { key: "product2Price", label: "Harga", group: "Produk 2", type: "text" },
+    { key: "product2ImageUrl", label: "URL Gambar", group: "Produk 2", type: "image" },
+    { key: "product3Name", label: "Nama", group: "Produk 3", type: "text" },
+    { key: "product3Price", label: "Harga", group: "Produk 3", type: "text" },
+    { key: "product3ImageUrl", label: "URL Gambar", group: "Produk 3", type: "image" },
+    { key: "product4Name", label: "Nama", group: "Produk 4", type: "text" },
+    { key: "product4Price", label: "Harga", group: "Produk 4", type: "text" },
+    { key: "product4ImageUrl", label: "URL Gambar", group: "Produk 4", type: "image" },
+  ],
+};
