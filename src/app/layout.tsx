@@ -1,28 +1,23 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Inter } from "next/font/google";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const inter = Inter({
+  variable: "--font-inter",
   subsets: ["latin"],
 });
 
 export const metadata: Metadata = {
-  title: "Buat.in — Visual Website Builder",
+  title: "Buat.in — Desain website visual, bayar sekali, miliki kodenya",
   description:
-    "Desain website visual, bayar sekali, miliki source code-nya. Tanpa lock-in, tanpa langganan.",
+    "Desain website visual dengan drag & drop. Gratis selama mendesain — bayar sekali saat export, source code HTML/CSS/JS milik Anda. Tanpa lock-in, tanpa langganan.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="id"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${inter.variable} h-full scroll-smooth antialiased`}
     >
       <body className="min-h-full">{children}</body>
     </html>
