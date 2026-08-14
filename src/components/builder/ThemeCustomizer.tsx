@@ -218,7 +218,7 @@ export function ThemeCustomizer() {
                 className={cn(
                   "rounded-md border px-2 py-2 text-xs font-medium transition-colors",
                   active
-                    ? "border-brand bg-brand/10 text-brand-foreground"
+                    ? "border-brand bg-brand/10 text-brand"
                     : "border-border text-muted-foreground hover:border-muted"
                 )}
               >
@@ -234,21 +234,6 @@ export function ThemeCustomizer() {
       </div>
 
       <ThemePreview tokens={tokens} />
-
-      <div className="rounded-lg border border-border bg-muted/35 p-3">
-        <div className="flex items-center justify-between gap-2">
-          <span className="flex items-center gap-1.5 text-xs font-semibold text-foreground">
-            <Palette size={13} /> Sistem token shadcn/ui
-          </span>
-          <span className="rounded-full border border-border bg-background px-2 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-muted-foreground">
-            aktif di kanvas
-          </span>
-        </div>
-        <p className="mt-1.5 text-[11px] leading-relaxed text-muted-foreground">
-          Perubahan di sini langsung dipakai Button, Input, Card, Badge, Switch,
-          dan komponen yang diekspor.
-        </p>
-      </div>
 
       <div className="space-y-2">
         <SectionLabel icon={<Sparkles size={11} />}>Gaya</SectionLabel>
@@ -266,7 +251,7 @@ export function ThemeCustomizer() {
                 className={cn(
                   "rounded-md border px-1 py-1.5 transition-colors",
                   active
-                    ? "border-brand bg-brand/10 text-brand-foreground"
+                    ? "border-brand bg-brand/10 text-brand"
                     : "border-border text-muted-foreground hover:border-muted"
                 )}
               >
@@ -404,7 +389,7 @@ export function ThemeCustomizer() {
                     {control.label}
                   </span>
                   <span className="block truncate font-mono text-[9px] leading-tight text-muted-foreground">
-                    {value.toUpperCase()} · {control.hint}
+                    {value.toUpperCase()} Â· {control.hint}
                   </span>
                 </span>
                 {isCustom ? (
@@ -447,7 +432,7 @@ export function ThemeCustomizer() {
                 className={cn(
                   "flex w-full items-center justify-between rounded-md border px-2.5 py-1.5 text-left transition-colors",
                   active
-                    ? "border-brand bg-brand/10 text-brand-foreground"
+                    ? "border-brand bg-brand/10 text-brand"
                     : "border-border hover:border-muted"
                 )}
                 style={{ fontFamily: preset.stack }}
@@ -477,7 +462,7 @@ export function ThemeCustomizer() {
                 className={cn(
                   "flex w-full items-center justify-between rounded-md border px-2.5 py-1 text-left transition-colors",
                   active
-                    ? "border-brand bg-brand/10 text-brand-foreground"
+                    ? "border-brand bg-brand/10 text-brand"
                     : "border-border hover:border-muted"
                 )}
               >
@@ -504,7 +489,7 @@ export function ThemeCustomizer() {
                 className={cn(
                   "flex items-center justify-center rounded-md border py-1.5 transition-colors",
                   active
-                    ? "border-brand bg-brand/10 text-brand-foreground"
+                    ? "border-brand bg-brand/10 text-brand"
                     : "border-border text-muted-foreground hover:border-muted"
                 )}
               >
@@ -519,7 +504,7 @@ export function ThemeCustomizer() {
       </div>
 
       <div className="space-y-2">
-        <SectionLabel icon={<span className="text-[10px] font-bold">▥</span>}>
+        <SectionLabel icon={<span className="text-[10px] font-bold">â–¥</span>}>
           Chart
         </SectionLabel>
         <div className="grid grid-cols-3 gap-1.5">

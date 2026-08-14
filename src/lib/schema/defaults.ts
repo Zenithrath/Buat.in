@@ -75,6 +75,8 @@ export function createProjectDocument(
       {
         id: uid(),
         name: projectType === "dashboard" ? "Overview Dashboard" : "Beranda",
+        path: "/",
+        isHome: true,
         sections,
       },
     ],

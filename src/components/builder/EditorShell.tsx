@@ -10,7 +10,7 @@ import {
   Undo2,
   Redo2,
 } from "lucide-react";
-import { useBuilderStore, autosaveProject } from "@/lib/store/project-store";
+import { autosaveProject, getActivePage, useBuilderStore } from "@/lib/store/project-store";
 import { RegistryStyles } from "./RegistryStyles";
 import { TopBar } from "./TopBar";
 import { LeftPanel } from "./LeftPanel";
@@ -149,8 +149,9 @@ function ResizableEditorPanel({
 }
 
 export function EditorShell() {
-  const document = useBuilderStore((s) => s.document);
-  const loaded = useBuilderStore((s) => s.loaded);
+const document = useBuilderStore((s) => s.document);
+const activePageId = useBuilderStore((s) => s.activePageId);
+const loaded = useBuilderStore((s) => s.loaded);
   const selectedId = useBuilderStore((s) => s.selectedId);
   const undo = useBuilderStore((s) => s.undo);
   const redo = useBuilderStore((s) => s.redo);
@@ -293,7 +294,7 @@ export function EditorShell() {
       </BuilderDndProvider>
       <div className="flex h-6 shrink-0 items-center justify-between border-t bg-background px-3 text-[11px] text-muted-foreground">
         <span>
-          {document.pages[0].sections.length} komponen · lebar kanvas:{" "}
+          {getActivePage(document, activePageId).sections.length} komponen · lebar kanvas:{" "}
           {document.settings.device === "desktop"
             ? "desktop 1440px"
             : document.settings.device === "tablet"

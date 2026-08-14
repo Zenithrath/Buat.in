@@ -8,10 +8,12 @@ export const TEMPLATE_VERSION = "1.0.0";
 
 export function buildGeneratorManifest(doc: ProjectDocument) {
   const componentVersions: Record<string, string> = {};
-  for (const section of doc.pages[0].sections) {
-    const manifest = componentMap[section.componentType];
-    if (manifest && !componentVersions[manifest.id]) {
-      componentVersions[manifest.id] = manifest.version;
+  for (const page of doc.pages) {
+    for (const section of page.sections ?? []) {
+      const manifest = componentMap[section.componentType];
+      if (manifest && !componentVersions[manifest.id]) {
+        componentVersions[manifest.id] = manifest.version;
+      }
     }
   }
 
@@ -23,6 +25,11 @@ export function buildGeneratorManifest(doc: ProjectDocument) {
     target: "html",
     projectName: doc.name,
     generatedAt: new Date().toISOString(),
+    pages: doc.pages.map((page) => ({
+      name: page.name,
+      path: page.path,
+      isHome: page.isHome,
+    })),
     componentVersions,
   };
 }

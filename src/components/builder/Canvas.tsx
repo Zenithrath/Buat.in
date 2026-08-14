@@ -17,7 +17,7 @@ import {
 } from "lucide-react";
 import { getComponent } from "@/lib/registry";
 import { projectTokenStyle, propString, themeTokenStyle } from "@/lib/registry/shared";
-import { useBuilderStore } from "@/lib/store/project-store";
+import { getActivePage, useBuilderStore } from "@/lib/store/project-store";
 import { resolveTheme } from "@/lib/theme/presets";
 import type { Node, Theme } from "@/lib/schema/types";
 import { SectionPreview } from "@/components/preview/SectionPreview";
@@ -505,6 +505,7 @@ function EmptyCanvas({ dragActive }: { dragActive: boolean }) {
 
 export function Canvas() {
   const document = useBuilderStore((state) => state.document);
+  const activePageId = useBuilderStore((state) => state.activePageId);
   const selectedId = useBuilderStore((state) => state.selectedId);
   const select = useBuilderStore((state) => state.select);
   const selectAll = useBuilderStore((state) => state.selectAll);
@@ -514,7 +515,7 @@ export function Canvas() {
   const setZoomLevel = useBuilderStore((state) => state.setZoomLevel);
   const { active, over } = useDndContext();
 
-  const sections = document.pages[0].sections;
+  const sections = getActivePage(document, activePageId).sections;
   const device = document.settings.device;
   const tokens = useMemo(() => resolveTheme(document.theme), [document.theme]);
   const deviceWidth = DEVICE_WIDTHS[device] ?? DEVICE_WIDTHS.desktop;

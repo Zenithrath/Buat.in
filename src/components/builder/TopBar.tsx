@@ -1,8 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import {
+  ChevronDown,
+  FilePlus2,
   Monitor,
   Tablet,
   Smartphone,
@@ -20,7 +22,7 @@ import {
   Maximize2,
   ExternalLink,
 } from "lucide-react";
-import { useBuilderStore } from "@/lib/store/project-store";
+import { getActivePage, useBuilderStore } from "@/lib/store/project-store";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/controls";
@@ -33,6 +35,112 @@ const DEVICES = [
 ] as const;
 
 const APP_THEME_KEY = "buatin:app-theme";
+
+function PageSwitcher() {
+  const doc = useBuilderStore((s) => s.document);
+  const activePageId = useBuilderStore((s) => s.activePageId);
+  const setActivePage = useBuilderStore((s) => s.setActivePage);
+  const createPage = useBuilderStore((s) => s.createPage);
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const onPointerDown = (event: MouseEvent) => {
+      if (ref.current && !ref.current.contains(event.target as Node)) {
+        setOpen(false);
+      }
+    };
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setOpen(false);
+    };
+    globalThis.document.addEventListener("pointerdown", onPointerDown);
+    globalThis.document.addEventListener("keydown", onKeyDown);
+    return () => {
+      globalThis.document.removeEventListener("pointerdown", onPointerDown);
+      globalThis.document.removeEventListener("keydown", onKeyDown);
+    };
+  }, [open]);
+
+  const active = getActivePage(doc, activePageId);
+
+  return (
+    <div ref={ref} className="relative">
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        aria-expanded={open}
+        className="flex h-8 items-center gap-1.5 rounded-md border border-border bg-card px-2.5 text-left transition-colors hover:border-brand/40"
+      >
+        <span className="max-w-40 truncate text-xs font-semibold text-foreground">
+          {active.name}
+        </span>
+        {active.isHome ? (
+          <span className="rounded bg-brand/10 px-1 py-0.5 font-mono text-[9px] font-bold text-brand uppercase">
+            Beranda
+          </span>
+        ) : (
+          <span className="max-w-24 truncate font-mono text-[10px] text-muted-foreground">
+            {active.path}
+          </span>
+        )}
+        <ChevronDown
+          size={13}
+          className={cn("shrink-0 text-muted-foreground transition-transform", open && "rotate-180")}
+        />
+      </button>
+
+      {open ? (
+        <div className="absolute left-0 top-full z-50 mt-1 w-64 rounded-lg border border-border bg-card p-1 shadow-lg">
+          <p className="px-2.5 py-1.5 text-[10px] font-bold uppercase tracking-[0.12em] text-muted-foreground">
+            Halaman ({doc.pages.length})
+          </p>
+          <div className="max-h-64 overflow-y-auto">
+            {doc.pages.map((page) => (
+              <button
+                key={page.id}
+                type="button"
+                onClick={() => {
+                  setActivePage(page.id);
+                  setOpen(false);
+                }}
+                className={cn(
+                  "flex w-full items-center gap-2 rounded-md px-2.5 py-2 text-left transition-colors",
+                  page.id === active.id
+                    ? "bg-brand/10 text-brand"
+                    : "text-foreground hover:bg-muted"
+                )}
+              >
+                <span className="min-w-0 flex-1">
+                  <span className="block truncate text-xs font-semibold">{page.name}</span>
+                  <span className="block truncate font-mono text-[10px] text-muted-foreground">
+                    {page.path} · {page.sections.length} komponen
+                  </span>
+                </span>
+                {page.isHome ? (
+                  <span className="shrink-0 rounded bg-brand/10 px-1.5 py-0.5 text-[9px] font-bold uppercase text-brand">
+                    Beranda
+                  </span>
+                ) : null}
+                {page.id === active.id ? <Check size={13} className="shrink-0" /> : null}
+              </button>
+            ))}
+          </div>
+          <button
+            type="button"
+            onClick={() => {
+              createPage();
+              setOpen(false);
+            }}
+            className="mt-1 flex w-full items-center gap-2 rounded-md border-t border-border px-2.5 py-2 text-xs font-semibold text-brand transition-colors hover:bg-brand/5"
+          >
+            <FilePlus2 size={13} /> Halaman baru
+          </button>
+        </div>
+      ) : null}
+    </div>
+  );
+}
 
 export function TopBar({
   onExport,
@@ -72,7 +180,9 @@ export function TopBar({
 
   const handleOpenDedicatedPreview = () => {
     if (doc.projectId) {
-      window.open(`/builder/${doc.projectId}/preview`, "_blank");
+      const page = getActivePage(doc, useBuilderStore.getState().activePageId);
+      const query = page.isHome ? "" : `?page=${encodeURIComponent(page.path)}`;
+      window.open(`/builder/${doc.projectId}/preview${query}`, "_blank");
     }
   };
 
@@ -90,6 +200,8 @@ export function TopBar({
       </span>
 
       <div className="h-5 w-px bg-border mx-1" />
+
+      <PageSwitcher />
 
       <Input
         value={doc.name}

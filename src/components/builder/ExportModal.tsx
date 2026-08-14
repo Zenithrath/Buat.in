@@ -63,7 +63,8 @@ export function ExportModal({ open, onClose }: { open: boolean; onClose: () => v
               HTML / CSS / JS Statis
             </p>
             <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-              Satu halaman mandiri. Hosting di mana saja — Netlify, Vercel,
+              {document.pages.length} halaman, satu file per halaman (beranda
+              menjadi index.html). Hosting di mana saja — Netlify, Vercel,
               GitHub Pages, atau hosting biasa.
             </p>
             <span className="mt-2 inline-block rounded-md bg-brand/10 px-2 py-0.5 text-[10px] font-semibold text-brand">
@@ -104,8 +105,10 @@ export function ExportModal({ open, onClose }: { open: boolean; onClose: () => v
 
         <div className="flex items-center justify-between rounded-lg border border-border bg-muted/40 px-3 py-2.5 text-xs text-muted-foreground">
           <span>
-            <strong className="text-foreground">{document.pages[0].sections.length}</strong>{" "}
-            komponen · export target: HTML
+            <strong className="text-foreground">
+              {document.pages.reduce((sum, page) => sum + page.sections.length, 0)}
+            </strong>{" "}
+            komponen · {document.pages.length} halaman · export target: HTML
           </span>
           <span className="font-medium text-brand">Gratis di V0 (prototipe)</span>
         </div>

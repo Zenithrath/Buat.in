@@ -2,7 +2,8 @@
 
 import { use, useEffect, useState } from "react";
 import Link from "next/link";
-import { loadProject } from "@/lib/store/project-store";
+import { useRouter, useSearchParams } from "next/navigation";
+import { getActivePage, loadProject } from "@/lib/store/project-store";
 import type { ProjectDocument } from "@/lib/schema/types";
 import { resolveTheme, FONT_LINKS } from "@/lib/theme/presets";
 import { projectTokenStyle, themeTokenStyle } from "@/lib/registry/shared";
@@ -18,6 +19,9 @@ export default function DedicatedPreviewPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = use(params);
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const pagePath = searchParams.get("page");
   // localStorage hanya tersedia setelah hydration. Mulai dari status loading yang
   // sama pada server dan client agar halaman preview tidak mengalami hydration
   // mismatch sebelum project lokal dimuat.
@@ -29,6 +33,48 @@ export default function DedicatedPreviewPage({
     }, 0);
     return () => window.clearTimeout(timer);
   }, [id]);
+
+  useEffect(() => {
+    if (doc === undefined || doc === null) return;
+    // Link internal (mis. href="/admin") diterjemahkan ke preview mode agar
+    // navigasi antar halaman berfungsi di dalam preview — bukan menuju rute
+    // Next.js yang tidak ada (404). Tautan eksternal/anchor dibiarkan.
+    function onDocClick(event: MouseEvent) {
+      if (
+        event.defaultPrevented ||
+        event.button !== 0 ||
+        event.metaKey ||
+        event.ctrlKey ||
+        event.shiftKey ||
+        event.altKey
+      ) {
+        return;
+      }
+      const anchor = (event.target as HTMLElement | null)?.closest?.("a");
+      if (!anchor) return;
+      const href = anchor.getAttribute("href");
+      if (
+        !href ||
+        href.startsWith("#") ||
+        href.startsWith("//") ||
+        /^[a-z][a-z0-9+.-]*:/i.test(href)
+      ) {
+        return;
+      }
+      if (anchor.target === "_blank") return;
+      event.preventDefault();
+      const clean = href.split("#")[0] || "/";
+      const base = `/builder/${id}/preview`;
+      router.replace(
+        clean === "/"
+          ? base
+          : `${base}?page=${encodeURIComponent(clean)}${knownPages.has(clean) ? "" : "&fallback=1"}`
+      );
+    }
+    const knownPages = new Set(doc.pages.map((p) => p.path));
+    document.addEventListener("click", onDocClick);
+    return () => document.removeEventListener("click", onDocClick);
+  }, [doc, id, router]);
 
   if (doc === undefined) {
     return (
@@ -55,8 +101,12 @@ export default function DedicatedPreviewPage({
     );
   }
 
+  const activePage = pagePath
+    ? doc.pages.find((p) => p.path === pagePath) ?? getActivePage(doc, null)
+    : getActivePage(doc, null);
+  const pageMissing = Boolean(pagePath && !doc.pages.some((p) => p.path === pagePath));
   const tokens = resolveTheme(doc.theme);
-  const sections = (doc.pages[0]?.sections ?? []).filter(
+  const sections = (activePage.sections ?? []).filter(
     (section) => !section.metadata.hidden
   );
   const isDashboard =
@@ -89,6 +139,11 @@ export default function DedicatedPreviewPage({
       {FONT_LINKS.map((href) => (
         <link key={href} rel="stylesheet" href={href} />
       ))}
+      {pageMissing ? (
+        <div className="fixed inset-x-0 top-0 z-50 bg-foreground px-4 py-2 text-center text-xs font-semibold text-background">
+          Halaman &quot;{pagePath}&quot; belum ada — menampilkan Beranda. Buat halaman dengan path ini di Inspector.
+        </div>
+      ) : null}
       <div
         className="w-full min-h-screen"
         style={{

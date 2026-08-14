@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useBuilderStore } from "@/lib/store/project-store";
+import { getActivePage, useBuilderStore } from "@/lib/store/project-store";
 import { getComponent } from "@/lib/registry";
 import {
   Layers,
@@ -151,8 +151,12 @@ function LayerNode({ node }: { node: Node }) {
 }
 
 export function LayersPanel() {
-  const sections = useBuilderStore((s) => s.document.pages[0].sections);
-  const pageName = useBuilderStore((s) => s.document.pages[0].name);
+  const sections = useBuilderStore((s) =>
+    getActivePage(s.document, s.activePageId).sections
+  );
+  const pageName = useBuilderStore((s) =>
+    getActivePage(s.document, s.activePageId).name
+  );
 
   return (
     <div className="space-y-4 p-1">

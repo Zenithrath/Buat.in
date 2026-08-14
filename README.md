@@ -17,6 +17,8 @@ Bukti loop inti berjalan end-to-end: `JSON → CANVAS → EXPORT HTML → ZIP`.
 | Component registry (manifest + preview + export adapter terpisah) | ✅ |
 | 34 komponen: navbar (6 varian), hero, produk, galeri, tim, testimoni, statistik, harga, FAQ, form, popup, CTA, footer, grid — plus komponen dashboard (sidebar, header, KPI, chart, tabel) | ✅ |
 | 7 template awal: 6 landing page + 1 dashboard analytics, bisa langsung dipakai & diubah | ✅ |
+| Multi-page: kelola banyak halaman (tambah, ganti nama, path URL, beranda, duplikat, hapus) — export satu file HTML per halaman | ✅ |
+| Link antar halaman: kontrol tautan (menu, tombol, dll.) punya pemilih halaman — link internal otomatis diarahkan ke file HTML yang benar saat export | ✅ |
 | Theme system: 7 palet warna, 4 radius, 4 tipografi, kerapatan, bayangan, warna kustom | ✅ |
 | Canvas structured + drag & drop (dnd-kit) + reorder + duplicate + delete | ✅ |
 | Inspector: Konten / Tata Letak / Gaya + panel Tema & SEO | ✅ |

@@ -13,7 +13,7 @@ import {
   X,
   type LucideIcon,
 } from "lucide-react";
-import { useBuilderStore } from "@/lib/store/project-store";
+import { getActivePage, useBuilderStore } from "@/lib/store/project-store";
 import { componentRegistry } from "@/lib/registry";
 import { templateRegistry, TEMPLATE_CATEGORY_LABELS } from "@/templates";
 import type { ComponentManifest } from "@/lib/registry/types";
@@ -138,7 +138,9 @@ function DraggableComponent({
   });
 
   const addSection = useBuilderStore((s) => s.addSection);
-  const sections = useBuilderStore((s) => s.document.pages[0].sections);
+  const sections = useBuilderStore((s) =>
+    getActivePage(s.document, s.activePageId).sections
+  );
 
   const name = FRIENDLY_NAMES[manifest.id] ?? manifest.name;
   const q = search.toLowerCase();

@@ -3,6 +3,7 @@ import type {
   Device,
   Node,
   NodeLayout,
+  Page,
   ProjectDocument,
   ProjectType,
   Theme,
@@ -104,6 +105,69 @@ function cloneNodeWithFreshIds(node: Node): Node {
   };
 }
 
+export function getActivePage(
+  doc: ProjectDocument,
+  activePageId: string | null
+): Page {
+  const page = doc.pages.find((p) => p.id === activePageId);
+  if (page) return page;
+  return doc.pages.find((p) => p.isHome) ?? doc.pages[0];
+}
+
+/** Ganti sections halaman aktif (tanpa mengubah halaman lain). */
+function withPageSections(
+  doc: ProjectDocument,
+  activePageId: string | null,
+  sections: Node[]
+): ProjectDocument {
+  const target = getActivePage(doc, activePageId);
+  return {
+    ...doc,
+    pages: doc.pages.map((p) => (p.id === target.id ? { ...p, sections } : p)),
+  };
+}
+
+function slugifyPageName(name: string): string {
+  const base = name
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+  return base || "halaman";
+}
+
+/**
+ * Pastikan tepat satu beranda dengan path "/", dan semua path non-beranda
+ * unik (suffix -2, -3 bila bentrok).
+ */
+export function normalizePagePaths(pages: Page[]): Page[] {
+  const seen = new Set<string>();
+  return pages.map((page) => {
+    if (page.isHome) {
+      seen.add("/");
+      return { ...page, path: "/" };
+    }
+    let candidate = page.path.startsWith("/") ? page.path : `/${page.path}`;
+    candidate = candidate === "/" ? `/${slugifyPageName(page.name)}` : candidate;
+    const stem = candidate.replace(/-\d+$/, "");
+    let n = 2;
+    while (seen.has(candidate)) {
+      candidate = n === 2 ? `${stem}-2` : `${stem}-${n}`;
+      n += 1;
+    }
+    seen.add(candidate);
+    return { ...page, path: candidate };
+  });
+}
+
+function resolveActivePageId(
+  doc: ProjectDocument,
+  activePageId: string | null
+): string {
+  if (doc.pages.some((p) => p.id === activePageId)) return activePageId as string;
+  return (doc.pages.find((p) => p.isHome) ?? doc.pages[0]).id;
+}
+
 export type SaveStatus = "idle" | "saving" | "saved";
 
 export type LeftTab =
@@ -119,6 +183,7 @@ export type LeftTab =
 
 interface BuilderState {
   document: ProjectDocument;
+  activePageId: string | null;
   selectedId: string | null;
   past: ProjectDocument[];
   future: ProjectDocument[];
@@ -135,6 +200,11 @@ interface BuilderState {
   setDocument: (doc: ProjectDocument) => void;
   markLoadError: () => void;
   setLeftTab: (tab: LeftTab) => void;
+  setActivePage: (pageId: string) => void;
+  createPage: (name?: string) => void;
+  updatePage: (pageId: string, patch: Partial<Page>) => void;
+  duplicatePage: (pageId: string) => void;
+  deletePage: (pageId: string) => void;
   updateNode: (id: string, updater: (node: Node) => Node) => void;
   updateNodeLayout: (id: string, layout: Partial<NodeLayout>) => void;
   toggleNodeVisibility: (id: string) => void;
@@ -170,6 +240,7 @@ const DEFAULT_PROJECT_NAMES = new Set([
 
 export const useBuilderStore = create<BuilderState>((set, get) => ({
   document: initialDocument,
+  activePageId: null,
   selectedId: null,
   past: [],
   future: [],
@@ -207,6 +278,7 @@ export const useBuilderStore = create<BuilderState>((set, get) => ({
   setDocument: (doc) =>
     set({
       document: normalizeDocument(doc),
+      activePageId: resolveActivePageId(normalizeDocument(doc), null),
       past: [],
       future: [],
       loaded: true,
@@ -215,21 +287,99 @@ export const useBuilderStore = create<BuilderState>((set, get) => ({
       selectedId: null,
     }),
 
-  updateNode: (id, updater) => {
+  setActivePage: (pageId) => {
     const { document } = get();
-    const sections = document.pages[0].sections;
+    if (!document.pages.some((p) => p.id === pageId)) return;
+    set({ activePageId: pageId, selectedId: null });
+  },
+
+  createPage: (name) => {
+    const { document } = get();
+    const pageName = (name ?? "Halaman Baru").trim() || "Halaman Baru";
+    const page: Page = {
+      id: uid(),
+      name: pageName,
+      path: "",
+      isHome: false,
+      sections: [],
+    };
+    const nextDoc: ProjectDocument = {
+      ...document,
+      pages: normalizePagePaths([...document.pages, page]),
+    };
+    commit(set, get, nextDoc);
+    set({ activePageId: page.id, selectedId: null });
+  },
+
+  updatePage: (pageId, patch) => {
+    const { document } = get();
+    const target = document.pages.find((p) => p.id === pageId);
+    if (!target) return;
+    let merged: Page = { ...target, ...patch };
+    if (patch.path !== undefined) {
+      const raw = String(patch.path).trim() || `/${slugifyPageName(target.name)}`;
+      merged = { ...merged, path: raw.startsWith("/") ? raw : `/${raw}` };
+    }
+    let pages = document.pages.map((p) => (p.id === pageId ? merged : p));
+    if (merged.isHome) {
+      pages = pages.map((p) => ({
+        ...p,
+        isHome: p.id === pageId,
+        path: p.id === pageId ? "/" : p.path,
+      }));
+    }
+    const nextDoc: ProjectDocument = {
+      ...document,
+      pages: normalizePagePaths(pages),
+    };
+    commit(set, get, nextDoc);
+    set({ selectedId: null });
+  },
+
+  duplicatePage: (pageId) => {
+    const { document } = get();
+    const target = document.pages.find((p) => p.id === pageId);
+    if (!target) return;
+    const copy: Page = {
+      id: uid(),
+      name: `${target.name} (Salinan)`,
+      path: "",
+      isHome: false,
+      sections: target.sections.map(cloneNodeWithFreshIds),
+    };
+    const nextDoc: ProjectDocument = {
+      ...document,
+      pages: normalizePagePaths([...document.pages, copy]),
+    };
+    commit(set, get, nextDoc);
+    set({ activePageId: copy.id, selectedId: null });
+  },
+
+  deletePage: (pageId) => {
+    const { document, activePageId } = get();
+    if (document.pages.length <= 1) return;
+    const target = document.pages.find((p) => p.id === pageId);
+    if (!target || target.isHome) return;
+    const pages = document.pages.filter((p) => p.id !== pageId);
+    const nextDoc: ProjectDocument = { ...document, pages };
+    commit(set, get, nextDoc);
+    if (activePageId === pageId) {
+      const fallback = pages.find((p) => p.isHome) ?? pages[0];
+      set({ activePageId: fallback.id, selectedId: null });
+    }
+  },
+
+  updateNode: (id, updater) => {
+    const { document, activePageId } = get();
+    const sections = getActivePage(document, activePageId).sections;
     const node = findNode(sections, id);
     if (!node) return;
 
-    const nextDoc: ProjectDocument = {
-      ...document,
-      pages: [
-        {
-          ...document.pages[0],
-          sections: mapNode(sections, id, updater),
-        },
-      ],
-    };
+    const nextDoc: ProjectDocument = withPageSections(
+      document,
+      activePageId,
+      mapNode(sections, id, updater)
+    );
     commit(set, get, nextDoc);
   },
 
@@ -258,11 +408,11 @@ export const useBuilderStore = create<BuilderState>((set, get) => ({
   },
 
   addSection: (componentType, index, name) => {
-    const { document } = get();
+    const { document, activePageId } = get();
     const node = createDefaultNode(componentType, name);
     const manifest = getComponent(componentType);
     node.props = { ...(manifest?.defaultProps ?? {}), ...node.props };
-    const sections = [...document.pages[0].sections];
+    const sections = [...getActivePage(document, activePageId).sections];
 
     // A dashboard only has one navigation rail. Dropping a different sidebar
     // is understood as choosing a new sidebar, not silently adding a second
@@ -276,10 +426,11 @@ export const useBuilderStore = create<BuilderState>((set, get) => ({
       );
       if (existingIndex >= 0) {
         sections.splice(existingIndex, 1, node);
-        const nextDoc: ProjectDocument = {
-          ...document,
-          pages: [{ ...document.pages[0], sections }],
-        };
+        const nextDoc: ProjectDocument = withPageSections(
+          document,
+          activePageId,
+          sections
+        );
         commit(set, get, nextDoc);
         set({ selectedId: node.id });
         return;
@@ -291,86 +442,82 @@ export const useBuilderStore = create<BuilderState>((set, get) => ({
       Math.max(0, index ?? sections.length)
     );
     sections.splice(at, 0, node);
-    const nextDoc: ProjectDocument = {
-      ...document,
-      pages: [{ ...document.pages[0], sections }],
-    };
+    const nextDoc: ProjectDocument = withPageSections(
+      document,
+      activePageId,
+      sections
+    );
     commit(set, get, nextDoc);
     set({ selectedId: node.id });
   },
 
   addChild: (parentId, componentType, index, name) => {
-    const { document } = get();
-    const parent = findNode(document.pages[0].sections, parentId);
+    const { document, activePageId } = get();
+    const activeSections = getActivePage(document, activePageId).sections;
+    const parent = findNode(activeSections, parentId);
     if (!parent) return;
 
     const node = createDefaultNode(componentType, name);
     const manifest = getComponent(componentType);
     node.props = { ...(manifest?.defaultProps ?? {}), ...node.props };
     const nextSections = insertNode(
-      document.pages[0].sections,
+      activeSections,
       parentId,
       node,
       index ?? parent.children.length
     );
-    const nextDoc: ProjectDocument = {
-      ...document,
-      pages: [{ ...document.pages[0], sections: nextSections }],
-    };
+    const nextDoc: ProjectDocument = withPageSections(
+      document,
+      activePageId,
+      nextSections
+    );
     commit(set, get, nextDoc);
     set({ selectedId: node.id });
   },
 
   addBlock: (nodes) => {
-    const { document } = get();
-    const nextDoc: ProjectDocument = {
-      ...document,
-      pages: [
-        {
-          ...document.pages[0],
-          sections: [...document.pages[0].sections, ...nodes],
-        },
-      ],
-    };
+    const { document, activePageId } = get();
+    const activeSections = getActivePage(document, activePageId).sections;
+    const nextDoc: ProjectDocument = withPageSections(document, activePageId, [
+      ...activeSections,
+      ...nodes,
+    ]);
     commit(set, get, nextDoc);
   },
 
   removeSection: (id) => {
-    const { document } = get();
-    const sections = document.pages[0].sections;
+    const { document, activePageId } = get();
+    const sections = getActivePage(document, activePageId).sections;
     const nextSections = removeNode(sections, id);
-    const nextDoc: ProjectDocument = {
-      ...document,
-      pages: [
-        {
-          ...document.pages[0],
-          sections: nextSections,
-        },
-      ],
-    };
+    const nextDoc: ProjectDocument = withPageSections(
+      document,
+      activePageId,
+      nextSections
+    );
     commit(set, get, nextDoc);
     if (get().selectedId === id) set({ selectedId: null });
   },
 
   duplicateSection: (id) => {
-    const { document } = get();
-    const sections = document.pages[0].sections;
+    const { document, activePageId } = get();
+    const sections = getActivePage(document, activePageId).sections;
     const source = findNodeLocation(sections, id);
     if (!source) return;
     const clone = cloneNodeWithFreshIds(source.node);
     clone.name = clone.name ? `${clone.name} (Copy)` : clone.componentType;
     const nextSections = insertNode(sections, source.parentId, clone, source.index + 1);
-    const nextDoc: ProjectDocument = {
-      ...document,
-      pages: [{ ...document.pages[0], sections: nextSections }],
-    };
+    const nextDoc: ProjectDocument = withPageSections(
+      document,
+      activePageId,
+      nextSections
+    );
     commit(set, get, nextDoc);
     set({ selectedId: clone.id });
   },
 
   moveSection: (fromIndex, toIndex) => {
-    const { document } = get();
-    const sections = [...document.pages[0].sections];
+    const { document, activePageId } = get();
+    const sections = [...getActivePage(document, activePageId).sections];
     if (
       fromIndex < 0 ||
       fromIndex >= sections.length ||
@@ -382,16 +529,17 @@ export const useBuilderStore = create<BuilderState>((set, get) => ({
     }
     const [moved] = sections.splice(fromIndex, 1);
     sections.splice(toIndex, 0, moved);
-    const nextDoc: ProjectDocument = {
-      ...document,
-      pages: [{ ...document.pages[0], sections }],
-    };
+    const nextDoc: ProjectDocument = withPageSections(
+      document,
+      activePageId,
+      sections
+    );
     commit(set, get, nextDoc);
   },
 
   moveNode: (id, parentId, index) => {
-    const { document } = get();
-    const sections = document.pages[0].sections;
+    const { document, activePageId } = get();
+    const sections = getActivePage(document, activePageId).sections;
     const source = findNodeLocation(sections, id);
     if (!source) return;
     // A node cannot become a child of itself or one of its descendants.
@@ -401,10 +549,11 @@ export const useBuilderStore = create<BuilderState>((set, get) => ({
     const sameParent = source.parentId === parentId;
     const adjustedIndex = sameParent && source.index < index ? index - 1 : index;
     const nextSections = insertNode(stripped, parentId, source.node, adjustedIndex);
-    const nextDoc: ProjectDocument = {
-      ...document,
-      pages: [{ ...document.pages[0], sections: nextSections }],
-    };
+    const nextDoc: ProjectDocument = withPageSections(
+      document,
+      activePageId,
+      nextSections
+    );
     commit(set, get, nextDoc);
   },
 
@@ -451,8 +600,8 @@ export const useBuilderStore = create<BuilderState>((set, get) => ({
   },
 
   selectAll: () => {
-    const { document } = get();
-    const sections = document.pages[0].sections;
+    const { document, activePageId } = get();
+    const sections = getActivePage(document, activePageId).sections;
     // "Select all" — select first section as a proxy; UI layer handles multi-select highlight
     if (sections.length > 0) set({ selectedId: sections[0].id });
   },
@@ -460,7 +609,7 @@ export const useBuilderStore = create<BuilderState>((set, get) => ({
   applyTemplate: (templateId: string) => {
     const tmpl = templateRegistry.find((t) => t.id === templateId);
     if (!tmpl) return;
-    const { document } = get();
+    const { document, activePageId } = get();
     const nodes = materializeTemplateNodes(tmpl.createNodes()).map((node) => ({
       ...node,
       props: { ...(getComponent(node.componentType)?.defaultProps ?? {}), ...node.props },
@@ -471,12 +620,17 @@ export const useBuilderStore = create<BuilderState>((set, get) => ({
       templateRegistry.some((template) => template.name === document.name);
     const nextDoc: ProjectDocument = {
       ...document,
-      // Applying a template replaces the whole document. Keep a name the user
-      // has deliberately written, but do not leave an automatic dashboard
-      // name behind after switching to a landing template (or vice versa).
+      // Applying a template replaces the active page (and the document-wide
+      // project type/name). Keep a name the user has deliberately written,
+      // but do not leave an automatic dashboard name behind after switching
+      // to a landing template (or vice versa).
       name: hasAutomaticName ? tmpl.name : document.name,
       projectType: tmpl.category,
-      pages: [{ ...document.pages[0], sections: nodes }],
+      pages: document.pages.map((page) =>
+        page.id === getActivePage(document, activePageId).id
+          ? { ...page, sections: nodes }
+          : page
+      ),
       theme: tmpl.theme
         ? {
             presets: { ...tmpl.theme.presets },
@@ -489,24 +643,26 @@ export const useBuilderStore = create<BuilderState>((set, get) => ({
   },
 
   undo: () => {
-    const { past, future, document } = get();
+    const { past, future, document, activePageId } = get();
     if (!past.length) return;
     const previous = past[past.length - 1];
     set({
       past: past.slice(0, -1),
       future: [document, ...future].slice(0, HISTORY_LIMIT),
       document: previous,
+      activePageId: resolveActivePageId(previous, activePageId),
     });
   },
 
   redo: () => {
-    const { past, future, document } = get();
+    const { past, future, document, activePageId } = get();
     if (!future.length) return;
     const next = future[0];
     set({
       future: future.slice(1),
       past: [...past, document].slice(-HISTORY_LIMIT),
       document: next,
+      activePageId: resolveActivePageId(next, activePageId),
     });
   },
 }));
@@ -553,6 +709,15 @@ export function loadProject(projectId: string): ProjectDocument | null {
 
 /** Menormalisasi document & theme presets lama ke skema baru. */
 export function normalizeDocument(doc: ProjectDocument): ProjectDocument {
+  const pages: Page[] = doc.pages?.length
+    ? doc.pages.map((page) => ({
+        id: page.id,
+        name: page.name,
+        path: page.path ?? "",
+        isHome: page.isHome ?? false,
+        sections: page.sections ?? [],
+      }))
+    : [{ id: uid(), name: "Beranda", path: "/", isHome: true, sections: [] }];
   return {
     ...doc,
     projectType: doc.projectType ?? "landing",
@@ -560,10 +725,14 @@ export function normalizeDocument(doc: ProjectDocument): ProjectDocument {
       ...doc.theme,
       presets: normalizePresets(doc.theme?.presets ?? {}),
     },
+    pages: normalizePagePaths(pages),
   };
 }
 
 export function getSelectedNode(state: BuilderState): Node | null {
   if (!state.selectedId) return null;
-  return findNode(state.document.pages[0].sections, state.selectedId);
+  return findNode(
+    getActivePage(state.document, state.activePageId).sections,
+    state.selectedId
+  );
 }

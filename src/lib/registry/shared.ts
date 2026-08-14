@@ -22,7 +22,10 @@ export function sanitizeUrl(url: unknown): string {
     lower.startsWith("https://") ||
     lower.startsWith("mailto:") ||
     lower.startsWith("tel:") ||
-    lower.startsWith("#")
+    lower.startsWith("#") ||
+    // Path halaman internal (multi-page): "/tentang", "/", "./tentang.html"
+    lower.startsWith("/") ||
+    lower.startsWith("./")
   ) {
     return trimmed;
   }

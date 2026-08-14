@@ -58,6 +58,10 @@ export interface Node {
 export interface Page {
   id: string;
   name: string;
+  /** Slug halaman, mis. "/", "/tentang", "/kontak". Halaman beranda = "/". */
+  path: string;
+  /** Halaman beranda — hanya boleh satu per dokumen. */
+  isHome: boolean;
   sections: Node[];
 }
 

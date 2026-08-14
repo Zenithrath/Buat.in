@@ -14,7 +14,7 @@ import {
 } from "@dnd-kit/core";
 import { Blocks, GripVertical } from "lucide-react";
 import { getComponent } from "@/lib/registry";
-import { useBuilderStore } from "@/lib/store/project-store";
+import { getActivePage, useBuilderStore } from "@/lib/store/project-store";
 import type { Node } from "@/lib/schema/types";
 
 export const CANVAS_ROOT_ID = "canvas-root";
@@ -57,7 +57,9 @@ function findNodeLocation(
  * cannot ever reach a droppable area in the canvas.
  */
 export function BuilderDndProvider({ children }: { children: React.ReactNode }) {
-  const sections = useBuilderStore((s) => s.document.pages[0].sections);
+  const sections = useBuilderStore((s) =>
+    getActivePage(s.document, s.activePageId).sections
+  );
   const addSection = useBuilderStore((s) => s.addSection);
   const addChild = useBuilderStore((s) => s.addChild);
   const moveNode = useBuilderStore((s) => s.moveNode);

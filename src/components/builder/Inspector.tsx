@@ -10,8 +10,10 @@ import {
   RotateCcw,
   Plus,
   Trash2,
+  Copy,
+  Link2,
 } from "lucide-react";
-import { useBuilderStore } from "@/lib/store/project-store";
+import { getActivePage, useBuilderStore } from "@/lib/store/project-store";
 import { getComponent } from "@/lib/registry";
 import { propString } from "@/lib/registry/shared";
 import type { ContentControl, ContentControlItemSchema } from "@/lib/registry/types";
@@ -58,7 +60,7 @@ const DEVICE_TABS = [
 
 export function Inspector() {
   const node = useBuilderStore((s) => {
-    const sections = s.document.pages[0].sections;
+    const sections = getActivePage(s.document, s.activePageId).sections;
     if (!s.selectedId) return null;
     const findInTree = (nodes: Node[], id: string): Node | null => {
       for (const n of nodes) {
@@ -333,9 +335,10 @@ function NodeInspector({
   const [deviceTab, setDeviceTab] = useState<"desktop" | "tablet" | "mobile">("desktop");
   const updateNode = useBuilderStore((s) => s.updateNode);
   const updateNodeLayout = useBuilderStore((s) => s.updateNodeLayout);
+  const pages = useBuilderStore((s) => s.document.pages);
   
   const node = useBuilderStore((s) => {
-    const sections = s.document.pages[0].sections;
+    const sections = getActivePage(s.document, s.activePageId).sections;
     const findInTree = (nodes: Node[], id: string): Node | null => {
       for (const n of nodes) {
         if (n.id === id) return n;
@@ -439,6 +442,44 @@ function NodeInspector({
                             </option>
                           ))}
                         </Select>
+                      ) : control.type === "link" ? (
+                        <div className="space-y-1.5">
+                          <Input
+                            value={propString(node, control.key)}
+                            onChange={(e) => patchProps(control.key, e.target.value)}
+                            placeholder={control.placeholder}
+                            className="text-xs"
+                          />
+                          <div className="flex items-center gap-1.5">
+                            <Link2
+                              size={11}
+                              className="shrink-0 text-muted-foreground"
+                            />
+                            <Select
+                              value={
+                                pages.some((p) => p.path === propString(node, control.key))
+                                  ? propString(node, control.key)
+                                  : ""
+                              }
+                              onChange={(e) => {
+                                if (e.target.value) {
+                                  patchProps(control.key, e.target.value);
+                                }
+                              }}
+                              className="h-6 text-[11px]"
+                            >
+                              <option value="" disabled>
+                                Tautkan ke halaman…
+                              </option>
+                              {pages.map((p) => (
+                                <option key={p.id} value={p.path}>
+                                  {p.name} — {p.path}
+                                  {p.isHome ? " · beranda" : ""}
+                                </option>
+                              ))}
+                            </Select>
+                          </div>
+                        </div>
                       ) : (
                         <Input
                           value={propString(node, control.key)}
@@ -648,8 +689,13 @@ function NodeInspector({
 
 function ThemePanel() {
   const document = useBuilderStore((s) => s.document);
+  const activePageId = useBuilderStore((s) => s.activePageId);
+  const updatePage = useBuilderStore((s) => s.updatePage);
+  const duplicatePage = useBuilderStore((s) => s.duplicatePage);
+  const deletePage = useBuilderStore((s) => s.deletePage);
   const updateSeo = useBuilderStore((s) => s.updateSeo);
   const [tab, setTab] = useState("theme");
+  const activePage = getActivePage(document, activePageId);
 
   return (
     <div className="flex h-full min-h-0 w-full min-w-0 flex-col bg-background">
@@ -664,30 +710,87 @@ function ThemePanel() {
       <div className="flex-1 space-y-5 overflow-y-auto p-4">
         {tab === "theme" ? <ThemeCustomizer /> : null}
 
-        {tab === "page" ? <div className="space-y-3">
-          <p className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
-            <Search size={11} /> SEO & Metadata
-          </p>
-          <Field label="Judul Halaman (Meta Title)">
-            <Input
-              value={document.seo.title}
-              placeholder={document.name}
-              onChange={(e) =>
-                updateSeo((seo) => ({ ...seo, title: e.target.value }))
-              }
-              className="text-xs"
-            />
-          </Field>
-          <Field label="Deskripsi (Meta Description)">
-            <Textarea
-              value={document.seo.description}
-              placeholder="Deskripsi singkat untuk mesin pencari Google"
-              onChange={(e) =>
-                updateSeo((seo) => ({ ...seo, description: e.target.value }))
-              }
-              className="text-xs"
-            />
-          </Field>
+        {tab === "page" ? <div className="space-y-5">
+          <div className="space-y-3">
+            <p className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+              <PanelRight size={11} /> Halaman Aktif
+            </p>
+            <Field label="Nama Halaman">
+              <Input
+                value={activePage.name}
+                onChange={(e) => updatePage(activePage.id, { name: e.target.value })}
+                className="text-xs"
+              />
+            </Field>
+            <Field label={activePage.isHome ? "Path URL (beranda = “/”)" : "Path URL"}>
+              <Input
+                value={activePage.path}
+                disabled={activePage.isHome}
+                onChange={(e) => updatePage(activePage.id, { path: e.target.value })}
+                className="text-xs font-mono"
+              />
+            </Field>
+            <label className="flex cursor-pointer items-center justify-between gap-2 rounded-md border border-border bg-muted/40 px-3 py-2">
+              <span className="text-xs font-medium text-foreground">Jadikan beranda</span>
+              <input
+                type="checkbox"
+                checked={activePage.isHome}
+                disabled={activePage.isHome}
+                onChange={(e) => updatePage(activePage.id, { isHome: e.target.checked })}
+                className="size-4 accent-brand"
+              />
+            </label>
+            <div className="flex gap-2">
+              <Button
+                variant="secondary"
+                size="sm"
+                className="flex-1 text-xs"
+                onClick={() => duplicatePage(activePage.id)}
+              >
+                <Copy size={12} /> Duplikat
+              </Button>
+              <Button
+                variant="secondary"
+                size="sm"
+                className="flex-1 text-xs text-destructive hover:text-destructive"
+                onClick={() => deletePage(activePage.id)}
+                disabled={activePage.isHome || document.pages.length <= 1}
+              >
+                <Trash2 size={12} /> Hapus
+              </Button>
+            </div>
+            {document.pages.length === 1 ? (
+              <p className="text-[10px] text-muted-foreground">
+                Project harus memiliki minimal satu halaman. Beranda tidak bisa dihapus.
+              </p>
+            ) : null}
+          </div>
+
+          <div className="space-y-3">
+            <p className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+              <Search size={11} /> SEO & Metadata (beranda)
+            </p>
+            <Field label="Judul Halaman (Meta Title)">
+              <Input
+                value={document.seo.title}
+                placeholder={document.name}
+                onChange={(e) =>
+                  updateSeo((seo) => ({ ...seo, title: e.target.value }))
+                }
+                className="text-xs"
+              />
+            </Field>
+            <Field label="Deskripsi (Meta Description)">
+              <Textarea
+                value={document.seo.description}
+                placeholder="Deskripsi singkat untuk mesin pencari Google"
+                onChange={(e) =>
+                  updateSeo((seo) => ({ ...seo, description: e.target.value }))
+                }
+                className="text-xs"
+              />
+            </Field>
+          </div>
         </div> : null}
       </div>
     </div>

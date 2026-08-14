@@ -1,4 +1,4 @@
-import type { Node, ProjectDocument } from "@/lib/schema/types";
+import type { Node, Page, ProjectDocument } from "@/lib/schema/types";
 import { resolveTheme } from "@/lib/theme/presets";
 import { CORE_CSS, buildThemeVarsCss } from "@/lib/registry/coreCss";
 import { componentMap } from "@/lib/registry";
@@ -18,13 +18,6 @@ export interface ExportFile {
 export function buildExportFiles(doc: ProjectDocument): ExportFile[] {
   const tokens = resolveTheme(doc.theme);
   const ctx = { theme: doc.theme, tokens };
-
-  const sections = doc.pages[0].sections.filter((section) => !section.metadata.hidden);
-  const isDashboard =
-    doc.projectType === "dashboard" ||
-    sections.some(
-      (s) => s.componentType === "app-sidebar" || s.componentType === "sidebar-icon"
-    );
 
   const cssParts: string[] = [];
   const usedCss = new Set<string>();
@@ -66,28 +59,36 @@ export function buildExportFiles(doc: ProjectDocument): ExportFile[] {
     return html.replace(/\bclassName=/g, "class=");
   };
 
-  let bodyHtml = "";
-  let dashboardCss = "";
+  const renderPage = (page: Page): string => {
+    const sections = (page.sections ?? []).filter((section) => !section.metadata.hidden);
+    const isDashboard =
+      doc.projectType === "dashboard" ||
+      sections.some(
+        (s) => s.componentType === "app-sidebar" || s.componentType === "sidebar-icon"
+      );
 
-  if (isDashboard) {
-    const sidebar = sections.find(
-      (s) => s.componentType === "app-sidebar" || s.componentType === "sidebar-icon"
-    );
-    const header = sections.find((s) => s.componentType === "dashboard-header");
-    const kpis = sections.filter((s) => s.componentType === "kpi-card");
-    const charts = sections.filter((s) => s.componentType === "chart-card");
-    const rest = sections.filter(
-      (section) =>
-        section.id !== sidebar?.id &&
-        !["dashboard-header", "kpi-card", "chart-card"].includes(section.componentType)
-    );
+    let bodyHtml = "";
+    let dashboardCss = "";
 
-    const savedSidebarWidth = Number.parseInt(String(sidebar?.styles.sidebarWidth ?? ""), 10);
-    const sidebarWidth = Number.isFinite(savedSidebarWidth)
-      ? Math.min(360, Math.max(180, savedSidebarWidth))
-      : 240;
+    if (isDashboard) {
+      const sidebar = sections.find(
+        (s) => s.componentType === "app-sidebar" || s.componentType === "sidebar-icon"
+      );
+      const header = sections.find((s) => s.componentType === "dashboard-header");
+      const kpis = sections.filter((s) => s.componentType === "kpi-card");
+      const charts = sections.filter((s) => s.componentType === "chart-card");
+      const rest = sections.filter(
+        (section) =>
+          section.id !== sidebar?.id &&
+          !["dashboard-header", "kpi-card", "chart-card"].includes(section.componentType)
+      );
 
-    bodyHtml = `<div class="bi-dashboard" style="--bi-sidebar-width: ${sidebarWidth}px">
+      const savedSidebarWidth = Number.parseInt(String(sidebar?.styles.sidebarWidth ?? ""), 10);
+      const sidebarWidth = Number.isFinite(savedSidebarWidth)
+        ? Math.min(360, Math.max(180, savedSidebarWidth))
+        : 240;
+
+      bodyHtml = `<div class="bi-dashboard" style="--bi-sidebar-width: ${sidebarWidth}px">
   ${
     sidebar
       ? `<aside class="bi-dashboard-side">
@@ -112,31 +113,60 @@ export function buildExportFiles(doc: ProjectDocument): ExportFile[] {
     </div>
   </main>
 </div>`;
-    dashboardCss = buildDashboardCss();
-  } else {
-    for (const section of sections) {
-      bodyHtml += renderSection(section);
+      dashboardCss = buildDashboardCss();
+      pushCss(dashboardCss);
+    } else {
+      for (const section of sections) {
+        bodyHtml += renderSection(section);
+      }
     }
-  }
 
-  // Early newsletter adapters used one fixed input id. Keep exports from older
-  // documents valid when a page contains more than one newsletter block.
-  let newsletterIndex = 0;
-  bodyHtml = bodyHtml.replace(
-    /for="bi-newsletter-email">Email<\/label><div><input id="bi-newsletter-email"/g,
-    () => {
-      newsletterIndex += 1;
-      const inputId = `bi-newsletter-email-${newsletterIndex}`;
-      return `for="${inputId}">Email</label><div><input id="${inputId}"`;
+    // Early newsletter adapters used one fixed input id. Keep exports from older
+    // documents valid when a page contains more than one newsletter block.
+    let newsletterIndex = 0;
+    bodyHtml = bodyHtml.replace(
+      /for="bi-newsletter-email">Email<\/label><div><input id="bi-newsletter-email"/g,
+      () => {
+        newsletterIndex += 1;
+        const inputId = `bi-newsletter-email-${newsletterIndex}`;
+        return `for="${inputId}">Email</label><div><input id="${inputId}"`;
+      }
+    );
+
+    // Rewrite internal page links (e.g. href="/tentang") to their exported HTML
+    // files so navigation keeps working on any static host (incl. sub-folder
+    // deployments like GitHub Pages). External URLs are left untouched.
+    for (const page of doc.pages) {
+      const target = page.isHome
+        ? "index.html"
+        : `${page.path.replace(/^\/+|\/+$/g, "")}.html`;
+      bodyHtml = bodyHtml.replace(
+        new RegExp(`href="${page.path === "/" ? "/" : page.path}"`, "g"),
+        `href="${target}"`
+      );
     }
-  );
 
-  const title = doc.seo.title || doc.name;
+    return bodyHtml;
+  };
+
   const description =
     doc.seo.description ||
     `Website ${doc.name} — dibuat dengan Buat.in.`;
 
-  const indexHtml = `<!doctype html>
+  const files: ExportFile[] = [];
+
+  for (const page of doc.pages) {
+    const bodyHtml = renderPage(page);
+    const title = page.isHome
+      ? doc.seo.title || doc.name
+      : `${page.name} — ${doc.name}`;
+    const fileName = page.isHome
+      ? "index.html"
+      : `${page.path.replace(/^\/+|\/+$/g, "")}.html`;
+
+    files.push({
+      path: fileName,
+      content: `<!doctype html>
 <html lang="id">
 <head>
   <meta charset="utf-8" />
@@ -151,12 +181,13 @@ ${bodyHtml}
 <script src="js/main.js"></script>
 </body>
 </html>
-`;
+`,
+    });
+  }
 
   const stylesCss = `${CORE_CSS}
 ${buildThemeVarsCss(tokens)}
-${cssParts.join("\n")}
-${dashboardCss}`;
+${cssParts.join("\n")}`;
 
   const mainJs = `${jsParts.join("\n\n")}${jsParts.length ? "\n\n" : ""}// Buat.in — interaksi minimal
 // Menu navigasi mobile
@@ -215,15 +246,16 @@ document.querySelectorAll('[data-dashboard-action="export"]').forEach(function (
     2
   );
 
-  return [
-    { path: "index.html", content: indexHtml },
+  files.push(
     { path: "css/styles.css", content: stylesCss },
     { path: "js/main.js", content: mainJs },
     { path: "README.md", content: buildReadme(doc) },
     { path: "DEPLOYMENT.md", content: buildDeploymentGuide(doc) },
     { path: "LICENSE.md", content: buildLicense() },
-    { path: "generator-manifest.json", content: generatorManifest + "\n" },
-  ];
+    { path: "generator-manifest.json", content: generatorManifest + "\n" }
+  );
+
+  return files;
 }
 
 export function buildDashboardCss(): string {
@@ -328,7 +360,8 @@ Website statis yang dibuat dengan **Buat.in** — visual website builder.
 
 \`\`\`
 .
-├── index.html              # Halaman utama (satu halaman)
+├── index.html              # Halaman beranda
+├── tentang.html            # (dst.) Satu file per halaman tambahan
 ├── css/
 │   └── styles.css          # Seluruh gaya visual (tema + komponen)
 ├── js/
@@ -339,6 +372,13 @@ Website statis yang dibuat dengan **Buat.in** — visual website builder.
 ├── LICENSE.md
 └── generator-manifest.json # Metadata versi generator & komponen
 \`\`\`
+
+## Navigasi Antar Halaman
+
+Setiap halaman menghasilkan satu file HTML (beranda menjadi \`index.html\`).
+Tautan internal sudah otomatis ditulis ulang ke file yang benar — mis. menu
+dengan \`href="/tentang"\` menjadi \`href="tentang.html"\` — sehingga navigasi
+tetap berfungsi di hosting mana pun, termasuk GitHub Pages di sub-folder.
 
 ## Cara Menjalankan Secara Lokal
 
