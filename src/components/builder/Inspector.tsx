@@ -6,8 +6,8 @@ import {
   Type,
   LayoutTemplate,
   Search,
-  Smartphone,
   PanelRight,
+  RotateCcw,
 } from "lucide-react";
 import { useBuilderStore } from "@/lib/store/project-store";
 import { getComponent } from "@/lib/registry";
@@ -17,8 +17,9 @@ import { cn } from "@/lib/utils";
 import { Tabs } from "@/components/ui/tabs";
 import { Field, Input, Textarea, Select, Separator } from "@/components/ui/controls";
 import { Button } from "@/components/ui/button";
+import { ThemeCustomizer } from "./ThemeCustomizer";
 import { ThemePreview } from "./ThemePreview";
-import type { Node } from "@/lib/schema/types";
+import type { Node, NodeLayout } from "@/lib/schema/types";
 
 const PADDING_OPTIONS = [
   { value: "none", label: "Tanpa" },
@@ -36,7 +37,7 @@ const ALIGN_OPTIONS = [
 
 const WIDTH_OPTIONS = [
   { value: "narrow", label: "Sempit" },
-  { value: "default", label: "Standar" },
+  { value: "default", label: "Standar (Fill)" },
   { value: "full", label: "Penuh" },
 ];
 
@@ -49,14 +50,27 @@ const BACKGROUND_OPTIONS = [
 ];
 
 const DEVICE_TABS = [
-  { id: "tablet", label: "Tablet" },
-  { id: "mobile", label: "Mobile" },
+  { id: "desktop" as const, label: "Desktop" },
+  { id: "tablet" as const, label: "Tablet" },
+  { id: "mobile" as const, label: "Mobile" },
 ];
 
 export function Inspector() {
-  const node = useBuilderStore((s) =>
-    s.document.pages[0].sections.find((sec) => sec.id === s.selectedId)
-  );
+  const node = useBuilderStore((s) => {
+    const sections = s.document.pages[0].sections;
+    if (!s.selectedId) return null;
+    const findInTree = (nodes: Node[], id: string): Node | null => {
+      for (const n of nodes) {
+        if (n.id === id) return n;
+        if (n.children) {
+          const res = findInTree(n.children, id);
+          if (res) return res;
+        }
+      }
+      return null;
+    };
+    return findInTree(sections, s.selectedId);
+  });
 
   if (!node) {
     return <ThemePanel />;
@@ -66,7 +80,7 @@ export function Inspector() {
   if (!manifest) {
     return (
       <div className="p-4 text-xs text-muted-foreground">
-        Komponen tidak ditemukan.
+        Komponen tidak ditemukan di registry.
       </div>
     );
   }
@@ -91,14 +105,28 @@ function NodeInspector({
   manifest: NonNullable<ReturnType<typeof getComponent>>;
 }) {
   const [tab, setTab] = useState("content");
-  const [deviceTab, setDeviceTab] = useState<"tablet" | "mobile">("tablet");
+  const [deviceTab, setDeviceTab] = useState<"desktop" | "tablet" | "mobile">("desktop");
   const updateNode = useBuilderStore((s) => s.updateNode);
-  const node = useBuilderStore((s) =>
-    s.document.pages[0].sections.find((sec) => sec.id === nodeId)
-  );
+  const updateNodeLayout = useBuilderStore((s) => s.updateNodeLayout);
+  
+  const node = useBuilderStore((s) => {
+    const sections = s.document.pages[0].sections;
+    const findInTree = (nodes: Node[], id: string): Node | null => {
+      for (const n of nodes) {
+        if (n.id === id) return n;
+        if (n.children) {
+          const res = findInTree(n.children, id);
+          if (res) return res;
+        }
+      }
+      return null;
+    };
+    return findInTree(sections, nodeId);
+  });
+
   if (!node) return null;
 
-  const patchProps = (key: string, value: string) => {
+  const patchProps = (key: string, value: string | number | boolean) => {
     updateNode(nodeId, (n) => ({ ...n, props: { ...n.props, [key]: value } }));
   };
 
@@ -119,42 +147,42 @@ function NodeInspector({
     ...new Set((manifest.contentControls ?? []).map((c) => c.group ?? "Umum")),
   ];
 
-  const styleControls = manifest.styleControls ?? [];
-  const styleGroups = [
-    ...new Set(styleControls.map((c) => c.group ?? "Umum")),
-  ];
-
   const overrides: Node["tabletOverride"] =
     deviceTab === "tablet" ? node.tabletOverride : node.mobileOverride;
 
-  const overrideTarget: "tablet" | "mobile" = deviceTab;
-
   return (
     <div className="flex w-72 shrink-0 flex-col border-l bg-background">
+      {/* 3 Core Inspector Tabs */}
       <Tabs
         active={tab}
         onChange={setTab}
         items={[
-          { id: "content", label: "Konten", icon: <Type size={13} /> },
-          { id: "layout", label: "Tata Letak", icon: <LayoutTemplate size={13} /> },
-          { id: "style", label: "Style", icon: <Palette size={13} /> },
-          { id: "responsive", label: "Responsif", icon: <Smartphone size={13} /> },
+          { id: "content", label: "CONTENT", icon: <Type size={13} /> },
+          { id: "component", label: "COMPONENT", icon: <LayoutTemplate size={13} /> },
+          { id: "general", label: "STYLE", icon: <Palette size={13} /> },
         ]}
       />
+
       <div className="flex-1 space-y-4 overflow-y-auto p-4">
-        <div>
-          <p className="text-sm font-semibold text-foreground">{manifest.name}</p>
-          <p className="text-[11px] text-muted-foreground">
-            {manifest.tier === "free" ? "Komponen gratis" : "Komponen Pro"}
-          </p>
+        <div className="flex items-center justify-between border-b pb-2">
+          <div>
+            <p className="text-xs font-bold text-foreground">{node.name || manifest.name}</p>
+            <p className="text-[10px] text-muted-foreground capitalize">
+              {manifest.category} · {manifest.tier}
+            </p>
+          </div>
+          <span className="rounded bg-muted px-1.5 py-0.5 font-mono text-[9px] font-bold text-muted-foreground">
+            {node.componentType}
+          </span>
         </div>
 
+        {/* TAB 1: CONTENT */}
         {tab === "content" ? (
           <div className="space-y-4">
             {groups.map((group) => (
               <div key={group} className="space-y-3">
                 {groups.length > 1 ? (
-                  <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+                  <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
                     {group}
                   </p>
                 ) : null}
@@ -167,11 +195,20 @@ function NodeInspector({
                           value={propString(node, control.key)}
                           onChange={(e) => patchProps(control.key, e.target.value)}
                           placeholder={control.placeholder}
+                          className="text-xs"
+                        />
+                      ) : control.type === "json" ? (
+                        <Textarea
+                          value={propString(node, control.key)}
+                          onChange={(e) => patchProps(control.key, e.target.value)}
+                          placeholder={control.placeholder || "Format JSON array..."}
+                          className="font-mono text-[11px] h-24"
                         />
                       ) : control.type === "select" ? (
                         <Select
                           value={propString(node, control.key)}
                           onChange={(e) => patchProps(control.key, e.target.value)}
+                          className="text-xs"
                         >
                           {control.options?.map((o) => (
                             <option key={o.value} value={o.value}>
@@ -184,6 +221,7 @@ function NodeInspector({
                           value={propString(node, control.key)}
                           onChange={(e) => patchProps(control.key, e.target.value)}
                           placeholder={control.placeholder}
+                          className="text-xs"
                         />
                       )}
                     </Field>
@@ -193,199 +231,190 @@ function NodeInspector({
           </div>
         ) : null}
 
-        {tab === "layout" ? (
-          <div className="space-y-3">
-            <Field label="Lebar Konten">
-              <Select
-                value={node.styles.contentWidth ?? "default"}
-                onChange={(e) => patchStyles("contentWidth", e.target.value)}
-              >
-                {WIDTH_OPTIONS.map((o) => (
-                  <option key={o.value} value={o.value}>
-                    {o.label}
-                  </option>
+        {/* TAB 2: COMPONENT STYLE */}
+        {tab === "component" ? (
+          <div className="space-y-4">
+            {/* Device Switcher */}
+            <div className="space-y-1.5">
+              <label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+                Perangkat Overrides
+              </label>
+              <div className="flex items-center gap-0.5 rounded-lg bg-muted p-0.5">
+                {DEVICE_TABS.map((d) => (
+                  <button
+                    key={d.id}
+                    type="button"
+                    onClick={() => setDeviceTab(d.id)}
+                    className={cn(
+                      "flex h-7 flex-1 items-center justify-center rounded-md text-[11px] font-semibold transition-colors",
+                      deviceTab === d.id
+                        ? "bg-background text-foreground shadow-sm"
+                        : "text-muted-foreground hover:text-foreground"
+                    )}
+                  >
+                    {d.label}
+                  </button>
                 ))}
-              </Select>
-            </Field>
-            <Field label="Perataan Teks">
-              <Select
-                value={node.styles.textAlign ?? "center"}
-                onChange={(e) => patchStyles("textAlign", e.target.value)}
-              >
-                {ALIGN_OPTIONS.map((o) => (
-                  <option key={o.value} value={o.value}>
-                    {o.label}
-                  </option>
-                ))}
-              </Select>
-            </Field>
-            <Field label="Jarak / Padding">
-              <Select
-                value={node.styles.padding ?? "lg"}
-                onChange={(e) => patchStyles("padding", e.target.value)}
-              >
-                {PADDING_OPTIONS.map((o) => (
-                  <option key={o.value} value={o.value}>
-                    {o.label}
-                  </option>
-                ))}
-              </Select>
-            </Field>
-          </div>
-        ) : null}
+              </div>
+            </div>
 
-        {tab === "style" ? (
-          <div className="space-y-3">
-            <Field label="Latar Belakang">
-              <Select
-                value={node.styles.background ?? "default"}
-                onChange={(e) => {
-                  patchStyles("background", e.target.value);
-                  if (e.target.value !== "custom") {
-                    patchStyles("backgroundCustom", "");
+            <Separator />
+
+            {/* Sizing & Layout */}
+            <div className="space-y-3">
+              <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+                Ukuran & Tata Letak
+              </p>
+              <Field label="Ukuran Lebar (Width Mode)">
+                <Select
+                  value={node.layout?.widthMode ?? "fill"}
+                  onChange={(e) => updateNodeLayout(nodeId, { widthMode: e.target.value as NodeLayout["widthMode"] })}
+                  className="text-xs"
+                >
+                  <option value="hug">Hug Contents (Fit)</option>
+                  <option value="fill">Fill Container (100%)</option>
+                  <option value="fixed">Fixed Width (Pixel)</option>
+                </Select>
+              </Field>
+
+              {node.layout?.widthMode === "fixed" ? (
+                <Field label="Lebar Spesifik (px)">
+                  <Input
+                    type="number"
+                    value={node.layout?.fixedWidth ?? 300}
+                    onChange={(e) => updateNodeLayout(nodeId, { fixedWidth: Number(e.target.value) })}
+                    className="text-xs font-mono"
+                  />
+                </Field>
+              ) : null}
+
+              <Field label="Lebar Konten Kontainer">
+                <Select
+                  value={node.styles.contentWidth ?? "default"}
+                  onChange={(e) => patchStyles("contentWidth", e.target.value)}
+                  className="text-xs"
+                >
+                  {WIDTH_OPTIONS.map((o) => (
+                    <option key={o.value} value={o.value}>
+                      {o.label}
+                    </option>
+                  ))}
+                </Select>
+              </Field>
+
+              <Field label="Perataan Teks (Alignment)">
+                <Select
+                  value={node.styles.textAlign ?? "center"}
+                  onChange={(e) => patchStyles("textAlign", e.target.value)}
+                  className="text-xs"
+                >
+                  {ALIGN_OPTIONS.map((o) => (
+                    <option key={o.value} value={o.value}>
+                      {o.label}
+                    </option>
+                  ))}
+                </Select>
+              </Field>
+
+              <Field label="Padding / Jarak Dalam">
+                <Select
+                  value={
+                    deviceTab === "desktop"
+                      ? node.styles.padding ?? "lg"
+                      : overrides.padding ?? node.styles.padding ?? "lg"
                   }
+                  onChange={(e) =>
+                    deviceTab === "desktop"
+                      ? patchStyles("padding", e.target.value)
+                      : patchStylesForDevice(patchStyles, "padding", e.target.value, deviceTab)
+                  }
+                  className="text-xs"
+                >
+                  {PADDING_OPTIONS.map((o) => (
+                    <option key={o.value} value={o.value}>
+                      {o.label}
+                    </option>
+                  ))}
+                </Select>
+              </Field>
+            </div>
+
+            <Separator />
+
+            {/* Appearance */}
+            <div className="space-y-3">
+              <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+                Tampilan / Appearance
+              </p>
+              <Field label="Latar Belakang (Background)">
+                <Select
+                  value={node.styles.background ?? "default"}
+                  onChange={(e) => {
+                    patchStyles("background", e.target.value);
+                    if (e.target.value !== "custom") {
+                      patchStyles("backgroundCustom", "");
+                    }
+                  }}
+                  className="text-xs"
+                >
+                  {BACKGROUND_OPTIONS.map((o) => (
+                    <option key={o.value} value={o.value}>
+                      {o.label}
+                    </option>
+                  ))}
+                </Select>
+              </Field>
+
+              {node.styles.background === "custom" ? (
+                <Field label="Warna Kustom">
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="color"
+                      value={
+                        /^#[0-9a-f]{6}$/i.test(node.styles.backgroundCustom ?? "")
+                          ? node.styles.backgroundCustom!
+                          : "#ffffff"
+                      }
+                      onChange={(e) =>
+                        patchStyles("backgroundCustom", e.target.value)
+                      }
+                      className="h-8 w-10 shrink-0 cursor-pointer rounded-md border bg-transparent p-0.5"
+                    />
+                    <Input
+                      value={node.styles.backgroundCustom ?? ""}
+                      placeholder="#ffffff"
+                      onChange={(e) =>
+                        patchStyles("backgroundCustom", e.target.value)
+                      }
+                      className="text-xs font-mono"
+                    />
+                  </div>
+                </Field>
+              ) : null}
+
+              <Button
+                variant="outline"
+                size="sm"
+                className="w-full gap-1.5 text-xs text-muted-foreground hover:text-foreground"
+                onClick={() => {
+                  patchStyles("background", "default");
+                  patchStyles("backgroundCustom", "");
+                  patchStyles("padding", "lg");
                 }}
               >
-                {BACKGROUND_OPTIONS.map((o) => (
-                  <option key={o.value} value={o.value}>
-                    {o.label}
-                  </option>
-                ))}
-              </Select>
-            </Field>
-            {node.styles.background === "custom" ? (
-              <Field label="Warna Kustom">
-                <div className="flex items-center gap-2">
-                  <input
-                    type="color"
-                    value={
-                      /^#[0-9a-f]{6}$/i.test(node.styles.backgroundCustom ?? "")
-                        ? node.styles.backgroundCustom!
-                        : "#ffffff"
-                    }
-                    onChange={(e) =>
-                      patchStyles("backgroundCustom", e.target.value)
-                    }
-                    className="h-8 w-10 shrink-0 cursor-pointer rounded-md border border-input bg-transparent p-0.5"
-                    title="Pilih warna latar"
-                  />
-                  <Input
-                    value={node.styles.backgroundCustom ?? ""}
-                    placeholder="#ffffff"
-                    onChange={(e) =>
-                      patchStyles("backgroundCustom", e.target.value)
-                    }
-                  />
-                </div>
-              </Field>
-            ) : null}
-            <Button
-              variant="ghost"
-              size="sm"
-              className="w-full"
-              onClick={() => {
-                patchStyles("background", "default");
-                patchStyles("backgroundCustom", "");
-              }}
-            >
-              Reset ke tema
-            </Button>
-            {styleGroups.map((group) => (
-              <div key={group} className="space-y-3">
-                <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
-                  {group}
-                </p>
-                {styleControls
-                  .filter((c) => (c.group ?? "Umum") === group)
-                  .map((control) => (
-                    <Field key={control.key} label={control.label}>
-                      {control.type === "select" ? (
-                        <Select
-                          value={propString(node, control.key)}
-                          onChange={(e) => patchProps(control.key, e.target.value)}
-                        >
-                          {control.options?.map((o) => (
-                            <option key={o.value} value={o.value}>
-                              {o.label}
-                            </option>
-                          ))}
-                        </Select>
-                      ) : null}
-                    </Field>
-                  ))}
-              </div>
-            ))}
-            <p className="text-[11px] leading-relaxed text-muted-foreground">
-              Warna, font, dan sudut diatur lewat Tema (panel kiri → Tema).
-              Pengaturan per-komponen hanya untuk latar belakang.
-            </p>
+                <RotateCcw size={12} /> Reset Ke Tema
+              </Button>
+            </div>
           </div>
         ) : null}
 
-        {tab === "responsive" ? (
+        {/* TAB 3: GENERAL STYLE (Global Theme System) */}
+        {tab === "general" ? (
           <div className="space-y-3">
-            <div className="flex items-center gap-0.5 rounded-lg bg-muted p-0.5">
-              {DEVICE_TABS.map((d) => (
-                <button
-                  key={d.id}
-                  type="button"
-                  onClick={() => setDeviceTab(d.id as "tablet" | "mobile")}
-                  className={cn(
-                    "flex h-7 flex-1 items-center justify-center rounded-md text-[11px] font-medium transition-colors",
-                    deviceTab === d.id
-                      ? "bg-background text-foreground shadow-sm"
-                      : "text-muted-foreground"
-                  )}
-                >
-                  {d.label}
-                </button>
-              ))}
-            </div>
-            <Field label="Jarak / Padding">
-              <Select
-                value={overrides.padding ?? node.styles.padding ?? "lg"}
-                onChange={(e) =>
-                  patchStylesForDevice(patchStyles, "padding", e.target.value, overrideTarget)
-                }
-              >
-                {PADDING_OPTIONS.map((o) => (
-                  <option key={o.value} value={o.value}>
-                    {o.label}
-                  </option>
-                ))}
-              </Select>
-            </Field>
-            <Field label="Perataan Teks">
-              <Select
-                value={overrides.textAlign ?? node.styles.textAlign ?? "center"}
-                onChange={(e) =>
-                  patchStylesForDevice(patchStyles, "textAlign", e.target.value, overrideTarget)
-                }
-              >
-                {ALIGN_OPTIONS.map((o) => (
-                  <option key={o.value} value={o.value}>
-                    {o.label}
-                  </option>
-                ))}
-              </Select>
-            </Field>
-            <Field label="Lebar Konten">
-              <Select
-                value={overrides.contentWidth ?? node.styles.contentWidth ?? "default"}
-                onChange={(e) =>
-                  patchStylesForDevice(patchStyles, "contentWidth", e.target.value, overrideTarget)
-                }
-              >
-                {WIDTH_OPTIONS.map((o) => (
-                  <option key={o.value} value={o.value}>
-                    {o.label}
-                  </option>
-                ))}
-              </Select>
-            </Field>
-            <p className="text-[11px] leading-relaxed text-muted-foreground">
-              Override berlaku saat pratinjau perangkat {deviceTab === "tablet" ? "tablet" : "mobile"}.
+            <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+              Desain System Global
             </p>
+            <ThemeCustomizer />
           </div>
         ) : null}
       </div>
@@ -411,16 +440,16 @@ function ThemePanel() {
       <div className="flex-1 space-y-5 overflow-y-auto p-4">
         <div className="space-y-2">
           <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
-            Ringkasan Tema
+            Ringkasan Tema Global
           </p>
           <ThemePreview tokens={tokens} compact />
           <Button
             variant="secondary"
             size="sm"
-            className="w-full"
+            className="w-full text-xs font-bold"
             onClick={() => setLeftTab("style")}
           >
-            <Palette size={13} /> Buka Panel Style
+            <Palette size={13} /> Buka Panel Theme Customizer
           </Button>
         </div>
 
@@ -428,24 +457,26 @@ function ThemePanel() {
 
         <div className="space-y-3">
           <p className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
-            <Search size={11} /> SEO
+            <Search size={11} /> SEO & Metadata
           </p>
-          <Field label="Judul Halaman">
+          <Field label="Judul Halaman (Meta Title)">
             <Input
               value={document.seo.title}
               placeholder={document.name}
               onChange={(e) =>
                 updateSeo((seo) => ({ ...seo, title: e.target.value }))
               }
+              className="text-xs"
             />
           </Field>
-          <Field label="Deskripsi">
+          <Field label="Deskripsi (Meta Description)">
             <Textarea
               value={document.seo.description}
-              placeholder="Deskripsi singkat untuk mesin pencari"
+              placeholder="Deskripsi singkat untuk mesin pencari Google"
               onChange={(e) =>
                 updateSeo((seo) => ({ ...seo, description: e.target.value }))
               }
+              className="text-xs"
             />
           </Field>
         </div>

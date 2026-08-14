@@ -3,8 +3,8 @@
 import { useEffect, useState } from "react";
 import {
   Boxes,
-  FileText,
-  Palette,
+  LayoutTemplate,
+  Image as ImageIcon,
   Plus,
   Trash2,
   Undo2,
@@ -20,6 +20,7 @@ import { ExportModal } from "./ExportModal";
 import { PreviewModal } from "./PreviewModal";
 import { FONT_LINKS } from "@/lib/theme/presets";
 import { componentRegistry } from "@/lib/registry";
+import { blockRegistry, buildBlockNodes } from "@/lib/blocks";
 import {
   CommandDialog,
   CommandEmpty,
@@ -41,6 +42,7 @@ export function EditorShell() {
   const duplicateSection = useBuilderStore((s) => s.duplicateSection);
   const select = useBuilderStore((s) => s.select);
   const addSection = useBuilderStore((s) => s.addSection);
+  const addBlock = useBuilderStore((s) => s.addBlock);
   const setLeftTab = useBuilderStore((s) => s.setLeftTab);
 
   const [showPreview, setShowPreview] = useState(false);
@@ -175,18 +177,10 @@ export function EditorShell() {
             <CommandItem
               onSelect={() => {
                 setCommandOpen(false);
-                setLeftTab("style");
+                setLeftTab("templates");
               }}
             >
-              <Palette size={14} /> Buka Panel Style
-            </CommandItem>
-            <CommandItem
-              onSelect={() => {
-                setCommandOpen(false);
-                setLeftTab("pages");
-              }}
-            >
-              <FileText size={14} /> Buka Panel Halaman
+              <LayoutTemplate size={14} /> Buka Panel Template
             </CommandItem>
             <CommandItem
               onSelect={() => {
@@ -195,6 +189,14 @@ export function EditorShell() {
               }}
             >
               <Boxes size={14} /> Buka Panel Komponen
+            </CommandItem>
+            <CommandItem
+              onSelect={() => {
+                setCommandOpen(false);
+                setLeftTab("assets");
+              }}
+            >
+              <ImageIcon size={14} /> Buka Panel Gambar
             </CommandItem>
             {selectedId ? (
               <CommandItem
@@ -221,19 +223,17 @@ export function EditorShell() {
             ))}
           </CommandGroup>
           <CommandGroup heading="Blok">
-            {["landing-toko", "landing-sederhana", "portfolio", "storefront"].map(
-              (id) => (
-                <CommandItem
-                  key={id}
-                  onSelect={() => {
-                    setCommandOpen(false);
-                    setLeftTab("blocks");
-                  }}
-                >
-                  <Plus size={14} /> Tambah Blok: {id}
-                </CommandItem>
-              )
-            )}
+            {blockRegistry.map((block) => (
+              <CommandItem
+                key={block.id}
+                onSelect={() => {
+                  setCommandOpen(false);
+                  addBlock(buildBlockNodes(block));
+                }}
+              >
+                <Plus size={14} /> Tambah Blok: {block.name}
+              </CommandItem>
+            ))}
           </CommandGroup>
         </CommandList>
       </CommandDialog>

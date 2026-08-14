@@ -3,6 +3,16 @@ import type { Node, NodeProps, Theme } from "@/lib/schema/types";
 import type { ResolvedTokens } from "@/lib/theme/presets";
 
 export type ComponentCategory =
+  | "layout"
+  | "navigation"
+  | "typography"
+  | "actions"
+  | "media"
+  | "content"
+  | "form"
+  | "data"
+  | "landing"
+  | "dashboard"
   | "navbar"
   | "hero"
   | "product"
@@ -15,13 +25,21 @@ export interface ContentControlOption {
   label: string;
 }
 
+export interface ContentControlItemSchema {
+  key: string;
+  label: string;
+  type: "text" | "textarea" | "image" | "link" | "select";
+  options?: ContentControlOption[];
+}
+
 export interface ContentControl {
   key: string;
   label: string;
   group?: string;
-  type: "text" | "textarea" | "image" | "link" | "select";
+  type: "text" | "textarea" | "image" | "link" | "select" | "number" | "boolean" | "array" | "json";
   options?: ContentControlOption[];
   placeholder?: string;
+  itemSchema?: ContentControlItemSchema[];
 }
 
 export interface ExportContext {
@@ -51,6 +69,9 @@ export interface ComponentManifest {
   /** Kemampuan tema yang dibutuhkan komponen (opsional). */
   themeCapabilities?: ("radius" | "shadow" | "fonts")[];
 }
+
+/** Alias for the full registry item (manifest + renderers) */
+export type ComponentRegistryItem = ComponentManifest;
 
 export interface SectionStyleControl {
   key: string;

@@ -1,4 +1,4 @@
-import type { ProjectDocument } from "@/lib/schema/types";
+import type { Node, ProjectDocument } from "@/lib/schema/types";
 import { resolveTheme } from "@/lib/theme/presets";
 import { CORE_CSS, buildThemeVarsCss } from "@/lib/registry/coreCss";
 import { componentMap } from "@/lib/registry";
@@ -19,18 +19,73 @@ export function buildExportFiles(doc: ProjectDocument): ExportFile[] {
   const tokens = resolveTheme(doc.theme);
   const ctx = { theme: doc.theme, tokens };
 
-  const bodyParts: string[] = [];
+  const sections = doc.pages[0].sections;
+  const isDashboard =
+    doc.projectType === "dashboard" ||
+    sections.some((s) => s.componentType === "app-sidebar");
+
   const cssParts: string[] = [];
   const usedCss = new Set<string>();
 
-  for (const section of doc.pages[0].sections) {
+  const pushCss = (css: string) => {
+    if (!css || usedCss.has(css)) return;
+    usedCss.add(css);
+    cssParts.push(css);
+  };
+
+  const renderSection = (section: Node): string => {
     const manifest = componentMap[section.componentType];
-    if (!manifest) continue;
+    if (!manifest) return "";
     const result = manifest.exportAdapter(section, ctx);
-    bodyParts.push(result.html);
-    if (!usedCss.has(result.css)) {
-      usedCss.add(result.css);
-      cssParts.push(result.css);
+    pushCss(result.css);
+    return result.html;
+  };
+
+  let bodyHtml = "";
+  let dashboardCss = "";
+
+  if (isDashboard) {
+    const sidebar = sections.find((s) => s.componentType === "app-sidebar");
+    const header = sections.find((s) => s.componentType === "dashboard-header");
+    const kpis = sections.filter((s) => s.componentType === "kpi-card");
+    const charts = sections.filter((s) => s.componentType === "chart-card");
+    const rest = sections.filter(
+      (s) =>
+        !["app-sidebar", "dashboard-header", "kpi-card", "chart-card"].includes(
+          s.componentType
+        )
+    );
+
+    const rawWidth = sidebar
+      ? parseInt((sidebar.styles as Record<string, string>).sidebarWidth ?? "", 10)
+      : 0;
+    const sidebarWidth = Number.isFinite(rawWidth) && rawWidth > 0 ? rawWidth : 240;
+
+    bodyHtml = `<div class="bi-dashboard">
+  <div class="bi-dashboard-side" style="--bi-sidebar-width:${sidebarWidth}px">
+    ${sidebar ? renderSection(sidebar) : ""}
+  </div>
+  <div class="bi-dashboard-main">
+    ${header ? `<div class="bi-dashboard-header">${renderSection(header)}</div>` : ""}
+    <div class="bi-dashboard-content">
+      ${
+        kpis.length > 0
+          ? `<div class="bi-dashboard-kpis">${kpis.map(renderSection).join("\n")}</div>`
+          : ""
+      }
+      ${
+        charts.length > 0
+          ? `<div class="bi-dashboard-charts">${charts.map(renderSection).join("\n")}</div>`
+          : ""
+      }
+      ${rest.map(renderSection).join("\n")}
+    </div>
+  </div>
+</div>`;
+    dashboardCss = buildDashboardCss();
+  } else {
+    for (const section of sections) {
+      bodyHtml += renderSection(section);
     }
   }
 
@@ -50,7 +105,7 @@ export function buildExportFiles(doc: ProjectDocument): ExportFile[] {
   <link rel="stylesheet" href="css/styles.css" />
 </head>
 <body>
-${bodyParts.join("\n")}
+${bodyHtml}
 <script src="js/main.js"></script>
 </body>
 </html>
@@ -58,6 +113,7 @@ ${bodyParts.join("\n")}
 
   const stylesCss = `${buildThemeVarsCss(tokens)}
 ${CORE_CSS}
+${dashboardCss}
 ${cssParts.join("\n")}`;
 
   const mainJs = `// Buat.in — interaksi minimal
@@ -89,6 +145,107 @@ document.querySelectorAll("[data-nav-toggle]").forEach(function (btn) {
     { path: "LICENSE.md", content: buildLicense() },
     { path: "generator-manifest.json", content: generatorManifest + "\n" },
   ];
+}
+
+export function buildDashboardCss(): string {
+  return `
+/* ── Frame Dashboard (Buat.in) ─────────────────────── */
+.bi-dashboard {
+  display: flex;
+  align-items: flex-start;
+  min-height: 100vh;
+}
+.bi-dashboard-side {
+  flex-shrink: 0;
+  width: var(--bi-sidebar-width, 240px);
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+}
+.bi-dashboard-main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+.bi-dashboard-header {
+  flex-shrink: 0;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+.bi-dashboard-content {
+  flex: 1;
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  box-sizing: border-box;
+}
+.bi-dashboard-kpis {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+}
+.bi-dashboard-charts {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+}
+
+@media (max-width: 1023px) {
+  .bi-dashboard-kpis { grid-template-columns: repeat(2, 1fr); }
+}
+
+/* Mobile: sidebar menjadi bottom navigation bar */
+@media (max-width: 767px) {
+  .bi-dashboard { flex-direction: column; }
+  .bi-dashboard-side {
+    width: 100% !important;
+    height: auto;
+    position: fixed;
+    bottom: 0;
+    top: auto;
+    left: 0;
+    right: 0;
+    z-index: 50;
+    box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.08);
+  }
+  .bi-dashboard-side .bi-app-sidebar {
+    width: 100% !important;
+    min-height: 0;
+    height: auto;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-around;
+    gap: 0.25rem;
+    padding: 0.5rem;
+    border-right: none;
+    border-top: 1px solid var(--border);
+    overflow-x: auto;
+  }
+  .bi-dashboard-side .bi-sidebar-brand { display: none; }
+  .bi-dashboard-side .bi-sidebar-user { display: none; }
+  .bi-dashboard-side .bi-nav-heading { display: none; }
+  .bi-dashboard-side .bi-sidebar-nav {
+    flex-direction: row;
+    gap: 0.25rem;
+    align-items: center;
+  }
+  .bi-dashboard-side .bi-sidebar-link {
+    flex-direction: column;
+    gap: 0.125rem;
+    font-size: 0.625rem;
+    padding: 0.375rem 0.625rem;
+    text-align: center;
+  }
+  .bi-dashboard-main { padding-bottom: 56px; }
+  .bi-dashboard-kpis { grid-template-columns: repeat(2, 1fr); }
+  .bi-dashboard-charts { grid-template-columns: 1fr; }
+  .bi-dashboard-header { position: static; }
+}
+`;
 }
 
 function buildReadme(doc: ProjectDocument): string {

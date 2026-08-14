@@ -32,19 +32,21 @@ export const blockRegistry: BlockManifest[] = [
       {
         componentType: "hero-centered",
         props: {
-          eyebrow: "Selamat datang",
+          badgeText: "Selamat datang",
           title: "Belanja kebutuhan Anda di satu tempat",
-          subtitle:
+          description:
             "Temukan produk pilihan dengan harga terbaik, dikirim cepat ke seluruh Indonesia.",
-          ctaText: "Lihat Katalog",
-          secondaryText: "Tentang Kami",
+          primaryCtaText: "Lihat Katalog",
+          primaryCtaUrl: "#produk",
+          secondaryCtaText: "Tentang Kami",
+          secondaryCtaUrl: "#tentang",
         },
       },
       {
         componentType: "product-grid-basic",
         props: {
-          title: "Produk Unggulan",
-          subtitle: "Paling laris minggu ini",
+          sectionTitle: "Produk Unggulan",
+          sectionSubtitle: "Paling laris minggu ini",
         },
       },
       {
@@ -66,12 +68,14 @@ export const blockRegistry: BlockManifest[] = [
       {
         componentType: "hero-centered",
         props: {
-          eyebrow: "Halo, saya",
+          badgeText: "Halo, saya",
           title: "Membangun sesuatu yang berarti",
-          subtitle:
+          description:
             "Saya membantu bisnis kecil tampil profesional di dunia digital.",
-          ctaText: "Hubungi Saya",
-          secondaryText: "Lihat Karya",
+          primaryCtaText: "Hubungi Saya",
+          primaryCtaUrl: "#kontak",
+          secondaryCtaText: "Lihat Karya",
+          secondaryCtaUrl: "#karya",
         },
       },
       { componentType: "about-basic" },
@@ -91,11 +95,12 @@ export const blockRegistry: BlockManifest[] = [
       {
         componentType: "hero-centered",
         props: {
-          eyebrow: "Portofolio",
+          badgeText: "Portofolio",
           title: "Desain yang bercerita",
-          subtitle:
+          description:
             "Fotografi, ilustrasi, dan brand identity untuk klien di seluruh dunia.",
-          ctaText: "Lihat Portofolio",
+          primaryCtaText: "Lihat Portofolio",
+          primaryCtaUrl: "#karya",
         },
       },
       { componentType: "about-basic" },
@@ -114,26 +119,28 @@ export const blockRegistry: BlockManifest[] = [
       {
         componentType: "hero-centered",
         props: {
-          eyebrow: "Koleksi baru",
+          badgeText: "Koleksi baru",
           title: "Gaya terbaru, harga terbaik",
-          subtitle:
+          description:
             "Belanja koleksi musim ini dengan gratis ongkir untuk pesanan di atas Rp 300.000.",
-          ctaText: "Belanja Sekarang",
-          secondaryText: "Lihat Promo",
+          primaryCtaText: "Belanja Sekarang",
+          primaryCtaUrl: "#produk",
+          secondaryCtaText: "Lihat Promo",
+          secondaryCtaUrl: "#promo",
         },
       },
       {
         componentType: "product-grid-basic",
         props: {
-          title: "Koleksi Terbaru",
-          subtitle: "Baru tiba minggu ini",
+          sectionTitle: "Koleksi Terbaru",
+          sectionSubtitle: "Baru tiba minggu ini",
         },
       },
       {
         componentType: "product-grid-basic",
         props: {
-          title: "Paling Laris",
-          subtitle: "Favorit pelanggan kami",
+          sectionTitle: "Paling Laris",
+          sectionSubtitle: "Favorit pelanggan kami",
         },
       },
       { componentType: "cta-basic", props: { title: "Jangan lewatkan promo" } },

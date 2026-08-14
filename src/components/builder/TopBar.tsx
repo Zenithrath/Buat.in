@@ -15,6 +15,10 @@ import {
   Command,
   Moon,
   Sun,
+  ZoomIn,
+  ZoomOut,
+  Maximize2,
+  ExternalLink,
 } from "lucide-react";
 import { useBuilderStore } from "@/lib/store/project-store";
 import { cn } from "@/lib/utils";
@@ -23,19 +27,18 @@ import { Input } from "@/components/ui/controls";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 const DEVICES = [
-  { id: "desktop", label: "Desktop", icon: Monitor },
-  { id: "tablet", label: "Tablet", icon: Tablet },
-  { id: "mobile", label: "Mobile", icon: Smartphone },
+  { id: "desktop", label: "Desktop (1440)", icon: Monitor },
+  { id: "tablet", label: "Tablet (768)", icon: Tablet },
+  { id: "mobile", label: "Mobile (390)", icon: Smartphone },
 ] as const;
 
 const APP_THEME_KEY = "buatin:app-theme";
 
 export function TopBar({
-  onPreview,
   onExport,
   onCommand,
 }: {
-  onPreview: () => void;
+  onPreview?: () => void;
   onExport: () => void;
   onCommand: () => void;
 }) {
@@ -47,6 +50,8 @@ export function TopBar({
   const past = useBuilderStore((s) => s.past);
   const future = useBuilderStore((s) => s.future);
   const saveStatus = useBuilderStore((s) => s.saveStatus);
+  const zoomLevel = useBuilderStore((s) => s.zoomLevel);
+  const setZoomLevel = useBuilderStore((s) => s.setZoomLevel);
 
   const [dark, setDark] = useState<boolean>(
     () =>
@@ -65,21 +70,31 @@ export function TopBar({
     globalThis.document.documentElement.classList.toggle("dark", next);
   };
 
+  const handleOpenDedicatedPreview = () => {
+    if (doc.projectId) {
+      window.open(`/builder/${doc.projectId}/preview`, "_blank");
+    }
+  };
+
   return (
     <div className="flex h-12 shrink-0 items-center gap-2 border-b bg-background px-3">
       <Link
         href="/"
-        className="text-sm font-bold tracking-tight text-foreground"
+        className="text-sm font-bold tracking-tight text-foreground flex items-center gap-1.5"
       >
-        Buat<span className="text-brand">.</span>in
+        <span>Buat<span className="text-primary">.</span>in</span>
       </Link>
 
-      <div className="h-5 w-px bg-border" />
+      <span className="rounded bg-primary/10 px-2 py-0.5 font-mono text-[10px] font-bold text-primary uppercase">
+        {doc.projectType || "landing"}
+      </span>
+
+      <div className="h-5 w-px bg-border mx-1" />
 
       <Input
         value={doc.name}
         onChange={(e) => renameProject(e.target.value)}
-        className="h-8 w-56 border-transparent bg-transparent px-2 font-medium hover:border-input focus:border-input"
+        className="h-8 w-48 border-transparent bg-transparent px-2 font-medium hover:border-input focus:border-input text-xs"
         aria-label="Nama project"
       />
 
@@ -118,13 +133,64 @@ export function TopBar({
         </Tooltip>
       </div>
 
-      <div className="mx-auto" />
+      <div className="mx-auto flex items-center gap-1">
+        {/* Device Frame Viewports */}
+        <div className="flex items-center gap-0.5 rounded-lg bg-muted p-0.5">
+          {DEVICES.map((device) => (
+            <button
+              key={device.id}
+              type="button"
+              onClick={() => setDevice(device.id)}
+              title={device.label}
+              className={cn(
+                "flex h-7 w-8 items-center justify-center rounded-md transition-colors",
+                doc.settings.device === device.id
+                  ? "bg-background text-foreground shadow-sm font-bold"
+                  : "text-muted-foreground hover:text-foreground"
+              )}
+            >
+              <device.icon size={14} />
+            </button>
+          ))}
+        </div>
+
+        {/* Zoom Controls */}
+        <div className="flex items-center gap-1 rounded-lg border bg-card px-1.5 py-0.5 text-xs">
+          <button
+            type="button"
+            onClick={() => setZoomLevel(zoomLevel - 10)}
+            className="p-1 text-muted-foreground hover:text-foreground"
+            title="Zoom out"
+          >
+            <ZoomOut size={13} />
+          </button>
+          <span className="w-10 text-center font-mono text-[11px] font-medium">
+            {zoomLevel}%
+          </span>
+          <button
+            type="button"
+            onClick={() => setZoomLevel(zoomLevel + 10)}
+            className="p-1 text-muted-foreground hover:text-foreground"
+            title="Zoom in"
+          >
+            <ZoomIn size={13} />
+          </button>
+          <button
+            type="button"
+            onClick={() => setZoomLevel(100)}
+            className="p-1 text-muted-foreground hover:text-foreground"
+            title="Reset Zoom (100%)"
+          >
+            <Maximize2 size={12} />
+          </button>
+        </div>
+      </div>
 
       <Tooltip>
         <TooltipTrigger asChild>
-          <Button variant="outline" size="sm" onClick={onCommand}>
+          <Button variant="outline" size="sm" onClick={onCommand} className="h-8">
             <Command size={13} />
-            <span className="hidden lg:inline">Perintah</span>
+            <span className="hidden lg:inline text-xs">Perintah</span>
             <kbd className="ml-1 rounded border bg-muted px-1 font-mono text-[9px] text-muted-foreground">
               Ctrl K
             </kbd>
@@ -132,25 +198,6 @@ export function TopBar({
         </TooltipTrigger>
         <TooltipContent>Palet perintah (Ctrl+K)</TooltipContent>
       </Tooltip>
-
-      <div className="flex items-center gap-0.5 rounded-lg bg-muted p-0.5">
-        {DEVICES.map((device) => (
-          <button
-            key={device.id}
-            type="button"
-            onClick={() => setDevice(device.id)}
-            title={device.label}
-            className={cn(
-              "flex h-7 w-9 items-center justify-center rounded-md transition-colors",
-              doc.settings.device === device.id
-                ? "bg-background text-foreground shadow-sm"
-                : "text-muted-foreground hover:text-foreground"
-            )}
-          >
-            <device.icon size={15} />
-          </button>
-        ))}
-      </div>
 
       <Button
         variant="ghost"
@@ -182,10 +229,12 @@ export function TopBar({
         ) : null}
       </div>
 
-      <Button variant="secondary" size="sm" onClick={onPreview}>
-        <Eye size={14} /> Pratinjau
+      <Button variant="secondary" size="sm" onClick={handleOpenDedicatedPreview} className="h-8 gap-1.5 text-xs">
+        <Eye size={14} />
+        <span>Pratinjau</span>
+        <ExternalLink size={11} className="opacity-70" />
       </Button>
-      <Button size="sm" onClick={onExport}>
+      <Button size="sm" onClick={onExport} className="h-8 text-xs font-bold">
         <Download size={14} /> Export
       </Button>
     </div>

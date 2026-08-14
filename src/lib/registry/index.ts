@@ -1,26 +1,58 @@
-import type { ComponentManifest, ComponentCategory } from "./types";
-import { navbarMinimal } from "./components/navbar-minimal";
-import { heroCentered } from "./components/hero-centered";
-import { productGridBasic } from "./components/product-grid-basic";
-import { aboutBasic } from "./components/about-basic";
-import { ctaBasic } from "./components/cta-basic";
-import { footerBasic } from "./components/footer-basic";
+import type { ComponentCategory, ComponentRegistryItem } from "./types";
+
+// ═══════════════════════════════════════════════════════════════
+// Registry now sources from /src/asset-comp/ (canonical location)
+// Old /src/lib/registry/components/ kept for backward compat only
+// ═══════════════════════════════════════════════════════════════
+
+import {
+  appSidebarComponent,
+  dashboardHeaderComponent,
+  kpiCardComponent,
+  chartCardComponent,
+  dataTableComponent,
+  gridContainerComponent,
+  navbarMinimalComponent,
+  heroCenteredComponent,
+  productGridBasicComponent,
+  aboutBasicComponent,
+  ctaBasicComponent,
+  footerBasicComponent,
+} from "@/asset-comp";
 
 export type { ComponentCategory };
 
-export const componentRegistry: ComponentManifest[] = [
-  navbarMinimal,
-  heroCentered,
-  productGridBasic,
-  aboutBasic,
-  ctaBasic,
-  footerBasic,
+export const componentRegistry: ComponentRegistryItem[] = [
+  // Dashboard components
+  appSidebarComponent,
+  dashboardHeaderComponent,
+  kpiCardComponent,
+  chartCardComponent,
+  dataTableComponent,
+  gridContainerComponent,
+  // Landing page components
+  navbarMinimalComponent,
+  heroCenteredComponent,
+  productGridBasicComponent,
+  aboutBasicComponent,
+  ctaBasicComponent,
+  footerBasicComponent,
 ];
 
-export const componentMap: Record<string, ComponentManifest> =
+export const componentMap: Record<string, ComponentRegistryItem> =
   Object.fromEntries(componentRegistry.map((c) => [c.id, c]));
 
 export const CATEGORY_LABELS: Record<ComponentCategory, string> = {
+  dashboard: "Dashboard",
+  landing: "Landing Page",
+  layout: "Tata Letak",
+  navigation: "Navigasi",
+  typography: "Tipografi",
+  actions: "Aksi / Tombol",
+  media: "Media & Gambar",
+  content: "Konten & Kartu",
+  form: "Formulir",
+  data: "Data & Grafik",
   navbar: "Navigasi",
   hero: "Hero",
   product: "Produk",
@@ -29,6 +61,6 @@ export const CATEGORY_LABELS: Record<ComponentCategory, string> = {
   footer: "Footer",
 };
 
-export function getComponent(id: string): ComponentManifest | undefined {
+export function getComponent(id: string): ComponentRegistryItem | undefined {
   return componentMap[id];
 }

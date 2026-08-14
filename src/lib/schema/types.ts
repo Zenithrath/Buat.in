@@ -2,30 +2,54 @@ export const SCHEMA_VERSION = "0.1.0";
 
 export type Device = "desktop" | "tablet" | "mobile";
 
+export type ProjectType = "landing" | "dashboard";
+
 export type SectionStyleKey =
   | "padding"
   | "textAlign"
   | "contentWidth"
   | "background"
-  | "backgroundCustom";
+  | "backgroundCustom"
+  | "borderRadius"
+  | "boxShadow"
+  | "opacity";
 
 export type SectionStyle = Partial<Record<SectionStyleKey, string>>;
 
-export type NodeProps = Record<
-  string,
-  string | number | boolean | undefined
->;
+// Props komponen adalah JSON arbitrer dari dokumen project.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type NodeProps = Record<string, any>;
+
+export interface NodeLayout {
+  type?: "auto" | "freeform" | "stack" | "row" | "grid";
+  widthMode?: "hug" | "fill" | "fixed";
+  heightMode?: "hug" | "fill" | "fixed";
+  fixedWidth?: number;
+  fixedHeight?: number;
+  gap?: number;
+  align?: "start" | "center" | "end" | "stretch";
+  justify?: "start" | "center" | "end" | "between";
+  wrap?: boolean;
+  x?: number;
+  y?: number;
+  zIndex?: number;
+  colSpan?: number;
+}
 
 export interface Node {
   id: string;
+  name?: string;
   componentType: string;
   props: NodeProps;
   styles: SectionStyle;
   tabletOverride: SectionStyle;
   mobileOverride: SectionStyle;
+  layout?: NodeLayout;
   children: Node[];
   metadata: {
     createdAt: string;
+    hidden?: boolean;
+    locked?: boolean;
   };
 }
 
@@ -88,6 +112,7 @@ export interface ProjectDocument {
   schemaVersion: string;
   projectId: string;
   name: string;
+  projectType: ProjectType;
   theme: Theme;
   settings: {
     device: Device;

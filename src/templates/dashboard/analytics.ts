@@ -1,0 +1,153 @@
+import type { RawTemplateNode } from "@/templates";
+import { uid } from "@/lib/utils";
+
+/** Analytics dashboard template — sidebar + header + KPI + chart + table */
+export function createAnalyticsDashboardNodes(): RawTemplateNode[] {
+  return [
+    // The dashboard uses a special "dashboard-layout" wrapper approach:
+    // app-sidebar + dashboard-header + grid of KPI cards + charts + table
+    {
+      id: uid(),
+      componentType: "app-sidebar",
+      name: "App Sidebar",
+      props: {
+        brandName: "Buat.Analytics",
+        brandTag: "PRO",
+        userName: "Admin User",
+        userRole: "Administrator",
+        linksJson: JSON.stringify([
+          { id: "s1", label: "Overview", icon: "layout-dashboard", active: true },
+          { id: "s2", label: "Analytics", icon: "bar-chart-3", active: false },
+          { id: "s3", label: "Transaksi", icon: "credit-card", active: false },
+          { id: "s4", label: "Pengguna", icon: "users", active: false },
+          { id: "s5", label: "Pengaturan", icon: "settings", active: false },
+        ]),
+      },
+      styles: { isDashboardSidebar: "true" },
+      tabletOverride: {},
+      mobileOverride: {},
+      metadata: { isDashboardComponent: true },
+    },
+    {
+      id: uid(),
+      componentType: "dashboard-header",
+      name: "Dashboard Header",
+      props: {
+        title: "Overview Dashboard",
+        breadcrumb: "Dashboard / Analytics",
+        searchPlaceholder: "Cari data, laporan...",
+        actionText: "Export Laporan",
+      },
+      styles: { isDashboardHeader: "true" },
+      tabletOverride: {},
+      mobileOverride: {},
+      metadata: { isDashboardComponent: true },
+    },
+    {
+      id: uid(),
+      componentType: "kpi-card",
+      name: "KPI Total Revenue",
+      props: {
+        title: "Total Revenue",
+        value: "Rp 128.450.000",
+        change: "+14.2%",
+        trend: "up",
+        period: "vs bulan lalu",
+      },
+      styles: { isDashboardWidget: "true" },
+      tabletOverride: {},
+      mobileOverride: {},
+      metadata: { isDashboardComponent: true },
+    },
+    {
+      id: uid(),
+      componentType: "kpi-card",
+      name: "KPI Pengguna Aktif",
+      props: {
+        title: "Pengguna Aktif",
+        value: "14.280",
+        change: "+8.1%",
+        trend: "up",
+        period: "30 hari terakhir",
+      },
+      styles: { isDashboardWidget: "true" },
+      tabletOverride: {},
+      mobileOverride: {},
+      metadata: { isDashboardComponent: true },
+    },
+    {
+      id: uid(),
+      componentType: "kpi-card",
+      name: "KPI Tingkat Konversi",
+      props: {
+        title: "Tingkat Konversi",
+        value: "3.42%",
+        change: "-0.4%",
+        trend: "down",
+        period: "vs bulan lalu",
+      },
+      styles: { isDashboardWidget: "true" },
+      tabletOverride: {},
+      mobileOverride: {},
+      metadata: { isDashboardComponent: true },
+    },
+    {
+      id: uid(),
+      componentType: "kpi-card",
+      name: "KPI Total Transaksi",
+      props: {
+        title: "Total Transaksi",
+        value: "4.891",
+        change: "+22.6%",
+        trend: "up",
+        period: "bulan ini",
+      },
+      styles: { isDashboardWidget: "true" },
+      tabletOverride: {},
+      mobileOverride: {},
+      metadata: { isDashboardComponent: true },
+    },
+    {
+      id: uid(),
+      componentType: "chart-card",
+      name: "Revenue & Traffic Chart",
+      props: {
+        title: "Revenue & Pengunjung",
+        subtitle: "Tren 6 bulan terakhir",
+        chartType: "area",
+        dataJson: JSON.stringify([
+          { label: "Jan", val1: 40, val2: 24 },
+          { label: "Feb", val1: 55, val2: 32 },
+          { label: "Mar", val1: 75, val2: 45 },
+          { label: "Apr", val1: 60, val2: 38 },
+          { label: "Mei", val1: 90, val2: 60 },
+          { label: "Jun", val1: 110, val2: 78 },
+        ]),
+      },
+      styles: { isDashboardWidget: "true" },
+      tabletOverride: {},
+      mobileOverride: {},
+      metadata: { isDashboardComponent: true },
+    },
+    {
+      id: uid(),
+      componentType: "data-table",
+      name: "Transaksi Table",
+      props: {
+        title: "Transaksi Terbaru",
+        subtitle: "Daftar 10 pesanan terkini",
+        rowsJson: JSON.stringify([
+          { id: "TRX-001", customer: "Budi Santoso", amount: "Rp 1.250.000", status: "Selesai", date: "14 Agu 2026" },
+          { id: "TRX-002", customer: "Siti Rahma", amount: "Rp 850.000", status: "Proses", date: "14 Agu 2026" },
+          { id: "TRX-003", customer: "Dewi Lestari", amount: "Rp 2.400.000", status: "Selesai", date: "13 Agu 2026" },
+          { id: "TRX-004", customer: "Andi Wijaya", amount: "Rp 450.000", status: "Batal", date: "12 Agu 2026" },
+          { id: "TRX-005", customer: "Rina Aprilia", amount: "Rp 3.100.000", status: "Selesai", date: "12 Agu 2026" },
+        ]),
+      },
+      styles: { isDashboardWidget: "true" },
+      tabletOverride: {},
+      mobileOverride: {},
+      metadata: { isDashboardComponent: true },
+    },
+  ];
+}

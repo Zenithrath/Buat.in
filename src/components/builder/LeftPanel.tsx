@@ -3,408 +3,360 @@
 import { useMemo, useState } from "react";
 import { useDraggable } from "@dnd-kit/core";
 import {
-  Copy,
-  Trash2,
-  Sparkles,
-  ShoppingBag,
-  Info,
-  Megaphone,
-  PanelBottom,
-  Navigation,
+  LayoutTemplate,
   Blocks,
-  FileText,
   Image as ImageIcon,
-  Palette,
   Search,
-  Boxes,
+  Crown,
+  CheckCircle2,
+  X,
+  type LucideIcon,
 } from "lucide-react";
-import {
-  componentRegistry,
-  CATEGORY_LABELS,
-  type ComponentCategory,
-} from "@/lib/registry";
-import {
-  blockRegistry,
-  BLOCK_CATEGORY_LABELS,
-  buildBlockNodes,
-  type BlockCategory,
-} from "@/lib/blocks";
-import {
-  useBuilderStore,
-  type LeftTab,
-} from "@/lib/store/project-store";
+import { useBuilderStore } from "@/lib/store/project-store";
+import { componentRegistry, CATEGORY_LABELS } from "@/lib/registry";
+import { templateRegistry, TEMPLATE_CATEGORY_LABELS } from "@/templates";
+import type { ComponentManifest } from "@/lib/registry/types";
 import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/controls";
-import { Badge } from "@/components/ui/badge";
-import { ThemeCustomizer } from "./ThemeCustomizer";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
-const CATEGORY_ICONS: Record<ComponentCategory, React.ReactNode> = {
-  navbar: <Navigation size={14} />,
-  hero: <Sparkles size={14} />,
-  product: <ShoppingBag size={14} />,
-  about: <Info size={14} />,
-  cta: <Megaphone size={14} />,
-  footer: <PanelBottom size={14} />,
-};
+/* ─────────────────────────────────────────────
+   Panel tabs — Templates | Components | Assets
+───────────────────────────────────────────── */
+type PanelTab = "templates" | "components" | "assets";
 
-const RAIL: { id: LeftTab; label: string; hint: string; icon: React.ReactNode }[] = [
-  { id: "pages", label: "Halaman", hint: "Halaman & lapisan komponen", icon: <FileText size={16} /> },
-  { id: "components", label: "Komponen", hint: "Tambahkan komponen ke halaman", icon: <Boxes size={16} /> },
-  { id: "blocks", label: "Blok", hint: "Template halaman siap pakai", icon: <Blocks size={16} /> },
-  { id: "style", label: "Style", hint: "Warna, border, tipografi", icon: <Palette size={16} /> },
-  { id: "assets", label: "Aset", hint: "Gambar & file project", icon: <ImageIcon size={16} /> },
+const PANEL_TABS: { id: PanelTab; icon: LucideIcon; label: string }[] = [
+  { id: "templates", icon: LayoutTemplate, label: "Template" },
+  { id: "components", icon: Blocks, label: "Komponen" },
+  { id: "assets", icon: ImageIcon, label: "Gambar" },
 ];
 
-function ComponentCard({ componentId }: { componentId: string }) {
-  const manifest = componentRegistry.find((c) => c.id === componentId)!;
-  const addSection = useBuilderStore((s) => s.addSection);
+/* ─── Component drag item ──────────────────── */
+function DraggableComponent({
+  manifest,
+  search,
+}: {
+  manifest: ComponentManifest;
+  search: string;
+}) {
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
-    id: `new:${componentId}`,
-    data: { type: "new", componentType: componentId },
+    id: `drag-new-${manifest.id}`,
+    data: { type: "new", componentType: manifest.id },
   });
 
+  const addSection = useBuilderStore((s) => s.addSection);
+  const sections = useBuilderStore((s) => s.document.pages[0].sections);
+
+  const name = manifest.name.toLowerCase();
+  const desc = manifest.description.toLowerCase();
+  const q = search.toLowerCase();
+  if (q && !name.includes(q) && !desc.includes(q)) return null;
+
   return (
-    <button
+    <div
       ref={setNodeRef}
-      {...attributes}
       {...listeners}
-      type="button"
-      onClick={() => addSection(componentId)}
+      {...attributes}
+      onDoubleClick={() => addSection(manifest.id, sections.length)}
+      title={`Seret ke kanvas atau klik dua kali untuk menambahkan\n${manifest.description}`}
       className={cn(
-        "flex w-full items-start gap-2.5 rounded-lg border bg-card p-2.5 text-left transition-colors hover:border-brand hover:bg-brand/5 active:cursor-grabbing",
-        isDragging && "opacity-40"
+        "group relative flex items-center gap-2.5 rounded-lg border border-border bg-card px-2.5 py-2 cursor-grab",
+        "hover:border-primary/50 hover:bg-primary/5 hover:shadow-sm transition-all text-left",
+        isDragging && "opacity-50 ring-2 ring-primary"
       )}
     >
-      <span className="mt-0.5 rounded-md bg-muted p-1.5 text-muted-foreground">
-        {CATEGORY_ICONS[manifest.category]}
-      </span>
-      <span className="min-w-0">
-        <span className="flex items-center gap-1.5">
-          <span className="truncate text-[13px] font-medium text-foreground">
-            {manifest.name}
-          </span>
-          {manifest.tier === "pro" ? <Badge variant="brand">Pro</Badge> : null}
-        </span>
-        <span className="mt-0.5 line-clamp-2 block text-[11px] leading-snug text-muted-foreground">
+      <div className="flex size-8 shrink-0 items-center justify-center rounded-md bg-primary/10 text-primary">
+        <Blocks size={14} />
+      </div>
+      <div className="min-w-0 flex-1">
+        <div className="flex items-center gap-1 min-w-0">
+          <p className="text-[11px] font-semibold text-foreground truncate">{manifest.name}</p>
+          {manifest.tier === "pro" && (
+            <span className="ml-auto shrink-0 flex items-center gap-0.5 rounded px-1 py-0 bg-amber-500/15 text-amber-600 text-[9px] font-bold">
+              <Crown size={9} />PRO
+            </span>
+          )}
+        </div>
+        <p className="text-[9px] text-muted-foreground leading-tight truncate">
           {manifest.description}
-        </span>
-      </span>
-    </button>
+        </p>
+      </div>
+    </div>
   );
 }
 
-export function LeftPanel() {
-  const leftTab = useBuilderStore((s) => s.leftTab);
-  const setLeftTab = useBuilderStore((s) => s.setLeftTab);
-  const sections = useBuilderStore((s) => s.document.pages[0].sections);
-  const pageName = useBuilderStore((s) => s.document.pages[0].name);
-  const selectedId = useBuilderStore((s) => s.selectedId);
-  const select = useBuilderStore((s) => s.select);
-  const duplicateSection = useBuilderStore((s) => s.duplicateSection);
-  const removeSection = useBuilderStore((s) => s.removeSection);
-  const addBlock = useBuilderStore((s) => s.addBlock);
+/* ─── Templates panel ─────────────────────── */
+function TemplatesPanel() {
+  const [search, setSearch] = useState("");
+  const [filter, setFilter] = useState<"all" | "landing" | "dashboard">("all");
+  const applyTemplate = useBuilderStore((s) => s.applyTemplate);
+  const [applied, setApplied] = useState<string | null>(null);
 
-  const [query, setQuery] = useState("");
-  const [category, setCategory] = useState<ComponentCategory | "all">("all");
-  const [tier, setTier] = useState<"all" | "free" | "pro">("all");
+  const filtered = templateRegistry.filter((t) => {
+    const q = search.toLowerCase();
+    const matchQ = !q || t.name.toLowerCase().includes(q) || t.tags.some((tag) => tag.includes(q));
+    const matchFilter = filter === "all" || t.category === filter;
+    return matchQ && matchFilter;
+  });
 
-  const categories = useMemo(
-    () => [...new Set(componentRegistry.map((c) => c.category))],
-    []
-  );
-
-  const filtered = useMemo(
-    () =>
-      componentRegistry.filter((c) => {
-        if (category !== "all" && c.category !== category) return false;
-        if (tier !== "all" && c.tier !== tier) return false;
-        if (!query.trim()) return true;
-        const q = query.toLowerCase();
-        return (
-          c.name.toLowerCase().includes(q) ||
-          c.description.toLowerCase().includes(q)
-        );
-      }),
-    [category, tier, query]
-  );
-
-  const blockCategories = useMemo(
-    () => [...new Set(blockRegistry.map((b) => b.category))],
-    []
-  );
+  function handleApply(templateId: string) {
+    if (typeof applyTemplate === "function") applyTemplate(templateId);
+    setApplied(templateId);
+    setTimeout(() => setApplied(null), 2000);
+  }
 
   return (
-    <div className="flex shrink-0 border-r bg-background">
-      <div className="flex w-12 shrink-0 flex-col items-center gap-1 border-r bg-muted/40 py-2">
-        {RAIL.map((item) => (
-          <Tooltip key={item.id}>
-            <TooltipTrigger asChild>
-              <button
-                type="button"
-                onClick={() => setLeftTab(item.id)}
-                aria-label={item.hint}
-                className={cn(
-                  "flex h-9 w-9 items-center justify-center rounded-md transition-colors",
-                  leftTab === item.id
-                    ? "bg-card text-foreground shadow-sm ring-1 ring-border"
-                    : "text-muted-foreground hover:bg-card hover:text-foreground"
-                )}
-              >
-                {item.icon}
-              </button>
-            </TooltipTrigger>
-            <TooltipContent side="right">{item.label}</TooltipContent>
-          </Tooltip>
+    <div className="flex flex-col gap-3 px-3 py-3">
+      {/* Search */}
+      <div className="relative">
+        <Search size={11} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
+        <input
+          type="text"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="Cari template..."
+          className="w-full rounded-lg border border-border bg-muted/50 py-1.5 pl-7 pr-3 text-[11px] placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+        />
+        {search && (
+          <button onClick={() => setSearch("")} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
+            <X size={10} />
+          </button>
+        )}
+      </div>
+
+      {/* Category filter pills */}
+      <div className="flex gap-1.5">
+        {(["all", "landing", "dashboard"] as const).map((cat) => (
+          <button
+            key={cat}
+            onClick={() => setFilter(cat)}
+            className={cn(
+              "rounded-full px-2.5 py-0.5 text-[10px] font-semibold transition-all",
+              filter === cat
+                ? "bg-primary text-white shadow-sm"
+                : "bg-muted text-muted-foreground hover:bg-primary/10 hover:text-primary"
+            )}
+          >
+            {cat === "all" ? "Semua" : TEMPLATE_CATEGORY_LABELS[cat]}
+          </button>
         ))}
       </div>
 
-      <div className="flex w-64 shrink-0 flex-col">
-        <div className="border-b px-3 py-2">
-          <p className="text-xs font-semibold text-foreground">
-            {RAIL.find((r) => r.id === leftTab)?.label}
+      {/* Template cards */}
+      <div className="flex flex-col gap-2">
+        {filtered.length === 0 ? (
+          <p className="text-center text-[11px] text-muted-foreground py-6">
+            Tidak ada template yang sesuai
           </p>
-          <p className="text-[10px] text-muted-foreground">
-            {RAIL.find((r) => r.id === leftTab)?.hint}
-          </p>
-        </div>
-
-        <div className="flex-1 overflow-y-auto p-3">
-          {leftTab === "pages" ? (
-            <div className="space-y-4">
-              <div>
-                <h3 className="mb-1.5 px-0.5 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
-                  Halaman
-                </h3>
-                <div className="flex items-center gap-2 rounded-md border border-border bg-card px-2 py-2">
-                  <FileText size={14} className="text-muted-foreground" />
-                  <span className="text-[13px] font-medium text-foreground">
-                    {pageName}
-                  </span>
-                  <Badge className="ml-auto">{sections.length}</Badge>
-                </div>
-                <p className="pt-2 text-center text-[11px] text-muted-foreground">
-                  Halaman tambahan segera hadir.
-                </p>
-              </div>
-
-              <div>
-                <h3 className="mb-1.5 px-0.5 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
-                  Lapisan
-                </h3>
-                {sections.length === 0 ? (
-                  <p className="py-6 text-center text-xs text-muted-foreground">
-                    Belum ada komponen di halaman ini.
-                  </p>
+        ) : (
+          filtered.map((tmpl) => (
+            <button
+              key={tmpl.id}
+              onClick={() => handleApply(tmpl.id)}
+              className={cn(
+                "group relative w-full rounded-xl border bg-card p-3 text-left transition-all",
+                "hover:border-primary/50 hover:shadow-md hover:bg-primary/5",
+                applied === tmpl.id ? "border-emerald-500 bg-emerald-50 dark:bg-emerald-900/20" : "border-border"
+              )}
+            >
+              {/* Thumbnail placeholder */}
+              <div className="mb-2.5 flex h-20 items-center justify-center rounded-lg bg-gradient-to-br from-primary/10 to-primary/5 border border-border/50 text-primary">
+                {tmpl.category === "dashboard" ? (
+                  <svg viewBox="0 0 80 48" className="w-16 opacity-70" fill="none">
+                    <rect x="0" y="0" width="20" height="48" rx="2" fill="currentColor" opacity="0.15" />
+                    <rect x="22" y="0" width="58" height="10" rx="2" fill="currentColor" opacity="0.1" />
+                    <rect x="22" y="12" width="26" height="14" rx="2" fill="currentColor" opacity="0.2" />
+                    <rect x="52" y="12" width="28" height="14" rx="2" fill="currentColor" opacity="0.2" />
+                    <rect x="22" y="28" width="58" height="18" rx="2" fill="currentColor" opacity="0.12" />
+                  </svg>
                 ) : (
-                  <div className="space-y-1">
-                    {sections.map((section, index) => {
-                      const manifest = componentRegistry.find(
-                        (c) => c.id === section.componentType
-                      );
-                      const active = selectedId === section.id;
-                      return (
-                        <div
-                          key={section.id}
-                          onClick={() => select(section.id)}
-                          className={cn(
-                            "group flex cursor-pointer items-center gap-2 rounded-md border px-2 py-1.5 transition-colors",
-                            active
-                              ? "border-brand bg-brand/10"
-                              : "border-transparent hover:bg-muted"
-                          )}
-                        >
-                          <span className="flex h-6 w-6 items-center justify-center rounded bg-muted text-muted-foreground">
-                            {manifest ? CATEGORY_ICONS[manifest.category] : null}
-                          </span>
-                          <span className="flex-1 truncate text-[13px] text-foreground">
-                            {index + 1}. {manifest?.name ?? section.componentType}
-                          </span>
-                          <span className="hidden items-center gap-0.5 group-hover:flex">
-                            <button
-                              type="button"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                duplicateSection(section.id);
-                              }}
-                              className="rounded p-1 text-muted-foreground hover:bg-muted hover:text-foreground"
-                              title="Duplikat"
-                            >
-                              <Copy size={12} />
-                            </button>
-                            <button
-                              type="button"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                removeSection(section.id);
-                              }}
-                              className="rounded p-1 text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
-                              title="Hapus"
-                            >
-                              <Trash2 size={12} />
-                            </button>
-                          </span>
-                        </div>
-                      );
-                    })}
-                  </div>
+                  <svg viewBox="0 0 80 48" className="w-16 opacity-70" fill="none">
+                    <rect x="10" y="0" width="60" height="8" rx="2" fill="currentColor" opacity="0.15" />
+                    <rect x="15" y="10" width="50" height="18" rx="2" fill="currentColor" opacity="0.2" />
+                    <rect x="20" y="30" width="40" height="6" rx="2" fill="currentColor" opacity="0.12" />
+                    <rect x="25" y="38" width="30" height="8" rx="2" fill="currentColor" opacity="0.18" />
+                  </svg>
                 )}
-                {sections.length > 0 ? (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="mt-3 w-full text-muted-foreground hover:text-foreground"
-                    onClick={() => {
-                      const last = sections[sections.length - 1];
-                      duplicateSection(last.id);
-                    }}
-                  >
-                    <Copy size={12} /> Duplikat komponen terakhir
-                  </Button>
-                ) : null}
               </div>
-            </div>
-          ) : null}
 
-          {leftTab === "components" ? (
-            <div className="space-y-3">
-              <div className="relative">
-                <Search
-                  size={13}
-                  className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground"
-                />
-                <Input
-                  value={query}
-                  onChange={(e) => setQuery(e.target.value)}
-                  placeholder="Cari komponen..."
-                  className="h-8 pl-8"
-                />
-              </div>
-              <div className="flex flex-wrap gap-1">
-                <button
-                  type="button"
-                  onClick={() => setCategory("all")}
-                  className={cn(
-                    "rounded-full border px-2 py-0.5 text-[10px] font-medium transition-colors",
-                    category === "all"
-                      ? "border-brand bg-brand/10 text-brand-foreground"
-                      : "text-muted-foreground hover:border-muted"
-                  )}
-                >
-                  Semua
-                </button>
-                {categories.map((c) => (
-                  <button
-                    key={c}
-                    type="button"
-                    onClick={() => setCategory(c)}
-                    className={cn(
-                      "rounded-full border px-2 py-0.5 text-[10px] font-medium transition-colors",
-                      category === c
-                        ? "border-brand bg-brand/10 text-brand-foreground"
-                        : "text-muted-foreground hover:border-muted"
-                    )}
-                  >
-                    {CATEGORY_LABELS[c]}
-                  </button>
-                ))}
-              </div>
-              <div className="flex gap-1">
-                {(["all", "free", "pro"] as const).map((t) => (
-                  <button
-                    key={t}
-                    type="button"
-                    onClick={() => setTier(t)}
-                    className={cn(
-                      "rounded-md border px-2 py-0.5 text-[10px] font-medium capitalize transition-colors",
-                      tier === t
-                        ? "border-brand bg-brand/10 text-brand-foreground"
-                        : "text-muted-foreground hover:border-muted"
-                    )}
-                  >
-                    {t === "all" ? "Semua" : t === "free" ? "Gratis" : "Pro"}
-                  </button>
-                ))}
-              </div>
-              <div className="space-y-1.5">
-                {filtered.map((c) => (
-                  <ComponentCard key={c.id} componentId={c.id} />
-                ))}
-                {filtered.length === 0 ? (
-                  <p className="py-6 text-center text-xs text-muted-foreground">
-                    Tidak ada komponen yang cocok.
+              <div className="flex items-start justify-between gap-1">
+                <div className="min-w-0">
+                  <p className="text-[11px] font-bold text-foreground leading-tight">{tmpl.name}</p>
+                  <p className="text-[9px] text-muted-foreground mt-0.5 leading-snug line-clamp-2">
+                    {tmpl.description}
                   </p>
-                ) : null}
+                </div>
+                {tmpl.tier === "pro" && (
+                  <span className="shrink-0 flex items-center gap-0.5 rounded px-1.5 py-0.5 bg-amber-500/15 text-amber-600 text-[9px] font-bold">
+                    <Crown size={9} />PRO
+                  </span>
+                )}
               </div>
-            </div>
-          ) : null}
 
-          {leftTab === "blocks" ? (
-            <div className="space-y-4">
-              <p className="px-0.5 text-[11px] text-muted-foreground">
-                Blok adalah kumpulan komponen siap pakai. Klik untuk menambah
-                seluruh halaman sekaligus.
-              </p>
-              {blockCategories.map((bc) => (
-                <div key={bc}>
-                  <h3 className="mb-1.5 px-0.5 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
-                    {BLOCK_CATEGORY_LABELS[bc as BlockCategory]}
-                  </h3>
-                  <div className="space-y-1.5">
-                    {blockRegistry
-                      .filter((b) => b.category === bc)
-                      .map((block) => (
-                        <button
-                          key={block.id}
-                          type="button"
-                          onClick={() => addBlock(buildBlockNodes(block))}
-                          className="w-full rounded-lg border bg-card p-2.5 text-left transition-colors hover:border-brand hover:bg-brand/5"
-                        >
-                          <span className="flex items-center justify-between">
-                            <span className="text-[13px] font-medium text-foreground">
-                              {block.name}
-                            </span>
-                            {block.tier === "pro" ? (
-                              <Badge variant="brand">Pro</Badge>
-                            ) : (
-                              <Badge>Gratis</Badge>
-                            )}
-                          </span>
-                          <span className="mt-0.5 block text-[11px] leading-snug text-muted-foreground">
-                            {block.description}
-                          </span>
-                          <span className="mt-1.5 flex flex-wrap gap-1">
-                            {block.tags.map((tag) => (
-                              <span
-                                key={tag}
-                                className="rounded-full bg-muted px-1.5 py-0.5 text-[9px] text-muted-foreground"
-                              >
-                                {tag}
-                              </span>
-                            ))}
-                          </span>
-                        </button>
-                      ))}
+              {/* Tags */}
+              <div className="mt-1.5 flex flex-wrap gap-1">
+                {tmpl.tags.slice(0, 3).map((tag) => (
+                  <span key={tag} className="rounded-full bg-muted px-1.5 py-0 text-[8px] font-medium text-muted-foreground">
+                    {tag}
+                  </span>
+                ))}
+              </div>
+
+              {applied === tmpl.id ? (
+                <div className="absolute inset-0 flex items-center justify-center rounded-xl bg-emerald-500/10 backdrop-blur-sm">
+                  <div className="flex items-center gap-1.5 text-emerald-600 font-bold text-xs">
+                    <CheckCircle2 size={16} /> Template diterapkan!
                   </div>
                 </div>
+              ) : null}
+            </button>
+          ))
+        )}
+      </div>
+    </div>
+  );
+}
+
+/* ─── Components panel ────────────────────── */
+function ComponentsPanel() {
+  const [search, setSearch] = useState("");
+
+  const grouped = useMemo(() => {
+    const map = new Map<string, ComponentManifest[]>();
+    componentRegistry.forEach((c) => {
+      const cat = c.category;
+      if (!map.has(cat)) map.set(cat, []);
+      map.get(cat)!.push(c);
+    });
+    return map;
+  }, []);
+
+  return (
+    <div className="flex flex-col gap-2 px-3 py-3">
+      <div className="relative">
+        <Search size={11} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
+        <input
+          type="text"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="Cari komponen..."
+          className="w-full rounded-lg border border-border bg-muted/50 py-1.5 pl-7 pr-3 text-[11px] placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+        />
+        {search && (
+          <button onClick={() => setSearch("")} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
+            <X size={10} />
+          </button>
+        )}
+      </div>
+      <p className="text-[9px] text-muted-foreground">
+        Seret ke kanvas atau klik dua kali untuk menambahkan komponen.
+      </p>
+      {Array.from(grouped.entries()).map(([cat, items]) => {
+        const anyMatch = items.some((c) => {
+          const q = search.toLowerCase();
+          return !q || c.name.toLowerCase().includes(q) || c.description.toLowerCase().includes(q);
+        });
+        if (!anyMatch) return null;
+        return (
+          <div key={cat}>
+            <p className="mb-1.5 mt-2 text-[9px] font-bold uppercase tracking-widest text-muted-foreground">
+              {CATEGORY_LABELS[cat as keyof typeof CATEGORY_LABELS] ?? cat}
+            </p>
+            <div className="flex flex-col gap-1.5">
+              {items.map((m) => (
+                <DraggableComponent key={m.id} manifest={m} search={search} />
               ))}
             </div>
-          ) : null}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
 
-          {leftTab === "style" ? <ThemeCustomizer /> : null}
+/* ─── Assets panel ────────────────────────── */
+function AssetsPanel() {
+  const [uploaded, setUploaded] = useState<{ name: string; url: string }[]>([]);
 
-          {leftTab === "assets" ? (
-            <div className="flex flex-col items-center gap-2 py-8 text-center">
-              <span className="rounded-full bg-muted p-3 text-muted-foreground">
-                <ImageIcon size={18} />
-              </span>
-              <p className="text-xs text-muted-foreground">
-                Belum ada aset. Unggah gambar untuk dipakai di komponen.
-              </p>
+  function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const files = Array.from(e.target.files ?? []);
+    files.forEach((f) => {
+      const url = URL.createObjectURL(f);
+      setUploaded((prev) => [...prev, { name: f.name, url }]);
+    });
+  }
+
+  return (
+    <div className="flex flex-col gap-3 px-3 py-3">
+      <label className="flex flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-border bg-muted/30 py-7 cursor-pointer hover:border-primary/60 hover:bg-primary/5 transition-all">
+        <ImageIcon size={22} className="text-muted-foreground" />
+        <p className="text-[11px] font-semibold text-foreground">Unggah Gambar</p>
+        <p className="text-[9px] text-muted-foreground">PNG, JPG, SVG, WebP</p>
+        <input type="file" accept="image/*" multiple className="hidden" onChange={handleFileChange} />
+      </label>
+
+      {uploaded.length === 0 ? (
+        <p className="text-center text-[10px] text-muted-foreground py-4">
+          Belum ada gambar diunggah
+        </p>
+      ) : (
+        <div className="grid grid-cols-2 gap-2">
+          {uploaded.map((a, i) => (
+            <div
+              key={i}
+              className="group relative rounded-lg border overflow-hidden bg-muted/40 aspect-square cursor-pointer hover:ring-1 hover:ring-primary"
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element -- pratinjau lokal via blob URL */}
+              <img src={a.url} alt={a.name} className="h-full w-full object-cover" />
+              <div className="absolute inset-x-0 bottom-0 bg-black/50 px-1.5 py-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                <p className="text-[9px] text-white truncate">{a.name}</p>
+              </div>
             </div>
-          ) : null}
+          ))}
         </div>
+      )}
+    </div>
+  );
+}
+
+/* ─── Main LeftPanel component ────────────── */
+export function LeftPanel() {
+  const leftTab = useBuilderStore((s) => s.leftTab);
+  const setLeftTab = useBuilderStore((s) => s.setLeftTab);
+  const activeTab: PanelTab =
+    leftTab === "components" || leftTab === "assets" ? leftTab : "templates";
+
+  return (
+    <div className="flex h-full">
+      {/* Icon rail */}
+      <div className="flex w-12 shrink-0 flex-col items-center gap-1.5 border-r border-border bg-card/80 py-3">
+        {PANEL_TABS.map((tab) => {
+          const Icon = tab.icon;
+          return (
+            <button
+              key={tab.id}
+              onClick={() => setLeftTab(tab.id)}
+              title={tab.label}
+              className={cn(
+                "group relative flex h-9 w-9 flex-col items-center justify-center rounded-lg transition-all",
+                activeTab === tab.id
+                  ? "bg-primary text-white shadow-md shadow-primary/30"
+                  : "text-muted-foreground hover:bg-muted hover:text-foreground"
+              )}
+            >
+              <Icon size={16} />
+              {/* Tooltip */}
+              <span className="absolute left-full ml-2 z-50 hidden group-hover:flex items-center whitespace-nowrap rounded-md bg-popover border border-border px-2 py-1 text-[10px] font-semibold text-popover-foreground shadow-lg">
+                {tab.label}
+              </span>
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Panel content */}
+      <div className="flex-1 overflow-y-auto min-w-0">
+        {activeTab === "templates" && <TemplatesPanel />}
+        {activeTab === "components" && <ComponentsPanel />}
+        {activeTab === "assets" && <AssetsPanel />}
       </div>
     </div>
   );
