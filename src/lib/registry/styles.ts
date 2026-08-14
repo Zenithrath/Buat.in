@@ -4,6 +4,11 @@ import { createDefaultNode } from "@/lib/schema/defaults";
 import { resolveTheme } from "@/lib/theme/presets";
 import type { Theme } from "@/lib/schema/types";
 
+const EDITOR_CORE_CSS = CORE_CSS.replace(
+  /\/\* ===BI_SHADCN_ALIASES_START===\*\/[\s\S]*?\/\* ===BI_SHADCN_ALIASES_END===\*\//,
+  ""
+).replace("  /* ===BI_EDITOR_STRIP_BODY_BG=== */\n  background: var(--bi-bg);", "");
+
 export function collectRegistryCss(): string {
   const defaultTheme: Theme = {
     presets: {
@@ -26,5 +31,5 @@ export function collectRegistryCss(): string {
     })
     .join("\n");
 
-  return [CORE_CSS, componentCss].join("\n");
+  return [EDITOR_CORE_CSS, componentCss].join("\n");
 }

@@ -3,11 +3,12 @@ import { cn } from "@/lib/utils";
 const VARIANTS = {
   default: "bg-primary text-primary-foreground hover:bg-primary/90",
   secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/80",
-  outline: "border border-input bg-background hover:bg-accent hover:text-accent-foreground",
-  ghost: "hover:bg-accent hover:text-accent-foreground",
+  outline:
+    "border border-input bg-background hover:border-brand/40 hover:bg-brand/5 hover:text-brand",
+  ghost: "hover:bg-brand/10 hover:text-brand",
   destructive: "bg-destructive text-destructive-foreground hover:bg-destructive/90",
-  link: "text-primary underline-offset-4 hover:underline",
-  brand: "bg-brand text-white hover:bg-brand-hover",
+  link: "text-brand underline-offset-4 hover:underline",
+  brand: "bg-brand text-brand-foreground hover:bg-brand-hover",
 } as const;
 
 const SIZES = {

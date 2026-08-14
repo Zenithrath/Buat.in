@@ -5,7 +5,7 @@ const VARIANTS = {
   secondary: "border-transparent bg-secondary text-secondary-foreground",
   outline: "border-border text-foreground",
   destructive: "border-transparent bg-destructive text-destructive-foreground",
-  brand: "border-transparent bg-brand text-white",
+  brand: "border-transparent bg-brand text-brand-foreground",
 } as const;
 
 export function Badge({

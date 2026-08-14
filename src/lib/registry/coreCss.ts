@@ -8,6 +8,7 @@ export const CORE_CSS = `/* ===== Buat.in shared primitives ===== */
   --bi-primary: #2563eb;
   --bi-primary-fg: #ffffff;
   --bi-secondary: #eff6ff;
+  --bi-secondary-fg: #18181b;
   --bi-muted: #64748b;
   --bi-muted-fg: #52525b;
   --bi-accent: #f4f4f5;
@@ -29,6 +30,32 @@ export const CORE_CSS = `/* ===== Buat.in shared primitives ===== */
   --bi-chart-3: #d4d4d8;
   --bi-chart-4: #e4e4e7;
   --bi-chart-5: #f4f4f5;
+  /* ===BI_SHADCN_ALIASES_START=== */
+  /* shadcn-compatible aliases for exported, framework-free HTML */
+  --background: var(--bi-bg);
+  --foreground: var(--bi-fg);
+  --card: var(--bi-card);
+  --card-foreground: var(--bi-fg);
+  --popover: var(--bi-popover);
+  --popover-foreground: var(--bi-fg);
+  --primary: var(--bi-primary);
+  --primary-foreground: var(--bi-primary-fg);
+  --secondary: var(--bi-secondary);
+  --secondary-foreground: var(--bi-secondary-fg);
+  --muted: var(--bi-muted);
+  --muted-foreground: var(--bi-muted-fg);
+  --accent: var(--bi-accent);
+  --accent-foreground: var(--bi-accent-fg);
+  --border: var(--bi-border);
+  --input: var(--bi-input);
+  --ring: var(--bi-ring);
+  --radius: var(--bi-radius);
+  --chart-1: var(--bi-chart-1);
+  --chart-2: var(--bi-chart-2);
+  --chart-3: var(--bi-chart-3);
+  --chart-4: var(--bi-chart-4);
+  --chart-5: var(--bi-chart-5);
+  /* ===BI_SHADCN_ALIASES_END=== */
 }
 
 *, *::before, *::after {
@@ -38,6 +65,7 @@ export const CORE_CSS = `/* ===== Buat.in shared primitives ===== */
 body {
   margin: 0;
   font-family: var(--bi-font-body);
+  /* ===BI_EDITOR_STRIP_BODY_BG=== */
   background: var(--bi-bg);
   color: var(--bi-fg);
   -webkit-font-smoothing: antialiased;
@@ -156,6 +184,7 @@ export function buildThemeVarsCss(tokens: {
   primary: string;
   primaryForeground: string;
   secondary: string;
+  secondaryForeground: string;
   muted: string;
   mutedForeground: string;
   accent: string;
@@ -182,6 +211,7 @@ export function buildThemeVarsCss(tokens: {
   --bi-primary: ${tokens.primary};
   --bi-primary-fg: ${tokens.primaryForeground};
   --bi-secondary: ${tokens.secondary};
+  --bi-secondary-fg: ${tokens.secondaryForeground};
   --bi-muted: ${tokens.muted};
   --bi-muted-fg: ${tokens.mutedForeground};
   --bi-accent: ${tokens.accent};

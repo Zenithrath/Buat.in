@@ -15,6 +15,7 @@ import { RegistryStyles } from "./RegistryStyles";
 import { TopBar } from "./TopBar";
 import { LeftPanel } from "./LeftPanel";
 import { Canvas } from "./Canvas";
+import { BuilderDndProvider } from "./BuilderDndProvider";
 import { Inspector } from "./Inspector";
 import { ExportModal } from "./ExportModal";
 import { PreviewModal } from "./PreviewModal";
@@ -32,6 +33,121 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { TooltipProvider } from "@/components/ui/tooltip";
 
+type PanelEdge = "left" | "right";
+
+function clampPanelWidth(width: number, min: number, max: number) {
+  return Math.min(max, Math.max(min, Math.round(width)));
+}
+
+function useResizablePanelWidth({
+  storageKey,
+  initialWidth,
+  minWidth,
+  maxWidth,
+}: {
+  storageKey: string;
+  initialWidth: number;
+  minWidth: number;
+  maxWidth: number;
+}) {
+  const [width, setWidth] = useState(() => {
+    if (typeof window === "undefined") return initialWidth;
+    const saved = Number(window.localStorage.getItem(storageKey));
+    return Number.isFinite(saved) && saved > 0
+      ? clampPanelWidth(saved, minWidth, maxWidth)
+      : initialWidth;
+  });
+
+  useEffect(() => {
+    localStorage.setItem(storageKey, String(width));
+  }, [storageKey, width]);
+
+  const startResize = (event: React.PointerEvent, edge: PanelEdge) => {
+    event.preventDefault();
+    event.stopPropagation();
+    const startX = event.clientX;
+    const startWidth = width;
+    const previousCursor = document.body.style.cursor;
+    const previousSelect = document.body.style.userSelect;
+    document.body.style.cursor = "col-resize";
+    document.body.style.userSelect = "none";
+
+    const onMove = (moveEvent: PointerEvent) => {
+      const delta = moveEvent.clientX - startX;
+      const nextWidth =
+        edge === "right" ? startWidth + delta : startWidth - delta;
+      setWidth(clampPanelWidth(nextWidth, minWidth, maxWidth));
+    };
+    const onUp = () => {
+      window.removeEventListener("pointermove", onMove);
+      window.removeEventListener("pointerup", onUp);
+      document.body.style.cursor = previousCursor;
+      document.body.style.userSelect = previousSelect;
+    };
+
+    window.addEventListener("pointermove", onMove);
+    window.addEventListener("pointerup", onUp);
+  };
+
+  const nudge = (amount: number) =>
+    setWidth((current) => clampPanelWidth(current + amount, minWidth, maxWidth));
+
+  return { width, startResize, nudge };
+}
+
+function ResizableEditorPanel({
+  edge,
+  width,
+  label,
+  onResizeStart,
+  onNudge,
+  children,
+}: {
+  edge: PanelEdge;
+  width: number;
+  label: string;
+  onResizeStart: (event: React.PointerEvent, edge: PanelEdge) => void;
+  onNudge: (amount: number) => void;
+  children: React.ReactNode;
+}) {
+  const increaseForKey = edge === "right" ? 16 : -16;
+
+  return (
+    <aside
+      className={`relative h-full shrink-0 ${edge === "right" ? "border-r border-border" : "border-l border-border"}`}
+      style={{ width }}
+      aria-label={label}
+    >
+      {children}
+      <div
+        role="separator"
+        aria-label={`Ubah lebar ${label}`}
+        aria-orientation="vertical"
+        tabIndex={0}
+        onPointerDown={(event) => onResizeStart(event, edge)}
+        onKeyDown={(event) => {
+          if (event.key === "ArrowRight") {
+            event.preventDefault();
+            onNudge(increaseForKey);
+          }
+          if (event.key === "ArrowLeft") {
+            event.preventDefault();
+            onNudge(-increaseForKey);
+          }
+        }}
+        className={
+          edge === "right"
+            ? "group absolute -right-1 top-0 z-40 flex h-full w-2 cursor-col-resize items-center justify-center focus:outline-none"
+            : "group absolute -left-1 top-0 z-40 flex h-full w-2 cursor-col-resize items-center justify-center focus:outline-none"
+        }
+        title="Seret untuk mengubah lebar panel"
+      >
+        <span className="h-12 w-1 rounded-full bg-border opacity-0 transition-opacity group-hover:opacity-100 group-focus:opacity-100" />
+      </div>
+    </aside>
+  );
+}
+
 export function EditorShell() {
   const document = useBuilderStore((s) => s.document);
   const loaded = useBuilderStore((s) => s.loaded);
@@ -48,6 +164,18 @@ export function EditorShell() {
   const [showPreview, setShowPreview] = useState(false);
   const [showExport, setShowExport] = useState(false);
   const [commandOpen, setCommandOpen] = useState(false);
+  const leftPanel = useResizablePanelWidth({
+    storageKey: "buatin:editor-left-width",
+    initialWidth: 310,
+    minWidth: 236,
+    maxWidth: 520,
+  });
+  const rightPanel = useResizablePanelWidth({
+    storageKey: "buatin:editor-right-width",
+    initialWidth: 340,
+    minWidth: 296,
+    maxWidth: 560,
+  });
 
   useEffect(() => {
     if (!loaded || !document.projectId) return;
@@ -140,15 +268,37 @@ export function EditorShell() {
         onExport={() => setShowExport(true)}
         onCommand={() => setCommandOpen(true)}
       />
-      <div className="flex flex-1 overflow-hidden">
-        <LeftPanel />
-        <Canvas />
-        <Inspector />
-      </div>
+      <BuilderDndProvider>
+        <div className="flex min-h-0 flex-1 overflow-hidden">
+          <ResizableEditorPanel
+            edge="right"
+            width={leftPanel.width}
+            label="Panel kiri"
+            onResizeStart={leftPanel.startResize}
+            onNudge={leftPanel.nudge}
+          >
+            <LeftPanel />
+          </ResizableEditorPanel>
+          <Canvas />
+          <ResizableEditorPanel
+            edge="left"
+            width={rightPanel.width}
+            label="Panel kanan"
+            onResizeStart={rightPanel.startResize}
+            onNudge={rightPanel.nudge}
+          >
+            <Inspector />
+          </ResizableEditorPanel>
+        </div>
+      </BuilderDndProvider>
       <div className="flex h-6 shrink-0 items-center justify-between border-t bg-background px-3 text-[11px] text-muted-foreground">
         <span>
           {document.pages[0].sections.length} komponen · lebar kanvas:{" "}
-          {document.settings.device}
+          {document.settings.device === "desktop"
+            ? "desktop 1440px"
+            : document.settings.device === "tablet"
+              ? "tablet 768px"
+              : "mobile 390px"}
         </span>
         <span className="font-mono">schema v{document.schemaVersion}</span>
       </div>

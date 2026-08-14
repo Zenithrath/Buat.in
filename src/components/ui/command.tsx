@@ -96,7 +96,7 @@ export function CommandItem({
   return (
     <CommandPrimitive.Item
       className={cn(
-        "relative flex cursor-pointer select-none items-center gap-2 rounded-sm px-2 py-1.5 text-xs outline-none aria-selected:bg-accent aria-selected:text-accent-foreground data-[disabled=true]:pointer-events-none data-[disabled=true]:opacity-50 [&>svg]:shrink-0",
+        "relative flex cursor-pointer select-none items-center gap-2 rounded-sm px-2 py-1.5 text-xs outline-none aria-selected:bg-brand/10 aria-selected:text-brand data-[disabled=true]:pointer-events-none data-[disabled=true]:opacity-50 [&>svg]:shrink-0",
         className
       )}
       {...props}

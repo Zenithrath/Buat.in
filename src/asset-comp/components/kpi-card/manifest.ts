@@ -7,6 +7,7 @@ export const kpiCardManifest: Omit<
   id: "kpi-card",
   name: "KPI Metric Card",
   category: "dashboard",
+  scope: "dashboard",
   description: "Kartu indikator performa utama (KPI) dengan metrik angka, tren persentase naik/turun, dan deskripsi.",
   tier: "free",
   priceKey: "kpi-card",
@@ -17,6 +18,7 @@ export const kpiCardManifest: Omit<
     change: "+14.2%",
     trend: "up",
     period: "vs bulan lalu",
+    subtitle: "vs bulan lalu",
   },
   contentControls: [
     { key: "title", label: "Judul Metrik", group: "KPI", type: "text" },
@@ -34,5 +36,6 @@ export const kpiCardManifest: Omit<
       ],
     },
     { key: "period", label: "Keterangan Periode", group: "KPI", type: "text" },
+    { key: "subtitle", label: "Keterangan Waktu", group: "KPI", type: "text" },
   ],
 };

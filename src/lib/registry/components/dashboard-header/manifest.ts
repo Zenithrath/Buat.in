@@ -17,10 +17,14 @@ export const dashboardHeaderManifest: Omit<
     searchPlaceholder: "Cari data, laporan, atau transaksi...",
     showSearch: true,
     showNotifications: true,
+    actionText: "Export Laporan",
   },
   contentControls: [
     { key: "title", label: "Judul Halaman", group: "Header", type: "text" },
     { key: "breadcrumb", label: "Jejak Breadcrumb", group: "Header", type: "text" },
     { key: "searchPlaceholder", label: "Teks Placeholder Cari", group: "Search", type: "text" },
+    { key: "showSearch", label: "Tampilkan Pencarian", group: "Search", type: "boolean" },
+    { key: "showNotifications", label: "Tampilkan Notifikasi", group: "Aksi", type: "boolean" },
+    { key: "actionText", label: "Label Tombol Aksi", group: "Aksi", type: "text" },
   ],
 };

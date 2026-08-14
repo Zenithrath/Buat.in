@@ -7,6 +7,7 @@ export const gridContainerManifest: Omit<
   id: "grid-container",
   name: "Grid Container",
   category: "layout",
+  scope: "both",
   description: "Kontainer kolom grid responsif (1, 2, 3, atau 4 kolom) untuk menyusun widget/kartu secara berdampingan.",
   tier: "free",
   priceKey: "grid-container",

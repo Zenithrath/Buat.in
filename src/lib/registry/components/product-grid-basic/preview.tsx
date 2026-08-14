@@ -2,6 +2,7 @@
 
 import type { Node, Theme } from "@/lib/schema/types";
 import { propString } from "@/lib/registry/shared";
+import { InlineEditableImage, InlineEditableText } from "@/components/preview/InlineEditable";
 import { SectionShell } from "@/components/preview/SectionShell";
 
 export function ProductGridPreview({ node, theme }: { node: Node; theme: Theme }) {
@@ -17,24 +18,33 @@ export function ProductGridPreview({ node, theme }: { node: Node; theme: Theme }
     <SectionShell node={node} theme={theme}>
       <div className="bi-container">
         <h2 className="bi-title bi-product-grid-title">
-          {node.props.title || "Produk Unggulan"}
+          <InlineEditableText node={node} propKey="title" fallback="Produk Unggulan" multiline />
         </h2>
         <p className="bi-subtitle bi-product-grid-subtitle">
-          {node.props.subtitle || ""}
+          <InlineEditableText node={node} propKey="subtitle" multiline />
         </p>
         <div className="bi-product-grid">
           {products.map((p, idx) => (
             <article className="bi-card bi-product-card" key={idx}>
               {p.imageUrl ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
+                <InlineEditableImage
+                  node={node}
+                  imageKey={`product${idx + 1}ImageUrl`}
                   src={propString(node, `product${idx + 1}ImageUrl`)}
                   alt={String(p.name || "Produk")}
                   loading="lazy"
                 />
               ) : null}
-              <h3>{p.name || "Nama Produk"}</h3>
-              <p className="bi-product-price">{p.price || ""}</p>
+              <h3>
+                <InlineEditableText
+                  node={node}
+                  propKey={`product${idx + 1}Name`}
+                  fallback="Nama Produk"
+                />
+              </h3>
+              <p className="bi-product-price">
+                <InlineEditableText node={node} propKey={`product${idx + 1}Price`} />
+              </p>
             </article>
           ))}
         </div>

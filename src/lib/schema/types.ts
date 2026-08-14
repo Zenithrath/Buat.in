@@ -12,7 +12,9 @@ export type SectionStyleKey =
   | "backgroundCustom"
   | "borderRadius"
   | "boxShadow"
-  | "opacity";
+  | "opacity"
+  /** Lebar sidebar dashboard yang diatur langsung dari canvas. */
+  | "sidebarWidth";
 
 export type SectionStyle = Partial<Record<SectionStyleKey, string>>;
 
@@ -88,8 +90,10 @@ export interface Theme {
   presets: ThemePresetSelection;
   overrides: {
     primary?: string;
+    secondary?: string;
     background?: string;
     foreground?: string;
+    border?: string;
   };
 }
 

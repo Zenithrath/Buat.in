@@ -542,6 +542,13 @@ export const CHART_PALETTES: ChartPalette[] = [
     colors: ["#71717a", "#a1a1aa", "#d4d4d8", "#e4e4e7", "#f4f4f5"],
   },
   {
+    id: "theme",
+    name: "Ikuti warna utama",
+    description: "Mengikuti warna utama project agar chart selaras dengan brand.",
+    // Nilai aktual dihitung di resolveTheme karena mengikuti primary yang aktif.
+    colors: [],
+  },
+  {
     id: "categorical",
     name: "Categorical",
     description: "Lima warna khas untuk kategori.",
@@ -711,12 +718,61 @@ export function getFontPreset(id: string): FontPreset {
   return FONT_PRESETS.find((f) => f.id === normalized) ?? FONT_PRESETS[0];
 }
 
+/**
+ * Warna utama dapat di-override dari customizer. Saat itu terjadi, foreground
+ * preset tidak lagi selalu punya kontras yang benar (mis. primary putih dengan
+ * foreground putih). Pilih foreground netral yang terbaca untuk nilai hex.
+ */
+function readablePrimaryForeground(color: string, fallback: string): string {
+  const normalized = color.trim().replace(/^#/, "");
+  const hex =
+    normalized.length === 3
+      ? normalized
+          .split("")
+          .map((part) => `${part}${part}`)
+          .join("")
+      : normalized;
+
+  if (!/^[0-9a-f]{6}$/i.test(hex)) return fallback;
+
+  const channels = [0, 2, 4].map((start) =>
+    Number.parseInt(hex.slice(start, start + 2), 16) / 255
+  );
+  const linear = channels.map((channel) =>
+    channel <= 0.03928
+      ? channel / 12.92
+      : ((channel + 0.055) / 1.055) ** 2.4
+  );
+  const luminance =
+    0.2126 * linear[0] + 0.7152 * linear[1] + 0.0722 * linear[2];
+
+  return luminance > 0.42 ? "#18181b" : "#ffffff";
+}
+
+function scaledRadius(radius: string, scale: number): string {
+  if (scale === 1 || radius === "0px") return radius;
+
+  const match = /^(-?[\d.]+)(px|rem|em)$/.exec(radius);
+  if (!match) return radius;
+
+  const value = Number.parseFloat(match[1]) * scale;
+  return `${Number.parseFloat(value.toFixed(4))}${match[2]}`;
+}
+
 export function resolveTheme(theme: Theme): ResolvedTokens {
   const p = normalizePresets(theme.presets);
   const style = STYLE_PRESETS[p.style];
   const base = BASE_COLORS[p.baseColor][p.appearance];
   const tc = THEME_COLORS[p.theme][p.appearance];
   const radius = RADIUS_PRESETS.find((r) => r.id === p.radius) ?? RADIUS_PRESETS[2];
+  const primary = theme.overrides.primary ?? tc.primary;
+  const primaryForeground = theme.overrides.primary
+    ? readablePrimaryForeground(theme.overrides.primary, tc.primaryForeground)
+    : tc.primaryForeground;
+  const secondary = theme.overrides.secondary ?? base.muted;
+  const secondaryForeground = theme.overrides.secondary
+    ? readablePrimaryForeground(theme.overrides.secondary, base.accentForeground)
+    : base.accentForeground;
   const body = getFontPreset(p.font);
   const heading =
     p.fontHeading === "inherit" ? body : getFontPreset(p.fontHeading);
@@ -727,7 +783,7 @@ export function resolveTheme(theme: Theme): ResolvedTokens {
 
   const chart: [string, string, string, string, string] =
     p.chart === "theme"
-      ? [tc.primary, BRAND, base.mutedForeground, base.border, base.accentForeground]
+      ? [primary, secondary, base.mutedForeground, theme.overrides.border ?? base.border, base.accentForeground]
       : (CHART_PALETTES.find((c) => c.id === p.chart)?.colors as [string, string, string, string, string]) ??
         (CHART_PALETTES[0].colors as [string, string, string, string, string]);
 
@@ -737,22 +793,19 @@ export function resolveTheme(theme: Theme): ResolvedTokens {
     foreground: theme.overrides.foreground ?? base.accentForeground,
     card: base.card,
     popover: base.popover,
-    primary: theme.overrides.primary ?? tc.primary,
-    primaryForeground: tc.primaryForeground,
-    secondary: base.muted,
-    secondaryForeground: base.accentForeground,
+    primary,
+    primaryForeground,
+    secondary,
+    secondaryForeground,
     muted: base.muted,
     mutedForeground: base.mutedForeground,
     accent: base.accent,
     accentForeground: base.accentForeground,
-    border: base.border,
-    input: base.input,
-    ring: tc.primary,
+    border: theme.overrides.border ?? base.border,
+    input: theme.overrides.border ?? base.input,
+    ring: primary,
     destructive: "#dc2626",
-    radius:
-      style.radiusScale === 1
-        ? radius.radius
-        : `calc(${radius.radius} * ${style.radiusScale})`,
+    radius: scaledRadius(radius.radius, style.radiusScale),
     fontHeading: heading.stack,
     fontBody: body.stack,
     fontMono: mono.stack,

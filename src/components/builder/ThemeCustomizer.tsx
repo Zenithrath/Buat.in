@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
-import { RotateCcw, Shuffle, Sparkles } from "lucide-react";
+import { Palette, RotateCcw, Shuffle, Sparkles } from "lucide-react";
 import { useBuilderStore } from "@/lib/store/project-store";
 import {
   BASE_COLORS,
@@ -64,6 +64,36 @@ const FONT_ORDER: FontId[] = [
 ];
 const CHART_ORDER: ChartPaletteId[] = ["neutral", "theme", "categorical"];
 
+const CUSTOM_COLOR_CONTROLS = [
+  {
+    key: "primary",
+    label: "Utama",
+    hint: "CTA & tombol",
+  },
+  {
+    key: "secondary",
+    label: "Sekunder",
+    hint: "Button & surface sekunder",
+  },
+  {
+    key: "border",
+    label: "Border",
+    hint: "Border & input",
+  },
+  {
+    key: "background",
+    label: "Latar",
+    hint: "Halaman & kanvas",
+  },
+  {
+    key: "foreground",
+    label: "Teks",
+    hint: "Konten utama",
+  },
+] as const;
+
+type CustomColorKey = (typeof CUSTOM_COLOR_CONTROLS)[number]["key"];
+
 function SectionLabel({
   icon,
   children,
@@ -96,10 +126,55 @@ export function ThemeCustomizer() {
   ) =>
     updateTheme((t) => ({ ...t, presets: { ...t.presets, [key]: value } }));
 
+  const setAppearance = (appearance: "light" | "dark") =>
+    updateTheme((t) => {
+      const { background: _background, foreground: _foreground, ...overrides } =
+        t.overrides ?? {};
+
+      return {
+        ...t,
+        presets: { ...t.presets, appearance },
+        // Latar dan teks yang diatur manual pada tema sebelumnya dapat
+        // mengunci kanvas tetap putih. Saat mode berubah, kembalikan dua
+        // token ini ke pasangan preset yang benar agar perubahan terlihat.
+        overrides,
+      };
+    });
+
+  const setCustomColor = (key: CustomColorKey, value: string) =>
+    updateTheme((t) => ({
+      ...t,
+      overrides: {
+        ...(t.overrides ?? {}),
+        [key]: value,
+      } as typeof t.overrides,
+    }));
+
+  const clearCustomColor = (key: CustomColorKey) =>
+    updateTheme((t) => {
+      const overrides: Record<string, string | undefined> = {
+        ...(t.overrides ?? {}),
+      };
+      delete overrides[key];
+      return { ...t, overrides: overrides as typeof t.overrides };
+    });
+
+  const setPrimaryPalette = (value: ThemeColorId) =>
+    updateTheme((t) => {
+      const { primary: _primary, ...overrides } = t.overrides ?? {};
+      return {
+        ...t,
+        presets: { ...t.presets, theme: value },
+        // Memilih swatch harus langsung terlihat, bukan tertahan override lama.
+        overrides,
+      };
+    });
+
   const reset = () =>
     updateTheme((t) => ({
       ...t,
       presets: { ...t.presets, ...DEFAULT_THEME_PRESETS },
+      overrides: {},
     }));
 
   const shuffle = () =>
@@ -114,11 +189,66 @@ export function ThemeCustomizer() {
         font: pick(FONT_ORDER),
         chart: pick(CHART_ORDER),
       },
+      overrides: {},
     }));
 
   return (
     <div className="space-y-4">
+      <div className="rounded-lg border border-border bg-card p-3">
+        <div className="flex items-center justify-between gap-2">
+          <span className="text-xs font-semibold text-foreground">Mode kanvas</span>
+          <span className="text-[10px] text-muted-foreground">
+            {presets.appearance === "dark" ? "Gelap aktif" : "Terang aktif"}
+          </span>
+        </div>
+        <div className="mt-2 grid grid-cols-2 gap-1.5">
+          {(
+            [
+              { id: "light", name: "Terang" },
+              { id: "dark", name: "Gelap" },
+            ] as const
+          ).map((opt) => {
+            const active = presets.appearance === opt.id;
+            return (
+              <button
+                key={opt.id}
+                type="button"
+                onClick={() => setAppearance(opt.id)}
+                aria-pressed={active}
+                className={cn(
+                  "rounded-md border px-2 py-2 text-xs font-medium transition-colors",
+                  active
+                    ? "border-brand bg-brand/10 text-brand-foreground"
+                    : "border-border text-muted-foreground hover:border-muted"
+                )}
+              >
+                {opt.name}
+              </button>
+            );
+          })}
+        </div>
+        <p className="mt-2 text-[10px] leading-relaxed text-muted-foreground">
+          Berlaku langsung pada dashboard dan landing di kanvas, preview, serta file
+          HTML hasil ekspor.
+        </p>
+      </div>
+
       <ThemePreview tokens={tokens} />
+
+      <div className="rounded-lg border border-border bg-muted/35 p-3">
+        <div className="flex items-center justify-between gap-2">
+          <span className="flex items-center gap-1.5 text-xs font-semibold text-foreground">
+            <Palette size={13} /> Sistem token shadcn/ui
+          </span>
+          <span className="rounded-full border border-border bg-background px-2 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-muted-foreground">
+            aktif di kanvas
+          </span>
+        </div>
+        <p className="mt-1.5 text-[11px] leading-relaxed text-muted-foreground">
+          Perubahan di sini langsung dipakai Button, Input, Card, Badge, Switch,
+          dan komponen yang diekspor.
+        </p>
+      </div>
 
       <div className="space-y-2">
         <SectionLabel icon={<Sparkles size={11} />}>Gaya</SectionLabel>
@@ -132,6 +262,7 @@ export function ThemeCustomizer() {
                 type="button"
                 title={style.description}
                 onClick={() => set("style", id)}
+                aria-pressed={active}
                 className={cn(
                   "rounded-md border px-1 py-1.5 transition-colors",
                   active
@@ -164,7 +295,7 @@ export function ThemeCustomizer() {
 
       <div className="space-y-2">
         <SectionLabel icon={<span className="inline-block size-2 rounded-full bg-current" />}>
-          Warna Dasar
+          Warna sekunder & permukaan
         </SectionLabel>
         <div className="grid grid-cols-7 gap-1.5">
           {BASE_ORDER.map((id) => {
@@ -176,6 +307,8 @@ export function ThemeCustomizer() {
                 type="button"
                 title={preset.name}
                 onClick={() => set("baseColor", id)}
+                aria-label={`Warna permukaan ${preset.name}`}
+                aria-pressed={active}
                 className={cn(
                   "flex h-9 items-center justify-center rounded-md border transition-colors",
                   active
@@ -193,11 +326,14 @@ export function ThemeCustomizer() {
             );
           })}
         </div>
+        <p className="text-[10px] leading-relaxed text-muted-foreground">
+          Menentukan latar, kartu, border, input, dan tombol sekunder.
+        </p>
       </div>
 
       <div className="space-y-2">
         <SectionLabel icon={<span className="inline-block size-2 rounded-full bg-current" />}>
-          Warna Utama
+          Warna utama
         </SectionLabel>
         <div className="grid grid-cols-7 gap-1.5">
           {THEME_ORDER.map((id) => {
@@ -208,7 +344,9 @@ export function ThemeCustomizer() {
                 key={id}
                 type="button"
                 title={preset.name}
-                onClick={() => set("theme", id)}
+                onClick={() => setPrimaryPalette(id)}
+                aria-label={`Warna utama ${preset.name}`}
+                aria-pressed={active}
                 className={cn(
                   "flex h-8 items-center justify-center rounded-md border transition-colors",
                   active
@@ -224,6 +362,73 @@ export function ThemeCustomizer() {
             );
           })}
         </div>
+        <p className="text-[10px] leading-relaxed text-muted-foreground">
+          Dipakai CTA, focus ring, badge utama, dan chart mode tema.
+        </p>
+      </div>
+
+      <div className="space-y-2">
+        <SectionLabel icon={<Palette size={11} />}>Warna manual</SectionLabel>
+        <div className="grid grid-cols-1 gap-1.5">
+          {CUSTOM_COLOR_CONTROLS.map((control) => {
+            const value =
+              control.key === "primary"
+                ? tokens.primary
+                : control.key === "secondary"
+                  ? tokens.secondary
+                  : control.key === "border"
+                    ? tokens.border
+                  : control.key === "background"
+                    ? tokens.background
+                    : tokens.foreground;
+            const isCustom = Boolean(
+              (theme.overrides as Record<string, string | undefined> | undefined)?.[
+                control.key
+              ]
+            );
+
+            return (
+              <div
+                key={control.key}
+                className="flex items-center gap-2 rounded-md border border-border bg-card p-1.5"
+              >
+                <input
+                  type="color"
+                  value={value}
+                  onChange={(event) => setCustomColor(control.key, event.target.value)}
+                  className="size-8 shrink-0 cursor-pointer rounded border border-border bg-transparent p-0.5"
+                  aria-label={`Pilih warna ${control.label.toLowerCase()}`}
+                />
+                <span className="min-w-0 flex-1">
+                  <span className="block text-[11px] font-medium leading-tight text-foreground">
+                    {control.label}
+                  </span>
+                  <span className="block truncate font-mono text-[9px] leading-tight text-muted-foreground">
+                    {value.toUpperCase()} · {control.hint}
+                  </span>
+                </span>
+                {isCustom ? (
+                  <button
+                    type="button"
+                    onClick={() => clearCustomColor(control.key)}
+                    className="inline-flex size-7 shrink-0 items-center justify-center rounded border border-border text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                    title={`Kembalikan ${control.label.toLowerCase()} ke preset`}
+                    aria-label={`Kembalikan ${control.label.toLowerCase()} ke preset`}
+                  >
+                    <RotateCcw size={12} />
+                  </button>
+                ) : (
+                  <span className="shrink-0 rounded border border-border bg-muted px-1.5 py-1 text-[9px] font-medium text-muted-foreground">
+                    preset
+                  </span>
+                )}
+              </div>
+            );
+          })}
+        </div>
+        <p className="text-[10px] leading-relaxed text-muted-foreground">
+          Warna utama manual otomatis memakai teks tombol yang kontras.
+        </p>
       </div>
 
       <div className="space-y-2">
@@ -350,37 +555,6 @@ export function ThemeCustomizer() {
                 <span className="mt-1 block text-[9px] font-medium capitalize text-muted-foreground">
                   {id}
                 </span>
-              </button>
-            );
-          })}
-        </div>
-      </div>
-
-      <div className="space-y-2">
-        <SectionLabel icon={<span className="inline-block size-2 rounded-full border border-current" />}>
-          Tampilan
-        </SectionLabel>
-        <div className="grid grid-cols-2 gap-1.5">
-          {(
-            [
-              { id: "light", name: "Terang" },
-              { id: "dark", name: "Gelap" },
-            ] as const
-          ).map((opt) => {
-            const active = presets.appearance === opt.id;
-            return (
-              <button
-                key={opt.id}
-                type="button"
-                onClick={() => set("appearance", opt.id)}
-                className={cn(
-                  "rounded-md border px-2 py-1.5 text-xs font-medium transition-colors",
-                  active
-                    ? "border-brand bg-brand/10 text-brand-foreground"
-                    : "border-border text-muted-foreground hover:border-muted"
-                )}
-              >
-                {opt.name}
               </button>
             );
           })}

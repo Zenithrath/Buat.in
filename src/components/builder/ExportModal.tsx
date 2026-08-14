@@ -66,7 +66,7 @@ export function ExportModal({ open, onClose }: { open: boolean; onClose: () => v
               Satu halaman mandiri. Hosting di mana saja — Netlify, Vercel,
               GitHub Pages, atau hosting biasa.
             </p>
-            <span className="mt-2 inline-block rounded-full bg-brand/10 px-2 py-0.5 text-[10px] font-semibold text-brand">
+            <span className="mt-2 inline-block rounded-md bg-brand/10 px-2 py-0.5 text-[10px] font-semibold text-brand">
               Tersedia
             </span>
           </button>
@@ -81,7 +81,7 @@ export function ExportModal({ open, onClose }: { open: boolean; onClose: () => v
             <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
               Project React yang bisa dilanjutkan developer.
             </p>
-            <span className="mt-2 inline-block rounded-full bg-muted px-2 py-0.5 text-[10px] font-semibold text-muted-foreground">
+            <span className="mt-2 inline-block rounded-md bg-muted px-2 py-0.5 text-[10px] font-semibold text-muted-foreground">
               Segera hadir
             </span>
           </button>
@@ -127,6 +127,7 @@ export function ExportModal({ open, onClose }: { open: boolean; onClose: () => v
             Tutup
           </Button>
           <Button
+            variant="brand"
             onClick={handleExport}
             disabled={phase === "generating" || target !== "html"}
           >

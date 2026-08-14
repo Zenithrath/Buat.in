@@ -8,17 +8,18 @@ import {
   Search,
   PanelRight,
   RotateCcw,
+  Plus,
+  Trash2,
 } from "lucide-react";
 import { useBuilderStore } from "@/lib/store/project-store";
 import { getComponent } from "@/lib/registry";
 import { propString } from "@/lib/registry/shared";
-import { resolveTheme, type ResolvedTokens } from "@/lib/theme/presets";
+import type { ContentControl, ContentControlItemSchema } from "@/lib/registry/types";
 import { cn } from "@/lib/utils";
 import { Tabs } from "@/components/ui/tabs";
 import { Field, Input, Textarea, Select, Separator } from "@/components/ui/controls";
 import { Button } from "@/components/ui/button";
 import { ThemeCustomizer } from "./ThemeCustomizer";
-import { ThemePreview } from "./ThemePreview";
 import type { Node, NodeLayout } from "@/lib/schema/types";
 
 const PADDING_OPTIONS = [
@@ -37,7 +38,7 @@ const ALIGN_OPTIONS = [
 
 const WIDTH_OPTIONS = [
   { value: "narrow", label: "Sempit" },
-  { value: "default", label: "Standar (Fill)" },
+  { value: "default", label: "Lebar normal" },
   { value: "full", label: "Penuh" },
 ];
 
@@ -52,7 +53,7 @@ const BACKGROUND_OPTIONS = [
 const DEVICE_TABS = [
   { id: "desktop" as const, label: "Desktop" },
   { id: "tablet" as const, label: "Tablet" },
-  { id: "mobile" as const, label: "Mobile" },
+  { id: "mobile" as const, label: "Ponsel" },
 ];
 
 export function Inspector() {
@@ -97,6 +98,230 @@ function patchStylesForDevice(
   patchStyles(key, value, device);
 }
 
+type VisualListItem = Record<string, unknown>;
+
+const FRIENDLY_FIELD_LABELS: Record<string, string> = {
+  id: "ID",
+  label: "Label",
+  title: "Judul",
+  name: "Nama",
+  description: "Deskripsi",
+  quote: "Testimoni",
+  role: "Peran",
+  initials: "Inisial",
+  url: "Tautan",
+  image: "Gambar",
+  imageUrl: "Gambar",
+  alt: "Deskripsi gambar",
+  price: "Harga",
+  period: "Periode",
+  tag: "Label kecil",
+  actionText: "Teks tombol",
+  actionUrl: "Tautan tombol",
+  icon: "Ikon",
+  status: "Status",
+  time: "Waktu",
+  customer: "Pelanggan",
+  amount: "Nominal",
+  date: "Tanggal",
+  value: "Nilai",
+  val1: "Nilai utama",
+  val2: "Nilai pembanding",
+};
+
+function prettyFieldLabel(key: string) {
+  return (
+    FRIENDLY_FIELD_LABELS[key] ??
+    key
+      .replace(/([a-z])([A-Z])/g, "$1 $2")
+      .replace(/[_-]+/g, " ")
+      .replace(/^./, (char) => char.toUpperCase())
+  );
+}
+
+function parseVisualList(value: unknown): VisualListItem[] {
+  try {
+    const parsed: unknown =
+      typeof value === "string" ? JSON.parse(value) : value;
+    if (!Array.isArray(parsed)) return [];
+    return parsed.flatMap((item): VisualListItem[] =>
+      item && typeof item === "object" && !Array.isArray(item)
+        ? [{ ...(item as VisualListItem) }]
+        : []
+    );
+  } catch {
+    return [];
+  }
+}
+
+function inferItemSchema(
+  control: ContentControl,
+  items: VisualListItem[]
+): ContentControlItemSchema[] {
+  if (control.itemSchema?.length) return control.itemSchema;
+
+  const sample = items[0] ?? {};
+  const keys = Object.keys(sample);
+  if (keys.length === 0) {
+    return [
+      { key: "title", label: "Judul", type: "text" },
+      { key: "description", label: "Deskripsi", type: "textarea" },
+    ];
+  }
+
+  return keys.map((key) => {
+    const value = sample[key];
+    const lower = key.toLowerCase();
+    const type: ContentControlItemSchema["type"] =
+      typeof value === "boolean"
+        ? "boolean"
+        : typeof value === "number"
+          ? "number"
+          : /(?:url|href|link)$/.test(lower)
+            ? "link"
+            : /(?:image|photo|avatar)(?:url)?$/.test(lower)
+              ? "image"
+              : /(?:description|quote|answer|message|content)/.test(lower)
+                ? "textarea"
+                : "text";
+    return { key, label: prettyFieldLabel(key), type };
+  });
+}
+
+function VisualListEditor({
+  control,
+  value,
+  onChange,
+}: {
+  control: ContentControl;
+  value: unknown;
+  onChange: (value: unknown) => void;
+}) {
+  const items = parseVisualList(value);
+  const schema = inferItemSchema(control, items);
+  const displayLabel = control.label.replace(/\s*\(JSON\)\s*/gi, "");
+  const isSerializedList = typeof value === "string";
+
+  const write = (next: VisualListItem[]) =>
+    onChange(isSerializedList ? JSON.stringify(next) : next);
+  const updateItem = (
+    index: number,
+    field: ContentControlItemSchema,
+    nextValue: string | boolean
+  ) => {
+    const next = items.map((item, itemIndex) => {
+      if (itemIndex !== index) return item;
+      const previous = item[field.key];
+      let valueToStore: unknown = nextValue;
+      if (field.type === "number") {
+        valueToStore = Number(nextValue) || 0;
+      } else if (typeof previous === "boolean") {
+        valueToStore = nextValue === true || nextValue === "true";
+      } else if (Array.isArray(previous)) {
+        valueToStore = String(nextValue)
+          .split("\n")
+          .map((entry) => entry.trim())
+          .filter(Boolean);
+      }
+      return { ...item, [field.key]: valueToStore };
+    });
+    write(next);
+  };
+
+  const addItem = () => {
+    const item: VisualListItem = {};
+    schema.forEach((field) => {
+      item[field.key] = field.type === "boolean" ? false : field.type === "number" ? 0 : "";
+    });
+    write([...items, item]);
+  };
+
+  return (
+    <Field label={displayLabel}>
+      <div className="space-y-2">
+        {items.map((item, index) => (
+          <div key={`${control.key}-${index}`} className="rounded-lg border border-border bg-muted/25 p-2.5">
+            <div className="mb-2 flex items-center justify-between">
+              <p className="text-[10px] font-bold text-foreground">Item {index + 1}</p>
+              <button
+                type="button"
+                onClick={() => write(items.filter((_, itemIndex) => itemIndex !== index))}
+                className="rounded p-1 text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive"
+                aria-label={`Hapus item ${index + 1}`}
+                title="Hapus item"
+              >
+                <Trash2 size={12} />
+              </button>
+            </div>
+            <div className="space-y-2">
+              {schema.map((field) => {
+                const rawValue = item[field.key];
+                const inputValue = Array.isArray(rawValue)
+                  ? rawValue.join("\n")
+                  : String(rawValue ?? "");
+                if (field.type === "boolean") {
+                  return (
+                    <label key={field.key} className="flex items-center justify-between gap-2 text-[11px] font-medium text-foreground">
+                      {field.label}
+                      <input
+                        type="checkbox"
+                        checked={Boolean(rawValue)}
+                        onChange={(event) => updateItem(index, field, event.target.checked)}
+                        className="size-4 accent-primary"
+                      />
+                    </label>
+                  );
+                }
+                return (
+                  <label key={field.key} className="block space-y-1">
+                    <span className="text-[10px] font-medium text-muted-foreground">{field.label}</span>
+                    {field.type === "textarea" || Array.isArray(rawValue) ? (
+                      <Textarea
+                        value={inputValue}
+                        onChange={(event) => updateItem(index, field, event.target.value)}
+                        className="min-h-16 text-xs"
+                      />
+                    ) : field.type === "select" ? (
+                      <Select
+                        value={inputValue}
+                        onChange={(event) => updateItem(index, field, event.target.value)}
+                        className="text-xs"
+                      >
+                        {field.options?.map((option) => (
+                          <option key={option.value} value={option.value}>{option.label}</option>
+                        ))}
+                      </Select>
+                    ) : (
+                      <Input
+                        type={field.type === "number" ? "number" : "text"}
+                        value={inputValue}
+                        onChange={(event) => updateItem(index, field, event.target.value)}
+                        className="text-xs"
+                      />
+                    )}
+                  </label>
+                );
+              })}
+            </div>
+          </div>
+        ))}
+        {items.length === 0 ? (
+          <p className="rounded-lg border border-dashed border-border px-3 py-2 text-[11px] text-muted-foreground">
+            Belum ada item. Tambahkan yang pertama untuk mulai mengisi bagian ini.
+          </p>
+        ) : null}
+        <button
+          type="button"
+          onClick={addItem}
+          className="flex w-full items-center justify-center gap-1.5 rounded-md border border-dashed border-brand/50 px-2 py-2 text-[11px] font-semibold text-brand transition-colors hover:bg-brand/5"
+        >
+          <Plus size={13} /> Tambah item
+        </button>
+      </div>
+    </Field>
+  );
+}
+
 function NodeInspector({
   nodeId,
   manifest,
@@ -126,7 +351,7 @@ function NodeInspector({
 
   if (!node) return null;
 
-  const patchProps = (key: string, value: string | number | boolean) => {
+  const patchProps = (key: string, value: unknown) => {
     updateNode(nodeId, (n) => ({ ...n, props: { ...n.props, [key]: value } }));
   };
 
@@ -151,15 +376,15 @@ function NodeInspector({
     deviceTab === "tablet" ? node.tabletOverride : node.mobileOverride;
 
   return (
-    <div className="flex w-72 shrink-0 flex-col border-l bg-background">
+    <div className="flex h-full min-h-0 w-full min-w-0 flex-col bg-background">
       {/* 3 Core Inspector Tabs */}
       <Tabs
         active={tab}
         onChange={setTab}
         items={[
-          { id: "content", label: "CONTENT", icon: <Type size={13} /> },
-          { id: "component", label: "COMPONENT", icon: <LayoutTemplate size={13} /> },
-          { id: "general", label: "STYLE", icon: <Palette size={13} /> },
+          { id: "content", label: "ISI", icon: <Type size={13} /> },
+          { id: "component", label: "TATA LETAK", icon: <LayoutTemplate size={13} /> },
+          { id: "theme", label: "TEMA", icon: <Palette size={13} /> },
         ]}
       />
 
@@ -167,13 +392,10 @@ function NodeInspector({
         <div className="flex items-center justify-between border-b pb-2">
           <div>
             <p className="text-xs font-bold text-foreground">{node.name || manifest.name}</p>
-            <p className="text-[10px] text-muted-foreground capitalize">
-              {manifest.category} · {manifest.tier}
+            <p className="text-[10px] text-muted-foreground">
+              Sesuaikan isi dan tampilan bagian ini
             </p>
           </div>
-          <span className="rounded bg-muted px-1.5 py-0.5 font-mono text-[9px] font-bold text-muted-foreground">
-            {node.componentType}
-          </span>
         </div>
 
         {/* TAB 1: CONTENT */}
@@ -189,6 +411,14 @@ function NodeInspector({
                 {(manifest.contentControls ?? [])
                   .filter((c) => (c.group ?? "Umum") === group)
                   .map((control) => (
+                    control.type === "json" || control.type === "array" ? (
+                      <VisualListEditor
+                        key={control.key}
+                        control={control}
+                        value={node.props[control.key]}
+                        onChange={(value) => patchProps(control.key, value)}
+                      />
+                    ) : (
                     <Field key={control.key} label={control.label}>
                       {control.type === "textarea" ? (
                         <Textarea
@@ -196,13 +426,6 @@ function NodeInspector({
                           onChange={(e) => patchProps(control.key, e.target.value)}
                           placeholder={control.placeholder}
                           className="text-xs"
-                        />
-                      ) : control.type === "json" ? (
-                        <Textarea
-                          value={propString(node, control.key)}
-                          onChange={(e) => patchProps(control.key, e.target.value)}
-                          placeholder={control.placeholder || "Format JSON array..."}
-                          className="font-mono text-[11px] h-24"
                         />
                       ) : control.type === "select" ? (
                         <Select
@@ -225,6 +448,7 @@ function NodeInspector({
                         />
                       )}
                     </Field>
+                    )
                   ))}
               </div>
             ))}
@@ -237,7 +461,7 @@ function NodeInspector({
             {/* Device Switcher */}
             <div className="space-y-1.5">
               <label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
-                Perangkat Overrides
+                Atur untuk perangkat
               </label>
               <div className="flex items-center gap-0.5 rounded-lg bg-muted p-0.5">
                 {DEVICE_TABS.map((d) => (
@@ -248,8 +472,8 @@ function NodeInspector({
                     className={cn(
                       "flex h-7 flex-1 items-center justify-center rounded-md text-[11px] font-semibold transition-colors",
                       deviceTab === d.id
-                        ? "bg-background text-foreground shadow-sm"
-                        : "text-muted-foreground hover:text-foreground"
+                        ? "bg-brand text-brand-foreground"
+                        : "text-muted-foreground hover:text-brand"
                     )}
                   >
                     {d.label}
@@ -395,7 +619,7 @@ function NodeInspector({
               <Button
                 variant="outline"
                 size="sm"
-                className="w-full gap-1.5 text-xs text-muted-foreground hover:text-foreground"
+                className="w-full gap-1.5 text-xs text-muted-foreground"
                 onClick={() => {
                   patchStyles("background", "default");
                   patchStyles("backgroundCustom", "");
@@ -408,8 +632,8 @@ function NodeInspector({
           </div>
         ) : null}
 
-        {/* TAB 3: GENERAL STYLE (Global Theme System) */}
-        {tab === "general" ? (
+        {/* TAB 3: GLOBAL THEME */}
+        {tab === "theme" ? (
           <div className="space-y-3">
             <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
               Desain System Global
@@ -425,37 +649,22 @@ function NodeInspector({
 function ThemePanel() {
   const document = useBuilderStore((s) => s.document);
   const updateSeo = useBuilderStore((s) => s.updateSeo);
-  const setLeftTab = useBuilderStore((s) => s.setLeftTab);
-  const tokens: ResolvedTokens = resolveTheme(document.theme);
+  const [tab, setTab] = useState("theme");
 
   return (
-    <div className="flex w-72 shrink-0 flex-col border-l bg-background">
+    <div className="flex h-full min-h-0 w-full min-w-0 flex-col bg-background">
       <Tabs
-        active="page"
-        onChange={() => {}}
+        active={tab}
+        onChange={setTab}
         items={[
+          { id: "theme", label: "Tema", icon: <Palette size={13} /> },
           { id: "page", label: "Halaman & SEO", icon: <PanelRight size={13} /> },
         ]}
       />
       <div className="flex-1 space-y-5 overflow-y-auto p-4">
-        <div className="space-y-2">
-          <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
-            Ringkasan Tema Global
-          </p>
-          <ThemePreview tokens={tokens} compact />
-          <Button
-            variant="secondary"
-            size="sm"
-            className="w-full text-xs font-bold"
-            onClick={() => setLeftTab("style")}
-          >
-            <Palette size={13} /> Buka Panel Theme Customizer
-          </Button>
-        </div>
+        {tab === "theme" ? <ThemeCustomizer /> : null}
 
-        <Separator />
-
-        <div className="space-y-3">
+        {tab === "page" ? <div className="space-y-3">
           <p className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
             <Search size={11} /> SEO & Metadata
           </p>
@@ -479,7 +688,7 @@ function ThemePanel() {
               className="text-xs"
             />
           </Field>
-        </div>
+        </div> : null}
       </div>
     </div>
   );

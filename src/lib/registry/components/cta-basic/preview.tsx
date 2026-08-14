@@ -1,7 +1,7 @@
 "use client";
 
 import type { Node, Theme } from "@/lib/schema/types";
-import { sanitizeUrl } from "@/lib/registry/shared";
+import { InlineEditableLink, InlineEditableText } from "@/components/preview/InlineEditable";
 import { SectionShell } from "@/components/preview/SectionShell";
 
 export function CtaPreview({ node, theme }: { node: Node; theme: Theme }) {
@@ -9,24 +9,32 @@ export function CtaPreview({ node, theme }: { node: Node; theme: Theme }) {
     <SectionShell node={node} theme={theme}>
       <div className="bi-container">
         <div className="bi-cta-card">
-          <h2 className="bi-title">{node.props.title || "Ajakan bertindak"}</h2>
+          <h2 className="bi-title">
+            <InlineEditableText node={node} propKey="title" fallback="Ajakan bertindak" multiline />
+          </h2>
           <p className="bi-subtitle">
-            {node.props.subtitle || "Tulis pesan ajakan Anda di sini."}
+            <InlineEditableText
+              node={node}
+              propKey="subtitle"
+              fallback="Tulis pesan ajakan Anda di sini."
+              multiline
+            />
           </p>
           <div className="bi-cta-actions">
-            <a
-              className="bi-btn bi-btn-on-primary"
-              href={sanitizeUrl(node.props.ctaUrl)}
-            >
-              {node.props.ctaText || "Hubungi Kami"}
-            </a>
+            <InlineEditableLink
+              node={node}
+              propKey="ctaText"
+              urlKey="ctaUrl"
+              fallback="Hubungi Kami"
+              linkClassName="bi-btn bi-btn-on-primary"
+            />
             {node.props.secondaryText ? (
-              <a
-                className="bi-btn bi-btn-on-primary-outline"
-                href={sanitizeUrl(node.props.secondaryUrl)}
-              >
-                {node.props.secondaryText}
-              </a>
+              <InlineEditableLink
+                node={node}
+                propKey="secondaryText"
+                urlKey="secondaryUrl"
+                linkClassName="bi-btn bi-btn-on-primary-outline"
+              />
             ) : null}
           </div>
         </div>

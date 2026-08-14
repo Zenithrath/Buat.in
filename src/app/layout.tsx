@@ -1,5 +1,12 @@
 import type { Metadata } from "next";
-import { EB_Garamond, Geist, Geist_Mono, Inter_Tight } from "next/font/google";
+import {
+  Anton,
+  EB_Garamond,
+  Geist,
+  Geist_Mono,
+  Inter_Tight,
+  JetBrains_Mono,
+} from "next/font/google";
 import "./globals.css";
 
 const geist = Geist({
@@ -23,6 +30,17 @@ const garamond = EB_Garamond({
   style: ["italic"],
 });
 
+const anton = Anton({
+  variable: "--font-anton",
+  subsets: ["latin"],
+  weight: "400",
+});
+
+const jetbrainsMono = JetBrains_Mono({
+  variable: "--font-jb-mono",
+  subsets: ["latin"],
+});
+
 export const metadata: Metadata = {
   title: "Buat.in — Desain website visual, bayar sekali, miliki kodenya",
   description:
@@ -34,7 +52,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     <html
       lang="id"
       data-scroll-behavior="smooth"
-      className={`${geist.variable} ${geistMono.variable} ${interTight.variable} ${garamond.variable} dark h-full scroll-smooth antialiased`}
+      className={`${geist.variable} ${geistMono.variable} ${interTight.variable} ${garamond.variable} ${anton.variable} ${jetbrainsMono.variable} dark h-full scroll-smooth antialiased`}
     >
       <body className="min-h-full bg-background font-sans text-foreground">
         {children}

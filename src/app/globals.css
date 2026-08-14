@@ -41,16 +41,26 @@
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
 
-  --color-brand: #e6007e;
-  --color-brand-hover: #ff1a94;
-  --color-brand-foreground: #ffffff;
+  --color-brand: #c9a227;
+  --color-brand-hover: #e0bf48;
+  --color-brand-foreground: #111111;
 
-  --color-ink: var(--background);
-  --color-ink-2: var(--card);
-  --color-ivory: var(--foreground);
-  --color-line: var(--border);
-  --color-cobalt: #e6007e;
-  --color-cobalt-hover: #ff1a94;
+  --font-anton: var(--font-anton), "Arial Narrow", sans-serif;
+  --font-jbmono: var(--font-jb-mono), ui-monospace, monospace;
+
+  /* Palette landing tetap (tidak mengikuti tema aplikasi) — gaya dignify */
+  --color-ink: #0b0b0b;
+  --color-ink-2: #121212;
+  --color-ivory: #f3f1ec;
+  --color-cream: #f5f5f2;
+  --color-line: #cfcfc8;
+  --color-line-dark: #2a2a2a;
+  --color-muted-ink: #3d3d3d;
+  --color-muted-ink-dark: #9c9c94;
+  --color-ink-text: #111111;
+  --color-cobalt: #c9a227;
+  --color-cobalt-deep: #9a6a0f;
+  --color-cobalt-ink: #7c5e10;
 
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
@@ -97,6 +107,7 @@
   --sidebar-ring: oklch(0.708 0 0);
 }
 
+:root.dark,
 .dark {
   --background: oklch(0.09 0 0);
   --foreground: oklch(0.985 0 0);
@@ -144,7 +155,7 @@
     color: var(--foreground);
   }
   ::selection {
-    background: rgba(230, 0, 126, 0.25);
+    background: rgba(201, 162, 39, 0.25);
     color: #fff;
   }
 }
@@ -233,11 +244,68 @@ html {
   animation: ring-turn 60s linear infinite;
 }
 
+/* ─── Gaya landing (dignify-style) ─── */
+.meta-label {
+  font-family: var(--font-jbmono), ui-monospace, monospace;
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+@keyframes hero-rise {
+  from {
+    opacity: 0;
+    transform: translateY(64px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes word-reveal {
+  from {
+    opacity: 0;
+    transform: translateY(40px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes header-drop {
+  from {
+    opacity: 0;
+    transform: translateY(-100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.hero-item {
+  animation: hero-rise 0.8s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.word-reveal {
+  animation: word-reveal 0.65s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.site-header {
+  animation: header-drop 0.65s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .animate-fade-up,
   .animate-float,
   .animate-ticker,
-  .animate-ring-turn {
+  .animate-ring-turn,
+  .hero-item,
+  .word-reveal,
+  .site-header {
     animation: none;
   }
 }

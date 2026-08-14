@@ -5,22 +5,28 @@ export const ctaManifest: Omit<
   "previewRenderer" | "exportAdapter"
 > = {
   id: "cta-basic",
-  name: "Call to Action",
+  name: "Ajakan Konsultasi",
   category: "cta",
-  description: "Banjir konversi dengan spanduk ajakan bertindak yang mencolok.",
+  scope: "landing",
+  description: "Penutup landing page yang terarah dengan aksi utama dan opsional kedua.",
   tier: "free",
   priceKey: "cta-basic",
-  version: "1.0.0",
+  version: "1.1.0",
   defaultProps: {
-    title: "Siap Membangun Website Pertama Anda?",
-    description: "Daftar sekarang dan nikmati akses penuh ke seluruh komponen & template pro.",
-    buttonText: "Mulai Buat Gratis",
-    buttonUrl: "#",
+    title: "Punya cerita yang perlu disampaikan dengan lebih baik?",
+    description:
+      "Ceritakan konteks bisnis Anda dalam sesi perkenalan singkat. Kami bantu memetakan langkah yang paling masuk akal.",
+    buttonText: "Jadwalkan konsultasi",
+    buttonUrl: "#kontak",
+    secondaryText: "Lihat layanan",
+    secondaryUrl: "#layanan",
   },
   contentControls: [
     { key: "title", label: "Judul CTA", group: "CTA", type: "text" },
     { key: "description", label: "Deskripsi", group: "CTA", type: "textarea" },
-    { key: "buttonText", label: "Teks Tombol", group: "Tombol", type: "text" },
-    { key: "buttonUrl", label: "URL Tombol", group: "Tombol", type: "link" },
+    { key: "buttonText", label: "Tombol Utama", group: "Tombol", type: "text" },
+    { key: "buttonUrl", label: "Tujuan tombol utama", group: "Tombol", type: "link" },
+    { key: "secondaryText", label: "Tombol Sekunder", group: "Tombol", type: "text" },
+    { key: "secondaryUrl", label: "Tujuan tombol sekunder", group: "Tombol", type: "link" },
   ],
 };

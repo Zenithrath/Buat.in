@@ -7,6 +7,7 @@ export const dataTableManifest: Omit<
   id: "data-table",
   name: "Data Table",
   category: "dashboard",
+  scope: "dashboard",
   description: "Tabel data admin/dashboard dengan status badge, pencarian, dan pagination.",
   tier: "pro",
   priceKey: "data-table",
@@ -24,6 +25,19 @@ export const dataTableManifest: Omit<
   contentControls: [
     { key: "title", label: "Judul Tabel", group: "Header", type: "text" },
     { key: "subtitle", label: "Deskripsi Sub-header", group: "Header", type: "text" },
-    { key: "rowsJson", label: "Baris Data (JSON)", group: "Data", type: "json" },
+    {
+      key: "rowsJson",
+      label: "Baris data",
+      group: "Data",
+      type: "array",
+      itemSchema: [
+        { key: "id", label: "Nomor", type: "text" },
+        { key: "customer", label: "Pelanggan", type: "text" },
+        { key: "item", label: "Keterangan", type: "text" },
+        { key: "amount", label: "Nominal", type: "text" },
+        { key: "status", label: "Status", type: "text" },
+        { key: "date", label: "Tanggal", type: "text" },
+      ],
+    },
   ],
 };

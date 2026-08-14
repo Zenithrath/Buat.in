@@ -1,4 +1,8 @@
-import type { ComponentCategory, ComponentRegistryItem } from "./types";
+import type {
+  ComponentCategory,
+  ComponentRegistryItem,
+  ComponentScope,
+} from "./types";
 
 // ═══════════════════════════════════════════════════════════════
 // Registry now sources from /src/asset-comp/ (canonical location)
@@ -13,11 +17,33 @@ import {
   dataTableComponent,
   gridContainerComponent,
   navbarMinimalComponent,
+  navbarGlassComponent,
+  navbarMegaComponent,
+  navbarFullscreenComponent,
+  navbarCenteredComponent,
+  navbarSplitComponent,
+  dropdownMenuComponent,
+  menuOffcanvasComponent,
+  menuCircleComponent,
   heroCenteredComponent,
   productGridBasicComponent,
   aboutBasicComponent,
   ctaBasicComponent,
   footerBasicComponent,
+  cardFeatureComponent,
+  pricingTableComponent,
+  testimonialGridComponent,
+  teamGridComponent,
+  statsBannerComponent,
+  galleryGridComponent,
+  faqAccordionComponent,
+  formContactComponent,
+  formNewsletterComponent,
+  modalCenterComponent,
+  modalSheetComponent,
+  modalConfirmComponent,
+  dashboardActivityListComponent,
+  sidebarIconComponent,
 } from "@/asset-comp";
 
 export type { ComponentCategory };
@@ -29,18 +55,46 @@ export const componentRegistry: ComponentRegistryItem[] = [
   kpiCardComponent,
   chartCardComponent,
   dataTableComponent,
+  dashboardActivityListComponent,
+  sidebarIconComponent,
   gridContainerComponent,
   // Landing page components
   navbarMinimalComponent,
+  navbarGlassComponent,
+  navbarMegaComponent,
+  navbarFullscreenComponent,
+  navbarCenteredComponent,
+  navbarSplitComponent,
+  dropdownMenuComponent,
+  menuOffcanvasComponent,
+  menuCircleComponent,
   heroCenteredComponent,
   productGridBasicComponent,
   aboutBasicComponent,
   ctaBasicComponent,
   footerBasicComponent,
+  cardFeatureComponent,
+  pricingTableComponent,
+  testimonialGridComponent,
+  teamGridComponent,
+  statsBannerComponent,
+  galleryGridComponent,
+  faqAccordionComponent,
+  formContactComponent,
+  formNewsletterComponent,
+  modalCenterComponent,
+  modalSheetComponent,
+  modalConfirmComponent,
 ];
 
 export const componentMap: Record<string, ComponentRegistryItem> =
   Object.fromEntries(componentRegistry.map((c) => [c.id, c]));
+
+/** Documents lama dibuat sebelum field `scope` ada. */
+export function getComponentScope(component: ComponentRegistryItem): ComponentScope {
+  if (component.scope) return component.scope;
+  return component.category === "dashboard" ? "dashboard" : "landing";
+}
 
 export const CATEGORY_LABELS: Record<ComponentCategory, string> = {
   dashboard: "Dashboard",

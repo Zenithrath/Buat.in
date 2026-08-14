@@ -2,7 +2,7 @@ import type { Node, ProjectDocument } from "@/lib/schema/types";
 import { resolveTheme } from "@/lib/theme/presets";
 import { CORE_CSS, buildThemeVarsCss } from "@/lib/registry/coreCss";
 import { componentMap } from "@/lib/registry";
-import { escapeHtml } from "@/lib/registry/shared";
+import { escapeHtml, propString } from "@/lib/registry/shared";
 import {
   buildFontsHtml,
   buildGeneratorManifest,
@@ -19,13 +19,17 @@ export function buildExportFiles(doc: ProjectDocument): ExportFile[] {
   const tokens = resolveTheme(doc.theme);
   const ctx = { theme: doc.theme, tokens };
 
-  const sections = doc.pages[0].sections;
+  const sections = doc.pages[0].sections.filter((section) => !section.metadata.hidden);
   const isDashboard =
     doc.projectType === "dashboard" ||
-    sections.some((s) => s.componentType === "app-sidebar");
+    sections.some(
+      (s) => s.componentType === "app-sidebar" || s.componentType === "sidebar-icon"
+    );
 
   const cssParts: string[] = [];
   const usedCss = new Set<string>();
+  const jsParts: string[] = [];
+  const usedJs = new Set<string>();
 
   const pushCss = (css: string) => {
     if (!css || usedCss.has(css)) return;
@@ -33,39 +37,65 @@ export function buildExportFiles(doc: ProjectDocument): ExportFile[] {
     cssParts.push(css);
   };
 
+  const pushJs = (js: string | undefined) => {
+    if (!js || usedJs.has(js)) return;
+    usedJs.add(js);
+    jsParts.push(js);
+  };
+
   const renderSection = (section: Node): string => {
     const manifest = componentMap[section.componentType];
     if (!manifest) return "";
     const result = manifest.exportAdapter(section, ctx);
     pushCss(result.css);
-    return result.html;
+    pushJs(result.js);
+    let html = result.html;
+
+    // Keep editable compact-sidebar labels identical in the exported HTML.
+    // This also preserves older sidebar documents that do not yet have them.
+    if (section.componentType === "sidebar-icon") {
+      const workspace = escapeHtml(propString(section, "workspaceLabel").trim() || "Workspace");
+      const status = escapeHtml(propString(section, "statusLabel").trim() || "Terhubung");
+      html = html
+        .replace("<span>Workspace</span>", `<span>${workspace}</span>`)
+        .replace("<span>Terhubung</span>", `<span>${status}</span>`);
+    }
+
+    // Some early adapters share markup with React previews and still emit the
+    // React-only `className` attribute. Static HTML needs the native spelling.
+    return html.replace(/\bclassName=/g, "class=");
   };
 
   let bodyHtml = "";
   let dashboardCss = "";
 
   if (isDashboard) {
-    const sidebar = sections.find((s) => s.componentType === "app-sidebar");
+    const sidebar = sections.find(
+      (s) => s.componentType === "app-sidebar" || s.componentType === "sidebar-icon"
+    );
     const header = sections.find((s) => s.componentType === "dashboard-header");
     const kpis = sections.filter((s) => s.componentType === "kpi-card");
     const charts = sections.filter((s) => s.componentType === "chart-card");
     const rest = sections.filter(
-      (s) =>
-        !["app-sidebar", "dashboard-header", "kpi-card", "chart-card"].includes(
-          s.componentType
-        )
+      (section) =>
+        section.id !== sidebar?.id &&
+        !["dashboard-header", "kpi-card", "chart-card"].includes(section.componentType)
     );
 
-    const rawWidth = sidebar
-      ? parseInt((sidebar.styles as Record<string, string>).sidebarWidth ?? "", 10)
-      : 0;
-    const sidebarWidth = Number.isFinite(rawWidth) && rawWidth > 0 ? rawWidth : 240;
+    const savedSidebarWidth = Number.parseInt(String(sidebar?.styles.sidebarWidth ?? ""), 10);
+    const sidebarWidth = Number.isFinite(savedSidebarWidth)
+      ? Math.min(360, Math.max(180, savedSidebarWidth))
+      : 240;
 
-    bodyHtml = `<div class="bi-dashboard">
-  <div class="bi-dashboard-side" style="--bi-sidebar-width:${sidebarWidth}px">
-    ${sidebar ? renderSection(sidebar) : ""}
-  </div>
-  <div class="bi-dashboard-main">
+    bodyHtml = `<div class="bi-dashboard" style="--bi-sidebar-width: ${sidebarWidth}px">
+  ${
+    sidebar
+      ? `<aside class="bi-dashboard-side">
+    ${renderSection(sidebar)}
+  </aside>`
+      : ""
+  }
+  <main class="bi-dashboard-main">
     ${header ? `<div class="bi-dashboard-header">${renderSection(header)}</div>` : ""}
     <div class="bi-dashboard-content">
       ${
@@ -80,7 +110,7 @@ export function buildExportFiles(doc: ProjectDocument): ExportFile[] {
       }
       ${rest.map(renderSection).join("\n")}
     </div>
-  </div>
+  </main>
 </div>`;
     dashboardCss = buildDashboardCss();
   } else {
@@ -88,6 +118,18 @@ export function buildExportFiles(doc: ProjectDocument): ExportFile[] {
       bodyHtml += renderSection(section);
     }
   }
+
+  // Early newsletter adapters used one fixed input id. Keep exports from older
+  // documents valid when a page contains more than one newsletter block.
+  let newsletterIndex = 0;
+  bodyHtml = bodyHtml.replace(
+    /for="bi-newsletter-email">Email<\/label><div><input id="bi-newsletter-email"/g,
+    () => {
+      newsletterIndex += 1;
+      const inputId = `bi-newsletter-email-${newsletterIndex}`;
+      return `for="${inputId}">Email</label><div><input id="${inputId}"`;
+    }
+  );
 
   const title = doc.seo.title || doc.name;
   const description =
@@ -111,12 +153,12 @@ ${bodyHtml}
 </html>
 `;
 
-  const stylesCss = `${buildThemeVarsCss(tokens)}
-${CORE_CSS}
-${dashboardCss}
-${cssParts.join("\n")}`;
+  const stylesCss = `${CORE_CSS}
+${buildThemeVarsCss(tokens)}
+${cssParts.join("\n")}
+${dashboardCss}`;
 
-  const mainJs = `// Buat.in — interaksi minimal
+  const mainJs = `${jsParts.join("\n\n")}${jsParts.length ? "\n\n" : ""}// Buat.in — interaksi minimal
 // Menu navigasi mobile
 document.querySelectorAll("[data-nav-toggle]").forEach(function (btn) {
   btn.addEventListener("click", function () {
@@ -126,6 +168,43 @@ document.querySelectorAll("[data-nav-toggle]").forEach(function (btn) {
     nav.setAttribute("data-nav-open", String(!open));
     btn.setAttribute("aria-expanded", String(!open));
     btn.setAttribute("aria-label", open ? "Buka menu" : "Tutup menu");
+  });
+});
+
+// Dashboard navigation works without a framework.
+document.querySelectorAll("[data-dashboard-nav]").forEach(function (nav) {
+  var links = nav.querySelectorAll("[data-dashboard-nav-link]");
+  links.forEach(function (link) {
+    link.addEventListener("click", function () {
+      links.forEach(function (item) {
+        item.classList.remove("active", "is-active");
+        item.removeAttribute("aria-current");
+      });
+      link.classList.add("active", "is-active");
+      link.setAttribute("aria-current", "page");
+    });
+  });
+});
+
+// Dashboard search filters exported table rows in place.
+document.querySelectorAll("[data-dashboard-search]").forEach(function (input) {
+  input.addEventListener("input", function () {
+    var query = String(input.value || "").trim().toLocaleLowerCase("id-ID");
+    var scope = input.closest(".bi-dashboard") || document;
+    scope.querySelectorAll("[data-dashboard-row]").forEach(function (row) {
+      var searchable = (row.getAttribute("data-search-text") || row.textContent || "")
+        .toLocaleLowerCase("id-ID");
+      var visible = !query || searchable.indexOf(query) !== -1;
+      row.hidden = !visible;
+      row.setAttribute("aria-hidden", String(!visible));
+    });
+  });
+});
+
+// A static dashboard still provides an export action through browser print.
+document.querySelectorAll('[data-dashboard-action="export"]').forEach(function (button) {
+  button.addEventListener("click", function () {
+    window.print();
   });
 });
 `;
@@ -149,11 +228,13 @@ document.querySelectorAll("[data-nav-toggle]").forEach(function (btn) {
 
 export function buildDashboardCss(): string {
   return `
-/* ── Frame Dashboard (Buat.in) ─────────────────────── */
+/* Frame dashboard — sidebar vertikal, sama seperti di canvas. */
 .bi-dashboard {
   display: flex;
   align-items: flex-start;
   min-height: 100vh;
+  background: var(--bi-bg);
+  color: var(--bi-fg);
 }
 .bi-dashboard-side {
   flex-shrink: 0;
@@ -161,7 +242,21 @@ export function buildDashboardCss(): string {
   position: sticky;
   top: 0;
   height: 100vh;
-  overflow-y: auto;
+  overflow: hidden;
+  border-right: 1px solid var(--bi-border);
+  background: var(--bi-card);
+}
+.bi-dashboard-side .bi-sidebar,
+.bi-dashboard-side .bi-app-sidebar {
+  width: 100% !important;
+  min-height: 100%;
+  height: 100%;
+  border-right: 0;
+}
+.bi-dashboard-side .bi-icon-sidebar {
+  width: 100% !important;
+  min-width: 100% !important;
+  height: 100%;
 }
 .bi-dashboard-main {
   flex: 1;
@@ -198,50 +293,26 @@ export function buildDashboardCss(): string {
   .bi-dashboard-kpis { grid-template-columns: repeat(2, 1fr); }
 }
 
-/* Mobile: sidebar menjadi bottom navigation bar */
 @media (max-width: 767px) {
-  .bi-dashboard { flex-direction: column; }
   .bi-dashboard-side {
-    width: 100% !important;
-    height: auto;
-    position: fixed;
-    bottom: 0;
-    top: auto;
-    left: 0;
-    right: 0;
-    z-index: 50;
-    box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.08);
+    width: 5rem;
+    min-width: 5rem;
   }
-  .bi-dashboard-side .bi-app-sidebar {
-    width: 100% !important;
-    min-height: 0;
-    height: auto;
-    flex-direction: row;
-    align-items: center;
-    justify-content: space-around;
-    gap: 0.25rem;
+  .bi-dashboard-side .bi-sidebar {
     padding: 0.5rem;
-    border-right: none;
-    border-top: 1px solid var(--border);
-    overflow-x: auto;
+    overflow: hidden;
   }
-  .bi-dashboard-side .bi-sidebar-brand { display: none; }
-  .bi-dashboard-side .bi-sidebar-user { display: none; }
+  .bi-dashboard-side .bi-sidebar-brand,
+  .bi-dashboard-side .bi-sidebar-user,
   .bi-dashboard-side .bi-nav-heading { display: none; }
-  .bi-dashboard-side .bi-sidebar-nav {
-    flex-direction: row;
-    gap: 0.25rem;
-    align-items: center;
-  }
   .bi-dashboard-side .bi-sidebar-link {
-    flex-direction: column;
-    gap: 0.125rem;
-    font-size: 0.625rem;
-    padding: 0.375rem 0.625rem;
-    text-align: center;
+    justify-content: center;
+    padding: 0.675rem;
   }
-  .bi-dashboard-main { padding-bottom: 56px; }
-  .bi-dashboard-kpis { grid-template-columns: repeat(2, 1fr); }
+  .bi-dashboard-side .bi-sidebar-link-label,
+  .bi-dashboard-side .bi-sidebar-link-caret { display: none; }
+  .bi-dashboard-content { padding: 0.875rem; gap: 0.875rem; }
+  .bi-dashboard-kpis { grid-template-columns: 1fr; }
   .bi-dashboard-charts { grid-template-columns: 1fr; }
   .bi-dashboard-header { position: static; }
 }

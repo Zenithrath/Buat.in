@@ -31,14 +31,14 @@ export function Tabs({
           className={cn(
             "relative flex flex-1 items-center justify-center gap-1.5 px-2 py-2 text-xs font-medium transition-colors",
             active === item.id
-              ? "text-foreground"
-              : "text-muted-foreground hover:text-foreground"
+              ? "text-brand"
+              : "text-muted-foreground hover:text-brand"
           )}
         >
           {item.icon}
           {item.label}
           {active === item.id ? (
-            <span className="absolute inset-x-2 bottom-0 h-0.5 rounded-full bg-foreground" />
+            <span className="absolute inset-x-2 bottom-0 h-0.5 bg-brand" />
           ) : null}
         </button>
       ))}

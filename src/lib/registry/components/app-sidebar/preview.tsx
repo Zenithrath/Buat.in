@@ -4,114 +4,135 @@ import type { Node, Theme } from "@/lib/schema/types";
 import { resolveTheme } from "@/lib/theme/presets";
 import { propString, themeTokenStyle } from "@/lib/registry/shared";
 import {
-  LayoutDashboard,
   BarChart3,
+  ChevronRight,
   CreditCard,
-  Users,
+  LayoutDashboard,
   Settings,
   ShieldCheck,
-  ChevronRight,
+  Users,
+  type LucideIcon,
 } from "lucide-react";
-
-const ICON_MAP: Record<string, React.ReactNode> = {
-  "layout-dashboard": <LayoutDashboard size={16} />,
-  "bar-chart-3": <BarChart3 size={16} />,
-  "credit-card": <CreditCard size={16} />,
-  users: <Users size={16} />,
-  settings: <Settings size={16} />,
-};
 
 interface LinkItem {
   id: string;
   label: string;
   icon: string;
-  active?: boolean;
+  active: boolean;
+}
+
+const DEFAULT_LINKS: LinkItem[] = [
+  { id: "overview", label: "Ringkasan", icon: "layout-dashboard", active: true },
+  { id: "analytics", label: "Analitik", icon: "bar-chart-3", active: false },
+  { id: "billing", label: "Keuangan", icon: "credit-card", active: false },
+  { id: "people", label: "Klien", icon: "users", active: false },
+  { id: "settings", label: "Pengaturan", icon: "settings", active: false },
+];
+
+const ICON_MAP: Record<string, LucideIcon> = {
+  "layout-dashboard": LayoutDashboard,
+  "bar-chart-3": BarChart3,
+  "credit-card": CreditCard,
+  users: Users,
+  settings: Settings,
+};
+
+function textOrFallback(node: Node, key: string, fallback: string): string {
+  return propString(node, key).trim() || fallback;
+}
+
+function parseLinks(node: Node): LinkItem[] {
+  try {
+    const parsed: unknown = JSON.parse(propString(node, "linksJson"));
+    if (!Array.isArray(parsed)) return DEFAULT_LINKS;
+
+    const links = parsed
+      .filter((item): item is Record<string, unknown> => !!item && typeof item === "object")
+      .map((item, index) => ({
+        id: String(item.id ?? `menu-${index + 1}`).trim() || `menu-${index + 1}`,
+        label: String(item.label ?? "").trim(),
+        icon: String(item.icon ?? "layout-dashboard"),
+        active: item.active === true,
+      }))
+      .filter((item) => item.label.length > 0);
+
+    if (!links.length) return DEFAULT_LINKS;
+    if (!links.some((item) => item.active)) links[0].active = true;
+    return links;
+  } catch {
+    return DEFAULT_LINKS;
+  }
 }
 
 export function AppSidebarPreview({ node, theme }: { node: Node; theme: Theme }) {
   const tokens = resolveTheme(theme);
-  const brandName = propString(node, "brandName") || "Acme Analytics";
-  const brandTag = propString(node, "brandTag") || "PRO";
-  const userName = propString(node, "userName") || "Alex Rivers";
-  const userRole = propString(node, "userRole") || "Administrator";
-
-  let links: LinkItem[] = [];
-  try {
-    const raw = propString(node, "linksJson");
-    links = raw ? JSON.parse(raw) : [];
-  } catch {
-    links = [
-      { id: "s1", label: "Overview", icon: "layout-dashboard", active: true },
-      { id: "s2", label: "Analytics", icon: "bar-chart-3", active: false },
-      { id: "s3", label: "Transaksi", icon: "credit-card", active: false },
-      { id: "s4", label: "Pengguna", icon: "users", active: false },
-      { id: "s5", label: "Pengaturan", icon: "settings", active: false },
-    ];
-  }
+  const brandName = textOrFallback(node, "brandName", "Acme Analytics");
+  const brandTag = propString(node, "brandTag").trim();
+  const userName = textOrFallback(node, "userName", "Alex Rivers");
+  const userRole = textOrFallback(node, "userRole", "Administrator");
+  const links = parseLinks(node);
+  const brandInitial = brandName.charAt(0).toUpperCase();
+  const userInitial = userName.charAt(0).toUpperCase();
 
   return (
     <aside
-      className="bi-app-sidebar flex w-64 flex-col border-r bg-card p-4 transition-colors"
+      aria-label="Navigasi aplikasi"
+      className="bi-app-sidebar flex h-full min-h-[520px] w-full min-w-0 flex-col border-r bg-card p-3.5 text-foreground transition-colors"
       style={themeTokenStyle(tokens)}
     >
-      {/* Brand Header */}
-      <div className="mb-6 flex items-center justify-between border-b pb-4">
-        <div className="flex items-center gap-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground font-bold text-sm">
-            {brandName.charAt(0)}
-          </div>
-          <div>
-            <h2 className="text-sm font-bold tracking-tight text-foreground leading-none">
-              {brandName}
-            </h2>
-            <span className="text-[10px] text-muted-foreground">Dashboard System</span>
-          </div>
+      <div className="mb-5 flex items-center gap-2.5 border-b pb-4">
+        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary text-sm font-extrabold text-primary-foreground shadow-sm">
+          {brandInitial}
+        </div>
+        <div className="min-w-0 flex-1">
+          <h2 className="truncate text-sm font-bold leading-tight tracking-tight">{brandName}</h2>
+          <p className="mt-0.5 truncate text-[10px] font-medium text-muted-foreground">
+            Workspace operasional
+          </p>
         </div>
         {brandTag ? (
-          <span className="rounded bg-primary/10 px-1.5 py-0.5 font-mono text-[9px] font-bold text-primary">
+          <span className="rounded-md border border-primary/20 bg-primary/10 px-1.5 py-0.5 font-mono text-[9px] font-bold tracking-wide text-primary">
             {brandTag}
           </span>
         ) : null}
       </div>
 
-      {/* Navigation items */}
-      <nav className="flex-1 space-y-1">
-        <p className="mb-2 px-2 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-          Menu Utama
+      <nav aria-label="Menu utama" className="flex flex-1 flex-col gap-1">
+        <p className="mb-1 px-2 text-[10px] font-bold uppercase tracking-[0.12em] text-muted-foreground">
+          Menu utama
         </p>
-        {links.map((link) => (
-          <a
-            key={link.id || link.label}
-            href="#"
-            onClick={(e) => e.preventDefault()}
-            className={`flex items-center gap-3 rounded-md px-3 py-2 text-xs font-medium transition-colors ${
-              link.active
-                ? "bg-primary text-primary-foreground font-semibold shadow-sm"
-                : "text-muted-foreground hover:bg-muted hover:text-foreground"
-            }`}
-          >
-            <span>{ICON_MAP[link.icon] ?? <LayoutDashboard size={16} />}</span>
-            <span className="flex-1">{link.label}</span>
-            {link.active ? <ChevronRight size={14} className="opacity-70" /> : null}
-          </a>
-        ))}
+        {links.map((link) => {
+          const Icon = ICON_MAP[link.icon] ?? LayoutDashboard;
+          return (
+            <button
+              key={link.id}
+              type="button"
+              aria-current={link.active ? "page" : undefined}
+              className={`flex min-w-0 items-center gap-3 rounded-lg px-3 py-2.5 text-left text-xs font-medium transition-colors ${
+                link.active
+                  ? "bg-primary text-primary-foreground shadow-sm"
+                  : "text-muted-foreground hover:bg-muted hover:text-foreground"
+              }`}
+            >
+              <Icon aria-hidden="true" size={16} strokeWidth={1.9} className="shrink-0" />
+              <span className="min-w-0 flex-1 truncate">{link.label}</span>
+              {link.active ? <ChevronRight aria-hidden="true" size={14} className="shrink-0 opacity-70" /> : null}
+            </button>
+          );
+        })}
       </nav>
 
-      {/* User profile footer */}
-      <div className="mt-auto border-t pt-4">
-        <div className="flex items-center gap-3 rounded-lg bg-muted/50 p-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/20 font-bold text-xs text-primary">
-            {userName.charAt(0)}
+      <div className="mt-5 border-t pt-3.5">
+        <div className="flex items-center gap-2.5 rounded-lg bg-muted/60 p-2">
+          <div className="relative flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/15 text-xs font-bold text-primary">
+            {userInitial}
+            <span className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full border-2 border-card bg-emerald-500" />
           </div>
           <div className="min-w-0 flex-1">
-            <p className="truncate text-xs font-semibold text-foreground leading-none">
-              {userName}
-            </p>
-            <p className="truncate text-[10px] text-muted-foreground mt-0.5">
-              {userRole}
-            </p>
+            <p className="truncate text-xs font-semibold leading-tight">{userName}</p>
+            <p className="mt-0.5 truncate text-[10px] text-muted-foreground">{userRole}</p>
           </div>
-          <ShieldCheck size={14} className="text-emerald-500 shrink-0" />
+          <ShieldCheck aria-label="Akun terverifikasi" size={15} className="shrink-0 text-emerald-500" />
         </div>
       </div>
     </aside>

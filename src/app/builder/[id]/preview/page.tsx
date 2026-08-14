@@ -1,6 +1,6 @@
 "use client";
 
-import { use, useState } from "react";
+import { use, useEffect, useState } from "react";
 import Link from "next/link";
 import { loadProject } from "@/lib/store/project-store";
 import type { ProjectDocument } from "@/lib/schema/types";
@@ -10,7 +10,7 @@ import { SectionPreview } from "@/components/preview/SectionPreview";
 import { RegistryStyles } from "@/components/builder/RegistryStyles";
 import { buildDashboardCss } from "@/lib/export/html";
 
-const DASHBOARD_GROUPS = ["app-sidebar", "dashboard-header", "kpi-card", "chart-card"];
+const DASHBOARD_GROUPS = ["dashboard-header", "kpi-card", "chart-card"];
 
 export default function DedicatedPreviewPage({
   params,
@@ -18,7 +18,25 @@ export default function DedicatedPreviewPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = use(params);
-  const [doc] = useState<ProjectDocument | null>(() => loadProject(id));
+  // localStorage hanya tersedia setelah hydration. Mulai dari status loading yang
+  // sama pada server dan client agar halaman preview tidak mengalami hydration
+  // mismatch sebelum project lokal dimuat.
+  const [doc, setDoc] = useState<ProjectDocument | null | undefined>(undefined);
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      setDoc(loadProject(id));
+    }, 0);
+    return () => window.clearTimeout(timer);
+  }, [id]);
+
+  if (doc === undefined) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background p-4 text-sm text-muted-foreground">
+        Memuat project...
+      </div>
+    );
+  }
 
   if (!doc) {
     return (
@@ -38,23 +56,34 @@ export default function DedicatedPreviewPage({
   }
 
   const tokens = resolveTheme(doc.theme);
-  const sections = doc.pages[0]?.sections ?? [];
+  const sections = (doc.pages[0]?.sections ?? []).filter(
+    (section) => !section.metadata.hidden
+  );
   const isDashboard =
     doc.projectType === "dashboard" ||
-    sections.some((s) => s.componentType === "app-sidebar");
+    sections.some(
+      (s) => s.componentType === "app-sidebar" || s.componentType === "sidebar-icon"
+    );
 
-  const sidebar = sections.find((s) => s.componentType === "app-sidebar");
+  const sidebar = sections.find(
+    (s) => s.componentType === "app-sidebar" || s.componentType === "sidebar-icon"
+  );
   const header = sections.find((s) => s.componentType === "dashboard-header");
   const kpis = sections.filter((s) => s.componentType === "kpi-card");
   const charts = sections.filter((s) => s.componentType === "chart-card");
-  const rest = sections.filter((s) => !DASHBOARD_GROUPS.includes(s.componentType));
-  const rawWidth = sidebar
-    ? parseInt((sidebar.styles as Record<string, string>).sidebarWidth ?? "", 10)
-    : 0;
-  const sidebarWidth = Number.isFinite(rawWidth) && rawWidth > 0 ? rawWidth : 240;
-
+  const rest = sections.filter(
+    (section) => section.id !== sidebar?.id && !DASHBOARD_GROUPS.includes(section.componentType)
+  );
   return (
-    <div className="min-h-screen w-full bg-background text-foreground transition-colors">
+    <div
+      className="min-h-screen w-full transition-colors"
+      style={{
+        ...themeTokenStyle(tokens),
+        ...projectTokenStyle(tokens),
+        backgroundColor: tokens.background,
+        color: tokens.foreground,
+      } as React.CSSProperties}
+    >
       <RegistryStyles />
       {isDashboard ? <style>{buildDashboardCss()}</style> : null}
       {FONT_LINKS.map((href) => (
@@ -65,6 +94,8 @@ export default function DedicatedPreviewPage({
         style={{
           ...themeTokenStyle(tokens),
           ...projectTokenStyle(tokens),
+          backgroundColor: tokens.background,
+          color: tokens.foreground,
         } as React.CSSProperties}
       >
         {sections.length === 0 ? (
@@ -74,11 +105,19 @@ export default function DedicatedPreviewPage({
         ) : isDashboard ? (
           <div className="bi-dashboard">
             {sidebar ? (
-              <div className="bi-dashboard-side" style={{ "--bi-sidebar-width": `${sidebarWidth}px` } as React.CSSProperties}>
+              <aside
+                className="bi-dashboard-side"
+                style={{
+                  "--bi-sidebar-width": `${Math.min(
+                    360,
+                    Math.max(180, Number.parseInt(sidebar.styles.sidebarWidth ?? "240", 10) || 240)
+                  )}px`,
+                } as React.CSSProperties}
+              >
                 <SectionPreview node={sidebar} theme={doc.theme} />
-              </div>
+              </aside>
             ) : null}
-            <div className="bi-dashboard-main">
+            <main className="bi-dashboard-main">
               {header ? (
                 <div className="bi-dashboard-header">
                   <SectionPreview node={header} theme={doc.theme} />
@@ -103,7 +142,7 @@ export default function DedicatedPreviewPage({
                   <SectionPreview key={node.id} node={node} theme={doc.theme} />
                 ))}
               </div>
-            </div>
+            </main>
           </div>
         ) : (
           sections.map((node) => (

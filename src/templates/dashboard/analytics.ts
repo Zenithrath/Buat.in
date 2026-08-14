@@ -1,26 +1,28 @@
 import type { RawTemplateNode } from "@/templates";
 import { uid } from "@/lib/utils";
 
-/** Analytics dashboard template — sidebar + header + KPI + chart + table */
+/**
+ * Static admin dashboard with realistic operational data. The builder groups
+ * these dashboard nodes into a desktop sidebar, KPI row, chart grid, and
+ * activity table automatically.
+ */
 export function createAnalyticsDashboardNodes(): RawTemplateNode[] {
   return [
-    // The dashboard uses a special "dashboard-layout" wrapper approach:
-    // app-sidebar + dashboard-header + grid of KPI cards + charts + table
     {
       id: uid(),
       componentType: "app-sidebar",
-      name: "App Sidebar",
+      name: "Navigasi Admin Karsa",
       props: {
-        brandName: "Buat.Analytics",
-        brandTag: "PRO",
-        userName: "Admin User",
-        userRole: "Administrator",
+        brandName: "Karsa Studio",
+        brandTag: "ADMIN",
+        userName: "Nadia Ardelia",
+        userRole: "Operations Lead",
         linksJson: JSON.stringify([
-          { id: "s1", label: "Overview", icon: "layout-dashboard", active: true },
-          { id: "s2", label: "Analytics", icon: "bar-chart-3", active: false },
-          { id: "s3", label: "Transaksi", icon: "credit-card", active: false },
-          { id: "s4", label: "Pengguna", icon: "users", active: false },
-          { id: "s5", label: "Pengaturan", icon: "settings", active: false },
+          { id: "overview", label: "Ringkasan", icon: "layout-dashboard", active: true },
+          { id: "projects", label: "Proyek", icon: "bar-chart-3", active: false },
+          { id: "billing", label: "Keuangan", icon: "credit-card", active: false },
+          { id: "clients", label: "Klien", icon: "users", active: false },
+          { id: "settings", label: "Pengaturan", icon: "settings", active: false },
         ]),
       },
       styles: { isDashboardSidebar: "true" },
@@ -31,12 +33,11 @@ export function createAnalyticsDashboardNodes(): RawTemplateNode[] {
     {
       id: uid(),
       componentType: "dashboard-header",
-      name: "Dashboard Header",
+      name: "Header Ringkasan Bisnis",
       props: {
-        title: "Overview Dashboard",
-        breadcrumb: "Dashboard / Analytics",
-        searchPlaceholder: "Cari data, laporan...",
-        actionText: "Export Laporan",
+        title: "Ringkasan Bisnis",
+        breadcrumb: "Karsa Studio / Admin",
+        searchPlaceholder: "Cari proyek, klien, atau invoice...",
       },
       styles: { isDashboardHeader: "true" },
       tabletOverride: {},
@@ -46,13 +47,13 @@ export function createAnalyticsDashboardNodes(): RawTemplateNode[] {
     {
       id: uid(),
       componentType: "kpi-card",
-      name: "KPI Total Revenue",
+      name: "KPI Pendapatan Bulan Ini",
       props: {
-        title: "Total Revenue",
-        value: "Rp 128.450.000",
-        change: "+14.2%",
+        title: "Pendapatan Bulan Ini",
+        value: "Rp 86,4 jt",
+        change: "+12,8%",
         trend: "up",
-        period: "vs bulan lalu",
+        subtitle: "dibanding bulan lalu",
       },
       styles: { isDashboardWidget: "true" },
       tabletOverride: {},
@@ -62,13 +63,13 @@ export function createAnalyticsDashboardNodes(): RawTemplateNode[] {
     {
       id: uid(),
       componentType: "kpi-card",
-      name: "KPI Pengguna Aktif",
+      name: "KPI Proyek Aktif",
       props: {
-        title: "Pengguna Aktif",
-        value: "14.280",
-        change: "+8.1%",
+        title: "Proyek Aktif",
+        value: "18",
+        change: "+3",
         trend: "up",
-        period: "30 hari terakhir",
+        subtitle: "proyek berjalan minggu ini",
       },
       styles: { isDashboardWidget: "true" },
       tabletOverride: {},
@@ -78,13 +79,13 @@ export function createAnalyticsDashboardNodes(): RawTemplateNode[] {
     {
       id: uid(),
       componentType: "kpi-card",
-      name: "KPI Tingkat Konversi",
+      name: "KPI Retensi Klien",
       props: {
-        title: "Tingkat Konversi",
-        value: "3.42%",
-        change: "-0.4%",
-        trend: "down",
-        period: "vs bulan lalu",
+        title: "Retensi Klien",
+        value: "92%",
+        change: "+4,1%",
+        trend: "up",
+        subtitle: "dari kuartal sebelumnya",
       },
       styles: { isDashboardWidget: "true" },
       tabletOverride: {},
@@ -94,13 +95,13 @@ export function createAnalyticsDashboardNodes(): RawTemplateNode[] {
     {
       id: uid(),
       componentType: "kpi-card",
-      name: "KPI Total Transaksi",
+      name: "KPI Pembayaran Masuk",
       props: {
-        title: "Total Transaksi",
-        value: "4.891",
-        change: "+22.6%",
+        title: "Pembayaran Masuk",
+        value: "Rp 47,2 jt",
+        change: "+18,7%",
         trend: "up",
-        period: "bulan ini",
+        subtitle: "dalam 7 hari terakhir",
       },
       styles: { isDashboardWidget: "true" },
       tabletOverride: {},
@@ -110,18 +111,36 @@ export function createAnalyticsDashboardNodes(): RawTemplateNode[] {
     {
       id: uid(),
       componentType: "chart-card",
-      name: "Revenue & Traffic Chart",
+      name: "Grafik Pertumbuhan Pendapatan",
       props: {
-        title: "Revenue & Pengunjung",
-        subtitle: "Tren 6 bulan terakhir",
+        title: "Pertumbuhan Pendapatan",
         chartType: "area",
         dataJson: JSON.stringify([
-          { label: "Jan", val1: 40, val2: 24 },
-          { label: "Feb", val1: 55, val2: 32 },
-          { label: "Mar", val1: 75, val2: 45 },
-          { label: "Apr", val1: 60, val2: 38 },
-          { label: "Mei", val1: 90, val2: 60 },
-          { label: "Jun", val1: 110, val2: 78 },
+          { month: "Mar", revenue: 42 },
+          { month: "Apr", revenue: 51 },
+          { month: "Mei", revenue: 48 },
+          { month: "Jun", revenue: 64 },
+          { month: "Jul", revenue: 73 },
+          { month: "Agu", revenue: 86 },
+        ]),
+      },
+      styles: { isDashboardWidget: "true" },
+      tabletOverride: {},
+      mobileOverride: {},
+      metadata: { isDashboardComponent: true },
+    },
+    {
+      id: uid(),
+      componentType: "chart-card",
+      name: "Grafik Sumber Prospek",
+      props: {
+        title: "Sumber Prospek",
+        chartType: "donut",
+        dataJson: JSON.stringify([
+          { label: "Referensi", value: 38 },
+          { label: "Website", value: 27 },
+          { label: "Komunitas", value: 21 },
+          { label: "Media Sosial", value: 14 },
         ]),
       },
       styles: { isDashboardWidget: "true" },
@@ -132,16 +151,51 @@ export function createAnalyticsDashboardNodes(): RawTemplateNode[] {
     {
       id: uid(),
       componentType: "data-table",
-      name: "Transaksi Table",
+      name: "Aktivitas Proyek Terkini",
       props: {
-        title: "Transaksi Terbaru",
-        subtitle: "Daftar 10 pesanan terkini",
+        title: "Aktivitas Proyek Terkini",
+        subtitle: "Ringkasan pekerjaan dan tagihan yang perlu dipantau hari ini",
         rowsJson: JSON.stringify([
-          { id: "TRX-001", customer: "Budi Santoso", amount: "Rp 1.250.000", status: "Selesai", date: "14 Agu 2026" },
-          { id: "TRX-002", customer: "Siti Rahma", amount: "Rp 850.000", status: "Proses", date: "14 Agu 2026" },
-          { id: "TRX-003", customer: "Dewi Lestari", amount: "Rp 2.400.000", status: "Selesai", date: "13 Agu 2026" },
-          { id: "TRX-004", customer: "Andi Wijaya", amount: "Rp 450.000", status: "Batal", date: "12 Agu 2026" },
-          { id: "TRX-005", customer: "Rina Aprilia", amount: "Rp 3.100.000", status: "Selesai", date: "12 Agu 2026" },
+          {
+            id: "PRJ-084",
+            customer: "Pesisir Coffee",
+            item: "Website company profile",
+            amount: "Rp 18.500.000",
+            status: "Proses",
+            date: "14 Agu 2026",
+          },
+          {
+            id: "PRJ-081",
+            customer: "Sana Living",
+            item: "Sistem identitas visual",
+            amount: "Rp 24.000.000",
+            status: "Selesai",
+            date: "13 Agu 2026",
+          },
+          {
+            id: "INV-213",
+            customer: "Arunika Health",
+            item: "Termin kedua strategi brand",
+            amount: "Rp 12.750.000",
+            status: "Proses",
+            date: "12 Agu 2026",
+          },
+          {
+            id: "PRJ-078",
+            customer: "Pohon Rupa",
+            item: "Kampanye peluncuran produk",
+            amount: "Rp 9.800.000",
+            status: "Selesai",
+            date: "11 Agu 2026",
+          },
+          {
+            id: "PRJ-086",
+            customer: "Kabin Kota",
+            item: "Workshop arah brand",
+            amount: "Rp 6.500.000",
+            status: "Proses",
+            date: "10 Agu 2026",
+          },
         ]),
       },
       styles: { isDashboardWidget: "true" },

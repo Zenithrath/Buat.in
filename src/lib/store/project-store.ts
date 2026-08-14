@@ -7,12 +7,18 @@ import type {
   ProjectType,
   Theme,
 } from "@/lib/schema/types";
-import { createBlankProject, createDefaultNode } from "@/lib/schema/defaults";
+import {
+  createBlankProject,
+  createDefaultNode,
+  materializeTemplateNodes,
+} from "@/lib/schema/defaults";
 import { normalizePresets } from "@/lib/theme/presets";
+import { getComponent } from "@/lib/registry";
 import { templateRegistry } from "@/templates";
 import { uid } from "@/lib/utils";
 
 const HISTORY_LIMIT = 50;
+const DASHBOARD_SIDEBAR_COMPONENTS = new Set(["app-sidebar", "sidebar-icon"]);
 
 function findNode(nodes: Node[], id: string): Node | null {
   for (const node of nodes) {
@@ -42,6 +48,60 @@ function removeNode(nodes: Node[], id: string): Node[] {
       ...n,
       children: n.children ? removeNode(n.children, id) : [],
     }));
+}
+
+type NodeLocation = {
+  node: Node;
+  parentId: string | null;
+  index: number;
+};
+
+function findNodeLocation(
+  nodes: Node[],
+  id: string,
+  parentId: string | null = null
+): NodeLocation | null {
+  for (let index = 0; index < nodes.length; index += 1) {
+    const node = nodes[index];
+    if (node.id === id) return { node, parentId, index };
+    const nested = findNodeLocation(node.children ?? [], id, node.id);
+    if (nested) return nested;
+  }
+  return null;
+}
+
+function insertNode(
+  nodes: Node[],
+  parentId: string | null,
+  node: Node,
+  index: number
+): Node[] {
+  if (parentId === null) {
+    const next = [...nodes];
+    next.splice(Math.max(0, Math.min(index, next.length)), 0, node);
+    return next;
+  }
+
+  return nodes.map((current) => {
+    if (current.id === parentId) {
+      const children = [...(current.children ?? [])];
+      children.splice(Math.max(0, Math.min(index, children.length)), 0, node);
+      return { ...current, children };
+    }
+    if (current.children?.length) {
+      return { ...current, children: insertNode(current.children, parentId, node, index) };
+    }
+    return current;
+  });
+}
+
+function cloneNodeWithFreshIds(node: Node): Node {
+  return {
+    ...structuredClone(node),
+    id: uid(),
+    children: (node.children ?? []).map(cloneNodeWithFreshIds),
+    metadata: { ...node.metadata, createdAt: new Date().toISOString() },
+  };
 }
 
 export type SaveStatus = "idle" | "saving" | "saved";
@@ -80,10 +140,12 @@ interface BuilderState {
   toggleNodeVisibility: (id: string) => void;
   renameNode: (id: string, name: string) => void;
   addSection: (componentType: string, index?: number, name?: string) => void;
+  addChild: (parentId: string, componentType: string, index?: number, name?: string) => void;
   addBlock: (sections: Node[]) => void;
   removeSection: (id: string) => void;
   duplicateSection: (id: string) => void;
   moveSection: (fromIndex: number, toIndex: number) => void;
+  moveNode: (id: string, parentId: string | null, index: number) => void;
   reorderChildren: (parentId: string | null, fromIndex: number, toIndex: number) => void;
   updateTheme: (updater: (theme: Theme) => Theme) => void;
   renameProject: (name: string) => void;
@@ -95,6 +157,16 @@ interface BuilderState {
 }
 
 const initialDocument = createBlankProject("");
+
+const DEFAULT_PROJECT_NAMES = new Set([
+  "Dashboard Baru",
+  "Landing Page Baru",
+  "Karsa Studio - Operations Dashboard",
+  "Karsa Studio - Company Profile",
+  "Company Profile Studio",
+  "Analytics Dashboard",
+  "Toko Online",
+]);
 
 export const useBuilderStore = create<BuilderState>((set, get) => ({
   document: initialDocument,
@@ -188,12 +260,62 @@ export const useBuilderStore = create<BuilderState>((set, get) => ({
   addSection: (componentType, index, name) => {
     const { document } = get();
     const node = createDefaultNode(componentType, name);
+    const manifest = getComponent(componentType);
+    node.props = { ...(manifest?.defaultProps ?? {}), ...node.props };
     const sections = [...document.pages[0].sections];
-    const at = index ?? sections.length;
+
+    // A dashboard only has one navigation rail. Dropping a different sidebar
+    // is understood as choosing a new sidebar, not silently adding a second
+    // invisible one somewhere in the dashboard content.
+    if (
+      document.projectType === "dashboard" &&
+      DASHBOARD_SIDEBAR_COMPONENTS.has(componentType)
+    ) {
+      const existingIndex = sections.findIndex((section) =>
+        DASHBOARD_SIDEBAR_COMPONENTS.has(section.componentType)
+      );
+      if (existingIndex >= 0) {
+        sections.splice(existingIndex, 1, node);
+        const nextDoc: ProjectDocument = {
+          ...document,
+          pages: [{ ...document.pages[0], sections }],
+        };
+        commit(set, get, nextDoc);
+        set({ selectedId: node.id });
+        return;
+      }
+    }
+
+    const at = Math.min(
+      sections.length,
+      Math.max(0, index ?? sections.length)
+    );
     sections.splice(at, 0, node);
     const nextDoc: ProjectDocument = {
       ...document,
       pages: [{ ...document.pages[0], sections }],
+    };
+    commit(set, get, nextDoc);
+    set({ selectedId: node.id });
+  },
+
+  addChild: (parentId, componentType, index, name) => {
+    const { document } = get();
+    const parent = findNode(document.pages[0].sections, parentId);
+    if (!parent) return;
+
+    const node = createDefaultNode(componentType, name);
+    const manifest = getComponent(componentType);
+    node.props = { ...(manifest?.defaultProps ?? {}), ...node.props };
+    const nextSections = insertNode(
+      document.pages[0].sections,
+      parentId,
+      node,
+      index ?? parent.children.length
+    );
+    const nextDoc: ProjectDocument = {
+      ...document,
+      pages: [{ ...document.pages[0], sections: nextSections }],
     };
     commit(set, get, nextDoc);
     set({ selectedId: node.id });
@@ -233,15 +355,11 @@ export const useBuilderStore = create<BuilderState>((set, get) => ({
   duplicateSection: (id) => {
     const { document } = get();
     const sections = document.pages[0].sections;
-    const index = sections.findIndex((s) => s.id === id);
-    if (index === -1) return;
-    const source = sections[index];
-    const clone: Node = structuredClone(source);
-    clone.id = uid();
+    const source = findNodeLocation(sections, id);
+    if (!source) return;
+    const clone = cloneNodeWithFreshIds(source.node);
     clone.name = clone.name ? `${clone.name} (Copy)` : clone.componentType;
-    clone.metadata = { ...clone.metadata, createdAt: new Date().toISOString() };
-    const nextSections = [...sections];
-    nextSections.splice(index + 1, 0, clone);
+    const nextSections = insertNode(sections, source.parentId, clone, source.index + 1);
     const nextDoc: ProjectDocument = {
       ...document,
       pages: [{ ...document.pages[0], sections: nextSections }],
@@ -267,6 +385,25 @@ export const useBuilderStore = create<BuilderState>((set, get) => ({
     const nextDoc: ProjectDocument = {
       ...document,
       pages: [{ ...document.pages[0], sections }],
+    };
+    commit(set, get, nextDoc);
+  },
+
+  moveNode: (id, parentId, index) => {
+    const { document } = get();
+    const sections = document.pages[0].sections;
+    const source = findNodeLocation(sections, id);
+    if (!source) return;
+    // A node cannot become a child of itself or one of its descendants.
+    if (parentId && findNode(source.node.children ?? [], parentId)) return;
+
+    const stripped = removeNode(sections, id);
+    const sameParent = source.parentId === parentId;
+    const adjustedIndex = sameParent && source.index < index ? index - 1 : index;
+    const nextSections = insertNode(stripped, parentId, source.node, adjustedIndex);
+    const nextDoc: ProjectDocument = {
+      ...document,
+      pages: [{ ...document.pages[0], sections: nextSections }],
     };
     commit(set, get, nextDoc);
   },
@@ -324,23 +461,28 @@ export const useBuilderStore = create<BuilderState>((set, get) => ({
     const tmpl = templateRegistry.find((t) => t.id === templateId);
     if (!tmpl) return;
     const { document } = get();
-    const rawNodes = tmpl.createNodes();
-    // Assign fresh IDs and ensure default metadata
-    const nodes: Node[] = rawNodes.map((raw) => ({
-      id: uid(),
-      componentType: raw.componentType,
-      name: raw.name ?? raw.componentType,
-      props: raw.props ?? {},
-      styles: raw.styles ?? {},
-      tabletOverride: raw.tabletOverride ?? {},
-      mobileOverride: raw.mobileOverride ?? {},
-      children: [],
-      layout: {},
-      metadata: { createdAt: new Date().toISOString(), hidden: false },
+    const nodes = materializeTemplateNodes(tmpl.createNodes()).map((node) => ({
+      ...node,
+      props: { ...(getComponent(node.componentType)?.defaultProps ?? {}), ...node.props },
+      layout: node.layout ?? {},
     }));
+    const hasAutomaticName =
+      DEFAULT_PROJECT_NAMES.has(document.name) ||
+      templateRegistry.some((template) => template.name === document.name);
     const nextDoc: ProjectDocument = {
       ...document,
+      // Applying a template replaces the whole document. Keep a name the user
+      // has deliberately written, but do not leave an automatic dashboard
+      // name behind after switching to a landing template (or vice versa).
+      name: hasAutomaticName ? tmpl.name : document.name,
+      projectType: tmpl.category,
       pages: [{ ...document.pages[0], sections: nodes }],
+      theme: tmpl.theme
+        ? {
+            presets: { ...tmpl.theme.presets },
+            overrides: { ...tmpl.theme.overrides },
+          }
+        : document.theme,
     };
     commit(set, get, nextDoc);
     set({ selectedId: null });

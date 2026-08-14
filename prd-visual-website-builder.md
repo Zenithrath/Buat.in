@@ -3,8 +3,8 @@
 
 | | |
 |---|---|
-| **Dokumen** | Product Requirements Document (PRD) v1.0 |
-| **Tanggal** | 13 Agustus 2026 |
+| **Dokumen** | Product Requirements Document (PRD) v1.1 |
+| **Tanggal** | 14 Agustus 2026 |
 | **Tipe produk** | Visual website builder + source-code generator |
 | **Target awal** | UMKM, freelancer, organisasi, personal brand, small business |
 | **Model bisnis** | Design gratis → bayar saat export → download full source code |
@@ -49,7 +49,7 @@ Statement produk:
 
 > **Design visually → Export HTML or React → Own the source.**
 
-V1 sengaja dibuat sempit: satu halaman (single-page), tiga template awal, ±20 komponen, dua export target. Tujuannya membuktikan satu loop inti bekerja end-to-end sebelum menambah kompleksitas:
+V1 sengaja dibuat sempit: satu halaman (single-page) — landing page dan dashboard —, tiga template awal (2 landing + 1 dashboard), 12 komponen inti, export target HTML (React menyusul). Tujuannya membuktikan satu loop inti bekerja end-to-end sebelum menambah kompleksitas:
 
 ```
 DESIGN → PREVIEW → PAY → EXPORT → OWN
@@ -172,7 +172,7 @@ Bagian ini eksplisit soal apa yang **belum tentu berhasil** dan harus terus diaw
 |---|---|---|
 | **Scope creep** — tergoda jadi "Framer + Webflow + Wix + Figma + v0 sekaligus" | Ini adalah risiko #1 yang disebut eksplisit di konsep awal. Tim kecil yang mencoba menyamai semua fitur builder besar akan kehabisan napas sebelum satu loop inti (design→export→own) benar-benar solid | Disiplin roadmap: jangan buka fitur baru sebelum acceptance criteria V1 (§19) lulus semua |
 | **Gap dukungan pasca-pembelian** | Target user non-teknis (UMKM) bisa saja bingung cara deploy source code setelah download — mereka mungkin tidak tahu apa itu `npm install` atau cara upload HTML ke hosting | README/DEPLOYMENT.md harus benar-benar dites oleh orang non-teknis, bukan cuma developer internal; pertimbangkan paket "Deployment Assistance" berbayar sejak awal (§21) |
-| **Template/komponen awal masih sedikit (3 template, ~20 komponen)** | Dibanding galeri template Wix yang jumlahnya ratusan, hasil desain awal bisa terasa terbatas dan generik, berisiko bikin user drop sebelum sempat bayar | Pantau rasio "project dibuat → mencapai preview" (Design Completion metric, §16); kalau rendah, ini sinyal kualitas/variasi komponen kurang, bukan cuma soal fitur |
+| **Template/komponen awal masih sedikit (3 template, 12 komponen)** | Dibanding galeri template Wix yang jumlahnya ratusan, hasil desain awal bisa terasa terbatas dan generik, berisiko bikin user drop sebelum sempat bayar | Pantau rasio "project dibuat → mencapai preview" (Design Completion metric, §16); kalau rendah, ini sinyal kualitas/variasi komponen kurang, bukan cuma soal fitur |
 | **Tekanan kompetitif dari AI code-gen yang berkembang cepat** | v0/Bolt/Lovable adalah kategori yang berubah sangat cepat; ada kemungkinan mereka menambah kanvas visual yang lebih terstruktur atau model harga yang lebih ramah non-teknis | Review lanskap kompetitor tiap kuartal, bukan cuma sekali di awal |
 | **Trust gap sebagai brand baru** | User belum pernah lihat bukti bahwa "bayar sekali dapat kode yang benar-benar jalan" — ini klaim yang mudah diucapkan tapi perlu dibuktikan sebelum orang mau bayar | Pertimbangkan sampel output publik (mis. 1 contoh project + isi ZIP-nya bisa dilihat strukturnya, atau garansi/refund policy yang jelas) |
 
@@ -625,21 +625,31 @@ TOTAL                       RpXXX
 
 ## 16. Roadmap Produk
 
-| Fase | Fokus |
-|---|---|
-| **V0 — Engineering Prototype** | Buktikan JSON → canvas → code: schema, registry, 1 Hero + 1 Product Grid + 1 Footer, render canvas, drag reorder, HTML generator, ZIP export. Tanpa auth/payment dulu. |
-| **V0.2 — Editor Core** | Left panel, canvas, right inspector, select/add/delete/duplicate/reorder, content edit, layout edit, theme token. |
-| **V0.3 — Responsive Engine** | Preview 3 breakpoint, default & override, export CSS responsive, tes semua komponen. |
-| **V0.4 — Project Persistence** | Supabase Auth, tabel projects, document JSON, autosave, dashboard, assets, RLS. |
-| **V0.5 — Component System** | Registry, metadata Free/Pro, versioning, style/responsive capability, adapter HTML & React. |
-| **V0.6 — Theme Engine** | Color token, font, radius, density, style preset, local override. |
-| **V0.7 — React Export** | Base project React, adapter export, generator package.json, asset map, README, tes `npm install` & `npm run build`. |
-| **V0.8 — Commercial Logic** | Price key, pricing engine, kalkulasi unique Pro component, quote system, breakdown, snapshot hash, order model. |
-| **V0.9 — Payment** | Payment gateway, checkout, webhook, verifikasi pembayaran, unlock export, penanganan gagal bayar. |
-| **V1.0 — Launch Candidate** | 3 template, ~20 komponen polished, HTML + React export, responsive, save project, payment, ZIP, README, deployment docs, admin, security audit, QA mobile & produksi. |
-| **V1.5** | Multi-page, lebih banyak template, Next.js export, AI copy assistant, kontrol responsive lebih kaya, komponen premium tambahan. |
-| **V2** | Modul backend (Auth, Admin CMS, product management, leads, storage), Supabase export, blog/CMS. |
-| **V3** | Marketplace, komponen developer pihak ketiga, custom module, team workspace, animasi lanjutan, potensi kolaborasi realtime. |
+### Selesai (dibangun & sudah dipush — tidak lagi di roadmap aktif)
+
+- **V0 — Engineering Prototype:** ProjectDocument schema, component registry, preview renderer, canvas, drag & drop & reorder (dnd-kit), HTML export, ZIP export (jszip).
+- **V0.2 — Editor Core:** panel kiri (Add/Layers/Templates/Assets), canvas, inspector kanan (Content/Layout/Style/Responsive), select/add/delete/duplicate/reorder, edit konten & layout, theme token, undo/redo, command palette (Ctrl+K) + shortcut keyboard.
+- **V0.3 — Responsive Engine:** preview 3 breakpoint (desktop/tablet/mobile), `styles.base` + `tabletOverride` + `mobileOverride`, CSS responsive di hasil export.
+- **V0.5 — Component System:** registry 12 komponen dengan manifest (id, tier, priceKey, styleControls, contentControls, previewRenderer, exportAdapter).
+- **V0.6 — Theme Engine:** preset warna/font/radius/density/style, override lokal (`Final Style = Global Token + Local Override`).
+- **Ekstra yang sudah jalan:** 3 template (SaaS Landing, Toko Online, **Analytics Dashboard**); keluarga komponen dashboard (app-sidebar, dashboard-header, kpi-card, chart-card, data-table, grid-container); export dashboard terstruktur (sidebar sticky + header + grid KPI 4 kolom + chart 2 kolom); **responsive sidebar → bottom bar di mobile** (canvas, preview, dan hasil export); preview page khusus `/builder/[id]/preview`; README otomatis + generator-manifest.json di ZIP.
+
+### Roadmap Aktif
+
+> **Batch berjalan (14 Agustus 2026):** modernisasi komponen & template baru —
+> 20 komponen baru + 4 template landing + pemisahan katalog Landing/Dashboard.
+> Detail lengkap: [`prd-batch-v2-components-templates.md`](./prd-batch-v2-components-templates.md).
+
+| Fase | Fokus | Status |
+|---|---|---|
+| **V0.4 — Project Persistence** | Supabase Auth, tabel projects, document JSON, autosave ke server, halaman dashboard daftar project, assets pipeline, RLS | **Sedang berjalan** — persistensi localStorage sudah berfungsi (save/reload aman); Supabase & auth belum |
+| **V0.7 — React Export** | Base project React/Vite, adapter export, package.json, asset map, README, tes `npm install` & `npm run build` | Belum |
+| **V0.8 — Commercial Logic** | Price key, pricing engine, kalkulasi unique Pro component, quote system, breakdown, snapshot hash, order model | Belum |
+| **V0.9 — Payment** | Payment gateway, checkout, webhook, verifikasi pembayaran, unlock export | Belum |
+| **V1.0 — Launch Candidate** | 3 template, 12 komponen polished, HTML export, responsive, save project, payment, ZIP, README, deployment docs, admin, security audit, QA mobile & produksi | Belum |
+| **V1.5** | Multi-page, lebih banyak template, Next.js export, AI copy assistant, kontrol responsive lebih kaya, komponen premium tambahan | Belum |
+| **V2** | Modul backend (Auth, Admin CMS, product management, leads, storage), Supabase export, blog/CMS | Belum |
+| **V3** | Marketplace, komponen developer pihak ketiga, custom module, team workspace, animasi lanjutan, potensi kolaborasi realtime | Belum |
 
 **AI Strategy:** AI tidak dibutuhkan di V1 — canvas, renderer, generator, exporter harus jalan tanpa AI. Di V1.5, AI opsional untuk: headline suggestion, teks About, deskripsi produk, CTA, SEO title/meta description, saran tema/palet. AI **tidak** dipakai untuk membuat arsitektur/codebase.
 
@@ -648,13 +658,15 @@ TOTAL                       RpXXX
 ## 17. Urutan Pengembangan (Build Order)
 
 ```
-1. Project JSON Schema        7. Theme System         13. Free/Pro Logic
-2. Component Registry         8. Responsive System     14. Pricing
-3. Preview Renderer           9. HTML Export           15. Payment
-4. Canvas                    10. React Export          16. ZIP
-5. Drag & Drop                11. Auth + Save          17. Admin
-6. Inspector                  12. Assets                18. QA → 19. Launch
+1. ✅ Project JSON Schema        7. ✅ Theme System         13. Free/Pro Logic
+2. ✅ Component Registry         8. ✅ Responsive System     14. Pricing
+3. ✅ Preview Renderer           9. ✅ HTML Export           15. Payment
+4. ✅ Canvas                    10. React Export            16. ✅ ZIP
+5. ✅ Drag & Drop               11. Auth + Save ⏳           17. Admin
+6. ✅ Inspector                 12. Assets                   18. QA → 19. Launch
 ```
+
+*✅ = selesai · ⏳ = sebagian (Save project via localStorage sudah jalan, auth/backend belum) · tanpa tanda = belum dimulai.*
 
 **Jangan mulai dari payment.** Pertanyaan yang harus terjawab dulu: *bisakah user desain website → preview → export HTML valid → export React valid?* Kalau belum, jangan bangun billing dulu.
 
@@ -666,21 +678,27 @@ TOTAL                       RpXXX
 
 Produk V1 dianggap berhasil secara teknis jika user dapat:
 
+**Sudah terpenuhi:**
+
+- [x] Create project, mulai dari blank/template
+- [x] Tambah section, drag/reorder
+- [x] Edit content
+- [x] Ubah color theme, font, radius, layout
+- [x] Preview desktop/tablet/mobile
+- [x] Save project, reload tanpa kehilangan data (localStorage)
+- [x] Preview site
+- [x] Generate source HTML, download ZIP
+- [x] Jalankan HTML langsung
+
+**Belum terpenuhi:**
+
 - [ ] Register/login
-- [ ] Create project, mulai dari blank/template
-- [ ] Tambah section, drag/reorder
-- [ ] Edit content, upload image
-- [ ] Ubah color theme, font, radius, layout
-- [ ] Preview desktop/tablet/mobile
+- [ ] Upload image (UI Assets dasar sudah ada, pipeline & storage belum)
 - [ ] Tambah komponen Pro dan lihat estimasi export
-- [ ] Save project, reload tanpa kehilangan data
-- [ ] Preview site
-- [ ] Pilih target HTML/React, dapat quote yang benar
+- [ ] Pilih target React, dapat quote yang benar
 - [ ] Bayar
-- [ ] Generate source, download ZIP
-- [ ] Jalankan HTML langsung
 - [ ] Jalankan React dengan `npm install`, build sukses
-- [ ] Mengikuti README dan berhasil sampai selesai
+- [ ] Mengikuti README dan berhasil sampai selesai (perlu dites user non-teknis)
 
 ---
 

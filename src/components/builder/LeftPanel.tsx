@@ -9,13 +9,15 @@ import {
   Search,
   Crown,
   CheckCircle2,
+  ChevronDown,
   X,
   type LucideIcon,
 } from "lucide-react";
 import { useBuilderStore } from "@/lib/store/project-store";
-import { componentRegistry, CATEGORY_LABELS } from "@/lib/registry";
+import { componentRegistry } from "@/lib/registry";
 import { templateRegistry, TEMPLATE_CATEGORY_LABELS } from "@/templates";
 import type { ComponentManifest } from "@/lib/registry/types";
+import { TemplatePreview } from "./TemplatePreview";
 import { cn } from "@/lib/utils";
 
 /* ─────────────────────────────────────────────
@@ -27,6 +29,99 @@ const PANEL_TABS: { id: PanelTab; icon: LucideIcon; label: string }[] = [
   { id: "templates", icon: LayoutTemplate, label: "Template" },
   { id: "components", icon: Blocks, label: "Komponen" },
   { id: "assets", icon: ImageIcon, label: "Gambar" },
+];
+
+/* ─── Panel header ─────────────────────────── */
+function PanelHeader({
+  title,
+  count,
+}: {
+  title: string;
+  count?: number;
+}) {
+  return (
+    <div className="flex items-center justify-between px-1">
+      <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground">
+        {title}
+      </p>
+      {typeof count === "number" ? (
+        <span className="rounded-md border border-border bg-muted/50 px-1.5 py-0.5 text-[9px] font-semibold text-muted-foreground">
+          {count}
+        </span>
+      ) : null}
+    </div>
+  );
+}
+
+/* ─── Komponen: nama ramah & kelompok kategori ── */
+const FRIENDLY_NAMES: Record<string, string> = {
+  "navbar-minimal": "Navbar Minimal",
+  "navbar-centered": "Navbar Tengah",
+  "navbar-split": "Navbar Dua Sisi",
+  "navbar-glass": "Navbar Kaca (Glass)",
+  "navbar-mega": "Navbar Mega Menu",
+  "navbar-fullscreen": "Navbar Layar Penuh",
+  "menu-offcanvas": "Menu Geser (Offcanvas)",
+  "menu-circle": "Menu Melingkar",
+  "dropdown-menu": "Menu Dropdown",
+  "hero-centered": "Hero Pembuka",
+  "about-basic": "Bagian Tentang Kami",
+  "card-feature": "Kartu Fitur",
+  "product-grid-basic": "Katalog Produk",
+  "gallery-grid": "Galeri Foto",
+  "team-grid": "Kartu Tim",
+  "testimonial-grid": "Kartu Testimoni",
+  "stats-banner": "Statistik / Angka",
+  "pricing-table": "Paket Harga",
+  "faq-accordion": "FAQ / Pertanyaan",
+  "form-contact": "Form Kontak",
+  "form-newsletter": "Form Berlangganan",
+  "cta-basic": "Ajakan Aksi (CTA)",
+  "footer-basic": "Footer / Bagian Bawah",
+  "modal-center": "Popup Tengah",
+  "modal-sheet": "Panel Geser (Sheet)",
+  "modal-confirm": "Dialog Konfirmasi",
+  "grid-container": "Grid / Kolom",
+  "app-sidebar": "Sidebar Aplikasi",
+  "sidebar-icon": "Sidebar Ikon",
+  "dashboard-header": "Header Dashboard",
+  "kpi-card": "Kartu Statistik (KPI)",
+  "chart-card": "Kartu Grafik",
+  "data-table": "Tabel Data",
+  "dashboard-activity-list": "Daftar Aktivitas",
+};
+
+type ComponentGroup = {
+  id: string;
+  label: string;
+  scope: "landing" | "dashboard" | "both";
+  ids: string[];
+};
+
+const COMPONENT_GROUPS: ComponentGroup[] = [
+  { id: "navbar", label: "Navbar / Menu Atas", scope: "landing", ids: ["navbar-minimal", "navbar-centered", "navbar-split", "navbar-glass", "navbar-mega", "navbar-fullscreen"] },
+  { id: "menu", label: "Menu & Dropdown", scope: "landing", ids: ["menu-offcanvas", "menu-circle", "dropdown-menu"] },
+  { id: "hero", label: "Hero / Bagian Pembuka", scope: "landing", ids: ["hero-centered"] },
+  { id: "about", label: "Tentang Kami", scope: "landing", ids: ["about-basic"] },
+  { id: "cards", label: "Kartu", scope: "landing", ids: ["card-feature"] },
+  { id: "product", label: "Produk & Katalog", scope: "landing", ids: ["product-grid-basic"] },
+  { id: "gallery", label: "Galeri", scope: "landing", ids: ["gallery-grid"] },
+  { id: "team", label: "Tim", scope: "landing", ids: ["team-grid"] },
+  { id: "testimonial", label: "Testimoni", scope: "landing", ids: ["testimonial-grid"] },
+  { id: "stats", label: "Statistik", scope: "landing", ids: ["stats-banner"] },
+  { id: "pricing", label: "Harga", scope: "landing", ids: ["pricing-table"] },
+  { id: "faq", label: "FAQ / Pertanyaan", scope: "landing", ids: ["faq-accordion"] },
+  { id: "form", label: "Formulir", scope: "landing", ids: ["form-contact", "form-newsletter"] },
+  { id: "cta", label: "Ajakan Aksi (CTA)", scope: "landing", ids: ["cta-basic"] },
+  { id: "footer", label: "Footer / Bagian Bawah", scope: "landing", ids: ["footer-basic"] },
+  { id: "modal", label: "Popup / Modal", scope: "both", ids: ["modal-center", "modal-sheet", "modal-confirm"] },
+  { id: "layout", label: "Tata Letak / Grid", scope: "both", ids: ["grid-container"] },
+  { id: "sidebar", label: "Sidebar / Menu Samping", scope: "dashboard", ids: ["app-sidebar", "sidebar-icon"] },
+  { id: "dash-header", label: "Header Dashboard", scope: "dashboard", ids: ["dashboard-header"] },
+  { id: "kpi", label: "Kartu Statistik (KPI)", scope: "dashboard", ids: ["kpi-card"] },
+  { id: "chart", label: "Grafik", scope: "dashboard", ids: ["chart-card"] },
+  { id: "table", label: "Tabel Data", scope: "dashboard", ids: ["data-table"] },
+  { id: "activity", label: "Daftar Aktivitas", scope: "dashboard", ids: ["dashboard-activity-list"] },
 ];
 
 /* ─── Component drag item ──────────────────── */
@@ -45,10 +140,9 @@ function DraggableComponent({
   const addSection = useBuilderStore((s) => s.addSection);
   const sections = useBuilderStore((s) => s.document.pages[0].sections);
 
-  const name = manifest.name.toLowerCase();
-  const desc = manifest.description.toLowerCase();
+  const name = FRIENDLY_NAMES[manifest.id] ?? manifest.name;
   const q = search.toLowerCase();
-  if (q && !name.includes(q) && !desc.includes(q)) return null;
+  if (q && !name.toLowerCase().includes(q) && !manifest.description.toLowerCase().includes(q)) return null;
 
   return (
     <div
@@ -58,17 +152,17 @@ function DraggableComponent({
       onDoubleClick={() => addSection(manifest.id, sections.length)}
       title={`Seret ke kanvas atau klik dua kali untuk menambahkan\n${manifest.description}`}
       className={cn(
-        "group relative flex items-center gap-2.5 rounded-lg border border-border bg-card px-2.5 py-2 cursor-grab",
-        "hover:border-primary/50 hover:bg-primary/5 hover:shadow-sm transition-all text-left",
-        isDragging && "opacity-50 ring-2 ring-primary"
+        "group relative flex items-center gap-2.5 rounded-md border border-border bg-card px-2.5 py-2 cursor-grab",
+        "hover:border-brand/50 hover:bg-brand/5 transition-all text-left",
+        isDragging && "opacity-50 ring-2 ring-brand"
       )}
     >
-      <div className="flex size-8 shrink-0 items-center justify-center rounded-md bg-primary/10 text-primary">
+      <div className="flex size-8 shrink-0 items-center justify-center rounded-md bg-brand/10 text-brand">
         <Blocks size={14} />
       </div>
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-1 min-w-0">
-          <p className="text-[11px] font-semibold text-foreground truncate">{manifest.name}</p>
+          <p className="text-[11px] font-semibold text-foreground truncate">{name}</p>
           {manifest.tier === "pro" && (
             <span className="ml-auto shrink-0 flex items-center gap-0.5 rounded px-1 py-0 bg-amber-500/15 text-amber-600 text-[9px] font-bold">
               <Crown size={9} />PRO
@@ -105,6 +199,7 @@ function TemplatesPanel() {
 
   return (
     <div className="flex flex-col gap-3 px-3 py-3">
+      <PanelHeader title="Template" count={filtered.length} />
       {/* Search */}
       <div className="relative">
         <Search size={11} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
@@ -113,10 +208,10 @@ function TemplatesPanel() {
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Cari template..."
-          className="w-full rounded-lg border border-border bg-muted/50 py-1.5 pl-7 pr-3 text-[11px] placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+          className="w-full rounded-md border border-border bg-muted/50 py-1.5 pl-7 pr-3 text-[11px] placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-brand"
         />
         {search && (
-          <button onClick={() => setSearch("")} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
+          <button onClick={() => setSearch("")} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground transition-colors hover:text-brand">
             <X size={10} />
           </button>
         )}
@@ -129,10 +224,10 @@ function TemplatesPanel() {
             key={cat}
             onClick={() => setFilter(cat)}
             className={cn(
-              "rounded-full px-2.5 py-0.5 text-[10px] font-semibold transition-all",
+              "rounded-md px-2.5 py-1 text-[10px] font-semibold transition-colors",
               filter === cat
-                ? "bg-primary text-white shadow-sm"
-                : "bg-muted text-muted-foreground hover:bg-primary/10 hover:text-primary"
+                ? "bg-brand text-brand-foreground"
+                : "bg-muted text-muted-foreground hover:bg-brand/10 hover:text-brand"
             )}
           >
             {cat === "all" ? "Semua" : TEMPLATE_CATEGORY_LABELS[cat]}
@@ -148,33 +243,25 @@ function TemplatesPanel() {
           </p>
         ) : (
           filtered.map((tmpl) => (
-            <button
+            <div
               key={tmpl.id}
+              role="button"
+              tabIndex={0}
               onClick={() => handleApply(tmpl.id)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  handleApply(tmpl.id);
+                }
+              }}
               className={cn(
-                "group relative w-full rounded-xl border bg-card p-3 text-left transition-all",
-                "hover:border-primary/50 hover:shadow-md hover:bg-primary/5",
+                "group relative w-full cursor-pointer rounded-lg border bg-card p-3 text-left transition-colors",
+                "hover:border-brand/40 hover:bg-brand/5",
                 applied === tmpl.id ? "border-emerald-500 bg-emerald-50 dark:bg-emerald-900/20" : "border-border"
               )}
             >
-              {/* Thumbnail placeholder */}
-              <div className="mb-2.5 flex h-20 items-center justify-center rounded-lg bg-gradient-to-br from-primary/10 to-primary/5 border border-border/50 text-primary">
-                {tmpl.category === "dashboard" ? (
-                  <svg viewBox="0 0 80 48" className="w-16 opacity-70" fill="none">
-                    <rect x="0" y="0" width="20" height="48" rx="2" fill="currentColor" opacity="0.15" />
-                    <rect x="22" y="0" width="58" height="10" rx="2" fill="currentColor" opacity="0.1" />
-                    <rect x="22" y="12" width="26" height="14" rx="2" fill="currentColor" opacity="0.2" />
-                    <rect x="52" y="12" width="28" height="14" rx="2" fill="currentColor" opacity="0.2" />
-                    <rect x="22" y="28" width="58" height="18" rx="2" fill="currentColor" opacity="0.12" />
-                  </svg>
-                ) : (
-                  <svg viewBox="0 0 80 48" className="w-16 opacity-70" fill="none">
-                    <rect x="10" y="0" width="60" height="8" rx="2" fill="currentColor" opacity="0.15" />
-                    <rect x="15" y="10" width="50" height="18" rx="2" fill="currentColor" opacity="0.2" />
-                    <rect x="20" y="30" width="40" height="6" rx="2" fill="currentColor" opacity="0.12" />
-                    <rect x="25" y="38" width="30" height="8" rx="2" fill="currentColor" opacity="0.18" />
-                  </svg>
-                )}
+              <div className="pointer-events-none mb-2.5 h-40 select-none overflow-hidden rounded-md border border-border/50 bg-card">
+                <TemplatePreview template={tmpl} />
               </div>
 
               <div className="flex items-start justify-between gap-1">
@@ -194,20 +281,20 @@ function TemplatesPanel() {
               {/* Tags */}
               <div className="mt-1.5 flex flex-wrap gap-1">
                 {tmpl.tags.slice(0, 3).map((tag) => (
-                  <span key={tag} className="rounded-full bg-muted px-1.5 py-0 text-[8px] font-medium text-muted-foreground">
+                  <span key={tag} className="rounded-md bg-muted px-1.5 py-0.5 text-[8px] font-medium text-muted-foreground">
                     {tag}
                   </span>
                 ))}
               </div>
 
               {applied === tmpl.id ? (
-                <div className="absolute inset-0 flex items-center justify-center rounded-xl bg-emerald-500/10 backdrop-blur-sm">
+                <div className="absolute inset-0 flex items-center justify-center rounded-lg bg-emerald-500/10 backdrop-blur-sm">
                   <div className="flex items-center gap-1.5 text-emerald-600 font-bold text-xs">
                     <CheckCircle2 size={16} /> Template diterapkan!
                   </div>
                 </div>
               ) : null}
-            </button>
+            </div>
           ))
         )}
       </div>
@@ -218,19 +305,37 @@ function TemplatesPanel() {
 /* ─── Components panel ────────────────────── */
 function ComponentsPanel() {
   const [search, setSearch] = useState("");
+  const [openGroups, setOpenGroups] = useState<Set<string>>(new Set());
+  const projectType = useBuilderStore((s) => s.document.projectType);
 
-  const grouped = useMemo(() => {
-    const map = new Map<string, ComponentManifest[]>();
-    componentRegistry.forEach((c) => {
-      const cat = c.category;
-      if (!map.has(cat)) map.set(cat, []);
-      map.get(cat)!.push(c);
+  const visibleGroups = useMemo(() => {
+    return COMPONENT_GROUPS.filter((group) => {
+      if (group.scope !== "both" && group.scope !== projectType) return false;
+      const q = search.toLowerCase();
+      return group.ids.some((id) => {
+        if (q) {
+          const manifest = componentRegistry.find((c) => c.id === id);
+          if (!manifest) return false;
+          const name = (FRIENDLY_NAMES[id] ?? manifest.name).toLowerCase();
+          if (!name.includes(q) && !manifest.description.toLowerCase().includes(q)) return false;
+        }
+        return true;
+      });
     });
-    return map;
-  }, []);
+  }, [projectType, search]);
+
+  function toggleGroup(id: string) {
+    setOpenGroups((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }
 
   return (
     <div className="flex flex-col gap-2 px-3 py-3">
+      <PanelHeader title="Komponen" />
       <div className="relative">
         <Search size={11} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
         <input
@@ -238,36 +343,62 @@ function ComponentsPanel() {
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Cari komponen..."
-          className="w-full rounded-lg border border-border bg-muted/50 py-1.5 pl-7 pr-3 text-[11px] placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+          className="w-full rounded-md border border-border bg-muted/50 py-1.5 pl-7 pr-3 text-[11px] placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-brand"
         />
         {search && (
-          <button onClick={() => setSearch("")} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
+          <button onClick={() => setSearch("")} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground transition-colors hover:text-brand">
             <X size={10} />
           </button>
         )}
       </div>
       <p className="text-[9px] text-muted-foreground">
-        Seret ke kanvas atau klik dua kali untuk menambahkan komponen.
+        Komponen untuk {projectType === "dashboard" ? "dashboard" : "landing page"}. Klik kategori untuk melihat pilihan desainnya.
       </p>
-      {Array.from(grouped.entries()).map(([cat, items]) => {
-        const anyMatch = items.some((c) => {
-          const q = search.toLowerCase();
-          return !q || c.name.toLowerCase().includes(q) || c.description.toLowerCase().includes(q);
-        });
-        if (!anyMatch) return null;
-        return (
-          <div key={cat}>
-            <p className="mb-1.5 mt-2 text-[9px] font-bold uppercase tracking-widest text-muted-foreground">
-              {CATEGORY_LABELS[cat as keyof typeof CATEGORY_LABELS] ?? cat}
-            </p>
-            <div className="flex flex-col gap-1.5">
-              {items.map((m) => (
-                <DraggableComponent key={m.id} manifest={m} search={search} />
-              ))}
-            </div>
-          </div>
-        );
-      })}
+
+      {visibleGroups.length === 0 ? (
+        <p className="py-6 text-center text-[11px] text-muted-foreground">
+          Tidak ada komponen yang sesuai
+        </p>
+      ) : (
+        <div className="flex flex-col gap-1.5">
+          {visibleGroups.map((group) => {
+            const open = openGroups.has(group.id);
+            const items = componentRegistry.filter((c) => group.ids.includes(c.id));
+            return (
+              <div key={group.id} className="overflow-hidden rounded-md border border-border bg-card">
+                <button
+                  onClick={() => toggleGroup(group.id)}
+                  aria-expanded={open}
+                  className="flex w-full items-center justify-between gap-2 px-2.5 py-2 text-left transition-colors hover:bg-brand/5"
+                >
+                  <span className="text-[10px] font-bold uppercase tracking-[0.14em] text-foreground">
+                    {group.label}
+                  </span>
+                  <span className="flex shrink-0 items-center gap-1.5">
+                    <span className="rounded-md bg-muted px-1.5 py-0.5 text-[9px] font-semibold text-muted-foreground">
+                      {items.length}
+                    </span>
+                    <ChevronDown
+                      size={13}
+                      className={cn(
+                        "text-muted-foreground transition-transform duration-200",
+                        open && "rotate-180 text-brand"
+                      )}
+                    />
+                  </span>
+                </button>
+                {open ? (
+                  <div className="flex flex-col gap-1.5 border-t border-border p-1.5">
+                    {items.map((manifest) => (
+                      <DraggableComponent key={manifest.id} manifest={manifest} search={search} />
+                    ))}
+                  </div>
+                ) : null}
+              </div>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }
@@ -286,7 +417,8 @@ function AssetsPanel() {
 
   return (
     <div className="flex flex-col gap-3 px-3 py-3">
-      <label className="flex flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-border bg-muted/30 py-7 cursor-pointer hover:border-primary/60 hover:bg-primary/5 transition-all">
+      <PanelHeader title="Gambar" />
+      <label className="flex flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed border-border bg-muted/30 py-7 cursor-pointer hover:border-brand/60 hover:bg-brand/5 transition-colors">
         <ImageIcon size={22} className="text-muted-foreground" />
         <p className="text-[11px] font-semibold text-foreground">Unggah Gambar</p>
         <p className="text-[9px] text-muted-foreground">PNG, JPG, SVG, WebP</p>
@@ -302,7 +434,7 @@ function AssetsPanel() {
           {uploaded.map((a, i) => (
             <div
               key={i}
-              className="group relative rounded-lg border overflow-hidden bg-muted/40 aspect-square cursor-pointer hover:ring-1 hover:ring-primary"
+              className="group relative rounded-md border overflow-hidden bg-muted/40 aspect-square cursor-pointer hover:ring-1 hover:ring-brand"
             >
               {/* eslint-disable-next-line @next/next/no-img-element -- pratinjau lokal via blob URL */}
               <img src={a.url} alt={a.name} className="h-full w-full object-cover" />
@@ -336,15 +468,15 @@ export function LeftPanel() {
               onClick={() => setLeftTab(tab.id)}
               title={tab.label}
               className={cn(
-                "group relative flex h-9 w-9 flex-col items-center justify-center rounded-lg transition-all",
+                "group relative flex h-9 w-9 flex-col items-center justify-center rounded-md transition-colors",
                 activeTab === tab.id
-                  ? "bg-primary text-white shadow-md shadow-primary/30"
-                  : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                  ? "bg-brand text-brand-foreground"
+                  : "text-muted-foreground hover:bg-brand/10 hover:text-brand"
               )}
             >
               <Icon size={16} />
               {/* Tooltip */}
-              <span className="absolute left-full ml-2 z-50 hidden group-hover:flex items-center whitespace-nowrap rounded-md bg-popover border border-border px-2 py-1 text-[10px] font-semibold text-popover-foreground shadow-lg">
+              <span className="absolute left-full ml-2 z-50 hidden group-hover:flex items-center whitespace-nowrap rounded-md bg-popover border border-border px-2 py-1 text-[10px] font-semibold text-popover-foreground shadow-sm">
                 {tab.label}
               </span>
             </button>

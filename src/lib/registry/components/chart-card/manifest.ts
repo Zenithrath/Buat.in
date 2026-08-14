@@ -13,19 +13,21 @@ export const chartCardManifest: Omit<
   version: "1.0.0",
   defaultProps: {
     title: "Tren Pendapatan & Pengguna",
+    subtitle: "Ringkasan 7 bulan terakhir",
     chartType: "area",
     dataJson: JSON.stringify([
-      { month: "Jan", revenue: 45000, users: 1200 },
-      { month: "Feb", revenue: 52000, users: 1400 },
-      { month: "Mar", revenue: 48000, users: 1350 },
-      { month: "Apr", revenue: 61000, users: 1800 },
-      { month: "Mei", revenue: 75000, users: 2200 },
-      { month: "Jun", revenue: 92000, users: 2700 },
-      { month: "Jul", revenue: 128450, users: 3400 },
+      { label: "Jan", val1: 45, val2: 28 },
+      { label: "Feb", val1: 52, val2: 31 },
+      { label: "Mar", val1: 48, val2: 35 },
+      { label: "Apr", val1: 61, val2: 42 },
+      { label: "Mei", val1: 75, val2: 53 },
+      { label: "Jun", val1: 92, val2: 68 },
+      { label: "Jul", val1: 128, val2: 84 },
     ]),
   },
   contentControls: [
     { key: "title", label: "Judul Grafik", group: "Data", type: "text" },
+    { key: "subtitle", label: "Subjudul / Periode", group: "Data", type: "text" },
     {
       key: "chartType",
       label: "Tipe Grafik",

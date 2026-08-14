@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Menu, X } from "lucide-react";
 import type { Node, Theme } from "@/lib/schema/types";
-import { sanitizeUrl } from "@/lib/registry/shared";
+import { InlineEditableLink, InlineEditableText } from "@/components/preview/InlineEditable";
 import { SectionShell } from "@/components/preview/SectionShell";
 
 function NavLinks({ node }: { node: Node }) {
@@ -11,12 +11,14 @@ function NavLinks({ node }: { node: Node }) {
     <nav className="bi-nav-links">
       {[1, 2, 3].map((i) => {
         const text = node.props[`link${i}Text`];
-        const url = node.props[`link${i}Url`];
         if (!text) return null;
         return (
-          <a key={i} href={sanitizeUrl(url)}>
-            {text}
-          </a>
+          <InlineEditableLink
+            key={i}
+            node={node}
+            propKey={`link${i}Text`}
+            urlKey={`link${i}Url`}
+          />
         );
       })}
     </nav>
@@ -38,19 +40,20 @@ export function NavbarPreview({ node, theme }: { node: Node; theme: Theme }) {
       data={{ "nav-open": String(open) }}
     >
       <div className="bi-container bi-nav-inner" style={{ paddingInline: 0 }}>
-        <a className="bi-nav-logo" href="#">
+        <span className="bi-nav-logo">
           <span className="bi-nav-logo-dot" />
-          {logo}
-        </a>
+          <InlineEditableText node={node} propKey="logoText" fallback={logo} />
+        </span>
         <NavLinks node={node} />
         <div className="bi-nav-actions">
           {ctaText ? (
-            <a
-              className="bi-btn bi-btn-primary bi-nav-cta"
-              href={sanitizeUrl(ctaUrl)}
-            >
-              {ctaText}
-            </a>
+            <InlineEditableLink
+              node={node}
+              propKey="ctaText"
+              urlKey="ctaUrl"
+              href={String(ctaUrl ?? "#")}
+              linkClassName="bi-btn bi-btn-primary bi-nav-cta"
+            />
           ) : null}
           <button
             type="button"

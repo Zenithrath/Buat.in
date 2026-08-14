@@ -7,6 +7,7 @@ export const chartCardManifest: Omit<
   id: "chart-card",
   name: "Analytics Chart Card",
   category: "dashboard",
+  scope: "dashboard",
   description: "Kartu visualisasi grafik interaktif (Area, Line, Bar, Donut) menggunakan token grafik tema.",
   tier: "pro",
   priceKey: "chart-card",
@@ -39,6 +40,16 @@ export const chartCardManifest: Omit<
         { value: "donut", label: "Donut Chart" },
       ],
     },
-    { key: "dataJson", label: "Data Point (JSON)", group: "Chart", type: "json" },
+    {
+      key: "dataJson",
+      label: "Data grafik",
+      group: "Chart",
+      type: "array",
+      itemSchema: [
+        { key: "label", label: "Label", type: "text" },
+        { key: "val1", label: "Nilai utama", type: "number" },
+        { key: "val2", label: "Nilai pembanding", type: "number" },
+      ],
+    },
   ],
 };

@@ -1,7 +1,7 @@
 "use client";
 
 import type { Node, Theme } from "@/lib/schema/types";
-import { sanitizeUrl } from "@/lib/registry/shared";
+import { InlineEditableLink, InlineEditableText } from "@/components/preview/InlineEditable";
 import { SectionShell } from "@/components/preview/SectionShell";
 
 export function FooterPreview({ node, theme }: { node: Node; theme: Theme }) {
@@ -14,23 +14,36 @@ export function FooterPreview({ node, theme }: { node: Node; theme: Theme }) {
     >
       <div className="bi-container bi-footer-grid">
         <div className="bi-footer-brand">
-          <strong>{node.props.brandName || "Nama Brand"}</strong>
-          <p>{node.props.tagline || ""}</p>
+          <strong>
+            <InlineEditableText node={node} propKey="brandName" fallback="Nama Brand" />
+          </strong>
+          <p>
+            <InlineEditableText node={node} propKey="tagline" multiline />
+          </p>
         </div>
         <nav className="bi-footer-links">
           {[1, 2, 3].map((i) => {
             const text = node.props[`link${i}Text`];
             if (!text) return null;
             return (
-              <a key={i} href={sanitizeUrl(node.props[`link${i}Url`])}>
-                {text}
-              </a>
+              <InlineEditableLink
+                key={i}
+                node={node}
+                propKey={`link${i}Text`}
+                urlKey={`link${i}Url`}
+              />
             );
           })}
         </nav>
       </div>
       <div className="bi-container bi-footer-bottom">
-        <p>{node.props.copyright || "© 2026. Semua hak dilindungi."}</p>
+        <p>
+          <InlineEditableText
+            node={node}
+            propKey="copyright"
+            fallback="© 2026. Semua hak dilindungi."
+          />
+        </p>
       </div>
     </SectionShell>
   );

@@ -20,6 +20,9 @@ export type ComponentCategory =
   | "cta"
   | "footer";
 
+/** Katalog yang boleh memakai komponen ini di builder. */
+export type ComponentScope = "landing" | "dashboard" | "both";
+
 export interface ContentControlOption {
   value: string;
   label: string;
@@ -28,7 +31,14 @@ export interface ContentControlOption {
 export interface ContentControlItemSchema {
   key: string;
   label: string;
-  type: "text" | "textarea" | "image" | "link" | "select";
+  type:
+    | "text"
+    | "textarea"
+    | "image"
+    | "link"
+    | "select"
+    | "number"
+    | "boolean";
   options?: ContentControlOption[];
 }
 
@@ -50,12 +60,19 @@ export interface ExportContext {
 export interface ExportResult {
   html: string;
   css: string;
+  /** Interaksi statis khusus komponen. Digabung ke js/main.js saat export. */
+  js?: string;
 }
 
 export interface ComponentManifest {
   id: string;
   name: string;
   category: ComponentCategory;
+  /**
+   * Komponen lama boleh belum menyatakan scope agar dokumen lama tetap bisa
+   * dimuat. Registry memberi fallback berdasarkan kategorinya.
+   */
+  scope?: ComponentScope;
   description: string;
   tier: "free" | "pro";
   priceKey: string;

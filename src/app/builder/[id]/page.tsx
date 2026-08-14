@@ -35,7 +35,7 @@ export default function BuilderPage({ params }: PageProps<"/builder/[id]">) {
         </p>
         <Link
           href="/builder"
-          className="mt-2 rounded-md bg-brand px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-brand-hover"
+          className="mt-2 rounded-md bg-brand px-5 py-2.5 text-sm font-semibold text-brand-foreground transition-colors hover:bg-brand-hover"
         >
           Buat website baru
         </Link>

@@ -34,5 +34,6 @@ export const kpiCardManifest: Omit<
       ],
     },
     { key: "subtitle", label: "Keterangan Waktu", group: "Data", type: "text" },
+    { key: "period", label: "Keterangan Lama (compatibility)", group: "Data", type: "text" },
   ],
 };

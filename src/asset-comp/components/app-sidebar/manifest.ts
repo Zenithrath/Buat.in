@@ -7,6 +7,7 @@ export const appSidebarManifest: Omit<
   id: "app-sidebar",
   name: "App Sidebar",
   category: "dashboard",
+  scope: "dashboard",
   description: "Navigasi samping khusus dashboard dengan logo, menu reorderable, dan profil pengguna.",
   tier: "free",
   priceKey: "app-sidebar",
@@ -31,9 +32,14 @@ export const appSidebarManifest: Omit<
     { key: "userRole", label: "Peran User", group: "User", type: "text" },
     {
       key: "linksJson",
-      label: "Menu Navigasi (JSON)",
+      label: "Menu Navigasi",
       group: "Menu",
-      type: "json",
+      type: "array",
+      itemSchema: [
+        { key: "label", label: "Nama menu", type: "text" },
+        { key: "icon", label: "Ikon", type: "text" },
+        { key: "active", label: "Menu aktif", type: "boolean" },
+      ],
     },
   ],
 };

@@ -82,10 +82,10 @@ export function TopBar({
         href="/"
         className="text-sm font-bold tracking-tight text-foreground flex items-center gap-1.5"
       >
-        <span>Buat<span className="text-primary">.</span>in</span>
+        <span>Buat<span className="text-brand">.</span>in</span>
       </Link>
 
-      <span className="rounded bg-primary/10 px-2 py-0.5 font-mono text-[10px] font-bold text-primary uppercase">
+      <span className="rounded bg-brand/10 px-2 py-0.5 font-mono text-[10px] font-bold text-brand uppercase">
         {doc.projectType || "landing"}
       </span>
 
@@ -145,8 +145,8 @@ export function TopBar({
               className={cn(
                 "flex h-7 w-8 items-center justify-center rounded-md transition-colors",
                 doc.settings.device === device.id
-                  ? "bg-background text-foreground shadow-sm font-bold"
-                  : "text-muted-foreground hover:text-foreground"
+                  ? "bg-brand text-brand-foreground"
+                  : "text-muted-foreground hover:text-brand"
               )}
             >
               <device.icon size={14} />
@@ -159,7 +159,7 @@ export function TopBar({
           <button
             type="button"
             onClick={() => setZoomLevel(zoomLevel - 10)}
-            className="p-1 text-muted-foreground hover:text-foreground"
+            className="p-1 text-muted-foreground transition-colors hover:text-brand"
             title="Zoom out"
           >
             <ZoomOut size={13} />
@@ -170,7 +170,7 @@ export function TopBar({
           <button
             type="button"
             onClick={() => setZoomLevel(zoomLevel + 10)}
-            className="p-1 text-muted-foreground hover:text-foreground"
+            className="p-1 text-muted-foreground transition-colors hover:text-brand"
             title="Zoom in"
           >
             <ZoomIn size={13} />
@@ -178,7 +178,7 @@ export function TopBar({
           <button
             type="button"
             onClick={() => setZoomLevel(100)}
-            className="p-1 text-muted-foreground hover:text-foreground"
+            className="p-1 text-muted-foreground transition-colors hover:text-brand"
             title="Reset Zoom (100%)"
           >
             <Maximize2 size={12} />
@@ -234,7 +234,7 @@ export function TopBar({
         <span>Pratinjau</span>
         <ExternalLink size={11} className="opacity-70" />
       </Button>
-      <Button size="sm" onClick={onExport} className="h-8 text-xs font-bold">
+      <Button variant="brand" size="sm" onClick={onExport} className="h-8 text-xs font-bold">
         <Download size={14} /> Export
       </Button>
     </div>
