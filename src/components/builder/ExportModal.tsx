@@ -53,45 +53,45 @@ export function ExportModal({ open, onClose }: { open: boolean; onClose: () => v
             type="button"
             onClick={() => setTarget("html")}
             className={cn(
-              "rounded-xl border-2 p-4 text-left transition-colors",
+              "rounded-lg border-2 p-4 text-left transition-colors",
               target === "html"
-                ? "border-blue-500 bg-blue-50/50"
-                : "border-zinc-200 hover:border-zinc-300"
+                ? "border-brand bg-brand/5"
+                : "border-border hover:border-muted"
             )}
           >
-            <p className="text-sm font-semibold text-zinc-900">
+            <p className="text-sm font-semibold text-foreground">
               HTML / CSS / JS Statis
             </p>
-            <p className="mt-1 text-xs leading-relaxed text-zinc-500">
+            <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
               Satu halaman mandiri. Hosting di mana saja — Netlify, Vercel,
               GitHub Pages, atau hosting biasa.
             </p>
-            <span className="mt-2 inline-block rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-semibold text-emerald-700">
+            <span className="mt-2 inline-block rounded-full bg-brand/10 px-2 py-0.5 text-[10px] font-semibold text-brand">
               Tersedia
             </span>
           </button>
           <button
             type="button"
             disabled
-            className="cursor-not-allowed rounded-xl border-2 border-zinc-100 p-4 text-left opacity-60"
+            className="cursor-not-allowed rounded-lg border-2 border-border p-4 text-left opacity-50"
           >
-            <p className="text-sm font-semibold text-zinc-900">
+            <p className="text-sm font-semibold text-foreground">
               React + Vite (TypeScript)
             </p>
-            <p className="mt-1 text-xs leading-relaxed text-zinc-500">
+            <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
               Project React yang bisa dilanjutkan developer.
             </p>
-            <span className="mt-2 inline-block rounded-full bg-zinc-100 px-2 py-0.5 text-[10px] font-semibold text-zinc-500">
+            <span className="mt-2 inline-block rounded-full bg-muted px-2 py-0.5 text-[10px] font-semibold text-muted-foreground">
               Segera hadir
             </span>
           </button>
         </div>
 
         <div>
-          <p className="mb-2 flex items-center gap-1.5 text-xs font-semibold text-zinc-600">
+          <p className="mb-2 flex items-center gap-1.5 text-xs font-semibold text-muted-foreground">
             <FileCode2 size={13} /> Isi ZIP
           </p>
-          <div className="grid grid-cols-2 gap-x-6 gap-y-1 rounded-lg bg-zinc-50 p-3 font-mono text-[11px] text-zinc-500">
+          <div className="grid grid-cols-2 gap-x-6 gap-y-1 rounded-lg border border-border bg-muted/40 p-3 font-mono text-[11px] text-muted-foreground">
             {buildExportFiles(document)
               .filter((f) => !f.path.includes("manifest"))
               .map((f) => (
@@ -102,22 +102,22 @@ export function ExportModal({ open, onClose }: { open: boolean; onClose: () => v
           </div>
         </div>
 
-        <div className="flex items-center justify-between rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-2.5 text-xs text-zinc-500">
+        <div className="flex items-center justify-between rounded-lg border border-border bg-muted/40 px-3 py-2.5 text-xs text-muted-foreground">
           <span>
-            <strong className="text-zinc-700">{document.pages[0].sections.length}</strong>{" "}
+            <strong className="text-foreground">{document.pages[0].sections.length}</strong>{" "}
             komponen · export target: HTML
           </span>
-          <span className="font-medium text-emerald-600">Gratis di V0 (prototipe)</span>
+          <span className="font-medium text-brand">Gratis di V0 (prototipe)</span>
         </div>
 
         {phase === "done" ? (
-          <div className="flex items-center gap-2 rounded-lg bg-emerald-50 px-3 py-2.5 text-sm text-emerald-700">
+          <div className="flex items-center gap-2 rounded-lg bg-brand/10 px-3 py-2.5 text-sm text-brand">
             <CheckCircle2 size={16} /> ZIP berhasil dibuat — cek folder
             unduhan Anda.
           </div>
         ) : null}
         {phase === "error" ? (
-          <div className="flex items-center gap-2 rounded-lg bg-red-50 px-3 py-2.5 text-sm text-red-600">
+          <div className="flex items-center gap-2 rounded-lg bg-destructive/10 px-3 py-2.5 text-sm text-destructive">
             <AlertCircle size={16} /> {error}
           </div>
         ) : null}
@@ -127,7 +127,6 @@ export function ExportModal({ open, onClose }: { open: boolean; onClose: () => v
             Tutup
           </Button>
           <Button
-            variant="primary"
             onClick={handleExport}
             disabled={phase === "generating" || target !== "html"}
           >

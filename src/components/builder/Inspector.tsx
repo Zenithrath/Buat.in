@@ -1,20 +1,24 @@
 "use client";
 
 import { useState } from "react";
-import { Palette, Type, LayoutTemplate, Search } from "lucide-react";
+import {
+  Palette,
+  Type,
+  LayoutTemplate,
+  Search,
+  Smartphone,
+  PanelRight,
+} from "lucide-react";
 import { useBuilderStore } from "@/lib/store/project-store";
 import { getComponent } from "@/lib/registry";
 import { propString } from "@/lib/registry/shared";
-import {
-  COLOR_PALETTES,
-  RADIUS_PRESETS,
-  FONT_PRESETS,
-  DENSITY_PRESETS,
-  SHADOW_PRESETS,
-} from "@/lib/theme/presets";
+import { resolveTheme, type ResolvedTokens } from "@/lib/theme/presets";
 import { cn } from "@/lib/utils";
 import { Tabs } from "@/components/ui/tabs";
 import { Field, Input, Textarea, Select, Separator } from "@/components/ui/controls";
+import { Button } from "@/components/ui/button";
+import { ThemePreview } from "./ThemePreview";
+import type { Node } from "@/lib/schema/types";
 
 const PADDING_OPTIONS = [
   { value: "none", label: "Tanpa" },
@@ -40,7 +44,13 @@ const BACKGROUND_OPTIONS = [
   { value: "default", label: "Latar (tema)" },
   { value: "muted", label: "Redup" },
   { value: "primary", label: "Warna utama" },
+  { value: "custom", label: "Kustom" },
   { value: "transparent", label: "Transparan" },
+];
+
+const DEVICE_TABS = [
+  { id: "tablet", label: "Tablet" },
+  { id: "mobile", label: "Mobile" },
 ];
 
 export function Inspector() {
@@ -55,7 +65,7 @@ export function Inspector() {
   const manifest = getComponent(node.componentType);
   if (!manifest) {
     return (
-      <div className="p-4 text-xs text-zinc-400">
+      <div className="p-4 text-xs text-muted-foreground">
         Komponen tidak ditemukan.
       </div>
     );
@@ -64,8 +74,24 @@ export function Inspector() {
   return <NodeInspector nodeId={node.id} manifest={manifest} />;
 }
 
-function NodeInspector({ nodeId, manifest }: { nodeId: string; manifest: ReturnType<typeof getComponent> }) {
+function patchStylesForDevice(
+  patchStyles: (key: string, value: string, device?: "tablet" | "mobile") => void,
+  key: string,
+  value: string,
+  device: "tablet" | "mobile"
+) {
+  patchStyles(key, value, device);
+}
+
+function NodeInspector({
+  nodeId,
+  manifest,
+}: {
+  nodeId: string;
+  manifest: NonNullable<ReturnType<typeof getComponent>>;
+}) {
   const [tab, setTab] = useState("content");
+  const [deviceTab, setDeviceTab] = useState<"tablet" | "mobile">("tablet");
   const updateNode = useBuilderStore((s) => s.updateNode);
   const node = useBuilderStore((s) =>
     s.document.pages[0].sections.find((sec) => sec.id === nodeId)
@@ -76,30 +102,50 @@ function NodeInspector({ nodeId, manifest }: { nodeId: string; manifest: ReturnT
     updateNode(nodeId, (n) => ({ ...n, props: { ...n.props, [key]: value } }));
   };
 
-  const patchStyles = (key: string, value: string) => {
-    updateNode(nodeId, (n) => ({ ...n, styles: { ...n.styles, [key]: value } }));
+  const patchStyles = (
+    key: string,
+    value: string,
+    device?: "tablet" | "mobile"
+  ) => {
+    updateNode(nodeId, (n) => ({
+      ...n,
+      styles: device ? n.styles : { ...n.styles, [key]: value },
+      tabletOverride: device === "tablet" ? { ...n.tabletOverride, [key]: value } : n.tabletOverride,
+      mobileOverride: device === "mobile" ? { ...n.mobileOverride, [key]: value } : n.mobileOverride,
+    }));
   };
 
   const groups = [
-    ...new Set((manifest?.contentControls ?? []).map((c) => c.group ?? "Umum")),
+    ...new Set((manifest.contentControls ?? []).map((c) => c.group ?? "Umum")),
   ];
 
+  const styleControls = manifest.styleControls ?? [];
+  const styleGroups = [
+    ...new Set(styleControls.map((c) => c.group ?? "Umum")),
+  ];
+
+  const overrides: Node["tabletOverride"] =
+    deviceTab === "tablet" ? node.tabletOverride : node.mobileOverride;
+
+  const overrideTarget: "tablet" | "mobile" = deviceTab;
+
   return (
-    <div className="flex w-72 shrink-0 flex-col border-l border-zinc-200 bg-white">
+    <div className="flex w-72 shrink-0 flex-col border-l bg-background">
       <Tabs
         active={tab}
         onChange={setTab}
         items={[
           { id: "content", label: "Konten", icon: <Type size={13} /> },
           { id: "layout", label: "Tata Letak", icon: <LayoutTemplate size={13} /> },
-          { id: "style", label: "Gaya", icon: <Palette size={13} /> },
+          { id: "style", label: "Style", icon: <Palette size={13} /> },
+          { id: "responsive", label: "Responsif", icon: <Smartphone size={13} /> },
         ]}
       />
       <div className="flex-1 space-y-4 overflow-y-auto p-4">
         <div>
-          <p className="text-sm font-semibold text-zinc-800">{manifest?.name}</p>
-          <p className="text-[11px] text-zinc-400">
-            {manifest?.tier === "free" ? "Komponen gratis" : "Komponen Pro"}
+          <p className="text-sm font-semibold text-foreground">{manifest.name}</p>
+          <p className="text-[11px] text-muted-foreground">
+            {manifest.tier === "free" ? "Komponen gratis" : "Komponen Pro"}
           </p>
         </div>
 
@@ -108,11 +154,11 @@ function NodeInspector({ nodeId, manifest }: { nodeId: string; manifest: ReturnT
             {groups.map((group) => (
               <div key={group} className="space-y-3">
                 {groups.length > 1 ? (
-                  <p className="text-[11px] font-semibold uppercase tracking-wide text-zinc-400">
+                  <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
                     {group}
                   </p>
                 ) : null}
-                {(manifest?.contentControls ?? [])
+                {(manifest.contentControls ?? [])
                   .filter((c) => (c.group ?? "Umum") === group)
                   .map((control) => (
                     <Field key={control.key} label={control.label}>
@@ -193,7 +239,12 @@ function NodeInspector({ nodeId, manifest }: { nodeId: string; manifest: ReturnT
             <Field label="Latar Belakang">
               <Select
                 value={node.styles.background ?? "default"}
-                onChange={(e) => patchStyles("background", e.target.value)}
+                onChange={(e) => {
+                  patchStyles("background", e.target.value);
+                  if (e.target.value !== "custom") {
+                    patchStyles("backgroundCustom", "");
+                  }
+                }}
               >
                 {BACKGROUND_OPTIONS.map((o) => (
                   <option key={o.value} value={o.value}>
@@ -202,9 +253,138 @@ function NodeInspector({ nodeId, manifest }: { nodeId: string; manifest: ReturnT
                 ))}
               </Select>
             </Field>
-            <p className="text-[11px] leading-relaxed text-zinc-400">
-              Warna, font, dan sudut diatur lewat Tema (klik area kosong di
-              kanvas). Pengaturan per-komponen hanya untuk latar belakang.
+            {node.styles.background === "custom" ? (
+              <Field label="Warna Kustom">
+                <div className="flex items-center gap-2">
+                  <input
+                    type="color"
+                    value={
+                      /^#[0-9a-f]{6}$/i.test(node.styles.backgroundCustom ?? "")
+                        ? node.styles.backgroundCustom!
+                        : "#ffffff"
+                    }
+                    onChange={(e) =>
+                      patchStyles("backgroundCustom", e.target.value)
+                    }
+                    className="h-8 w-10 shrink-0 cursor-pointer rounded-md border border-input bg-transparent p-0.5"
+                    title="Pilih warna latar"
+                  />
+                  <Input
+                    value={node.styles.backgroundCustom ?? ""}
+                    placeholder="#ffffff"
+                    onChange={(e) =>
+                      patchStyles("backgroundCustom", e.target.value)
+                    }
+                  />
+                </div>
+              </Field>
+            ) : null}
+            <Button
+              variant="ghost"
+              size="sm"
+              className="w-full"
+              onClick={() => {
+                patchStyles("background", "default");
+                patchStyles("backgroundCustom", "");
+              }}
+            >
+              Reset ke tema
+            </Button>
+            {styleGroups.map((group) => (
+              <div key={group} className="space-y-3">
+                <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+                  {group}
+                </p>
+                {styleControls
+                  .filter((c) => (c.group ?? "Umum") === group)
+                  .map((control) => (
+                    <Field key={control.key} label={control.label}>
+                      {control.type === "select" ? (
+                        <Select
+                          value={propString(node, control.key)}
+                          onChange={(e) => patchProps(control.key, e.target.value)}
+                        >
+                          {control.options?.map((o) => (
+                            <option key={o.value} value={o.value}>
+                              {o.label}
+                            </option>
+                          ))}
+                        </Select>
+                      ) : null}
+                    </Field>
+                  ))}
+              </div>
+            ))}
+            <p className="text-[11px] leading-relaxed text-muted-foreground">
+              Warna, font, dan sudut diatur lewat Tema (panel kiri → Tema).
+              Pengaturan per-komponen hanya untuk latar belakang.
+            </p>
+          </div>
+        ) : null}
+
+        {tab === "responsive" ? (
+          <div className="space-y-3">
+            <div className="flex items-center gap-0.5 rounded-lg bg-muted p-0.5">
+              {DEVICE_TABS.map((d) => (
+                <button
+                  key={d.id}
+                  type="button"
+                  onClick={() => setDeviceTab(d.id as "tablet" | "mobile")}
+                  className={cn(
+                    "flex h-7 flex-1 items-center justify-center rounded-md text-[11px] font-medium transition-colors",
+                    deviceTab === d.id
+                      ? "bg-background text-foreground shadow-sm"
+                      : "text-muted-foreground"
+                  )}
+                >
+                  {d.label}
+                </button>
+              ))}
+            </div>
+            <Field label="Jarak / Padding">
+              <Select
+                value={overrides.padding ?? node.styles.padding ?? "lg"}
+                onChange={(e) =>
+                  patchStylesForDevice(patchStyles, "padding", e.target.value, overrideTarget)
+                }
+              >
+                {PADDING_OPTIONS.map((o) => (
+                  <option key={o.value} value={o.value}>
+                    {o.label}
+                  </option>
+                ))}
+              </Select>
+            </Field>
+            <Field label="Perataan Teks">
+              <Select
+                value={overrides.textAlign ?? node.styles.textAlign ?? "center"}
+                onChange={(e) =>
+                  patchStylesForDevice(patchStyles, "textAlign", e.target.value, overrideTarget)
+                }
+              >
+                {ALIGN_OPTIONS.map((o) => (
+                  <option key={o.value} value={o.value}>
+                    {o.label}
+                  </option>
+                ))}
+              </Select>
+            </Field>
+            <Field label="Lebar Konten">
+              <Select
+                value={overrides.contentWidth ?? node.styles.contentWidth ?? "default"}
+                onChange={(e) =>
+                  patchStylesForDevice(patchStyles, "contentWidth", e.target.value, overrideTarget)
+                }
+              >
+                {WIDTH_OPTIONS.map((o) => (
+                  <option key={o.value} value={o.value}>
+                    {o.label}
+                  </option>
+                ))}
+              </Select>
+            </Field>
+            <p className="text-[11px] leading-relaxed text-muted-foreground">
+              Override berlaku saat pratinjau perangkat {deviceTab === "tablet" ? "tablet" : "mobile"}.
             </p>
           </div>
         ) : null}
@@ -215,199 +395,39 @@ function NodeInspector({ nodeId, manifest }: { nodeId: string; manifest: ReturnT
 
 function ThemePanel() {
   const document = useBuilderStore((s) => s.document);
-  const updateTheme = useBuilderStore((s) => s.updateTheme);
   const updateSeo = useBuilderStore((s) => s.updateSeo);
-  const theme = document.theme;
+  const setLeftTab = useBuilderStore((s) => s.setLeftTab);
+  const tokens: ResolvedTokens = resolveTheme(document.theme);
 
   return (
-    <div className="flex w-72 shrink-0 flex-col border-l border-zinc-200 bg-white">
+    <div className="flex w-72 shrink-0 flex-col border-l bg-background">
       <Tabs
-        active="theme"
+        active="page"
         onChange={() => {}}
-        items={[{ id: "theme", label: "Tema & SEO", icon: <Palette size={13} /> }]}
+        items={[
+          { id: "page", label: "Halaman & SEO", icon: <PanelRight size={13} /> },
+        ]}
       />
       <div className="flex-1 space-y-5 overflow-y-auto p-4">
-        <div>
-          <p className="text-[11px] font-semibold uppercase tracking-wide text-zinc-400">
-            Warna
+        <div className="space-y-2">
+          <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+            Ringkasan Tema
           </p>
-          <div className="mt-2 grid grid-cols-4 gap-2">
-            {COLOR_PALETTES.map((palette) => (
-              <button
-                key={palette.id}
-                type="button"
-                onClick={() =>
-                  updateTheme((t) => ({
-                    ...t,
-                    presets: { ...t.presets, color: palette.id },
-                  }))
-                }
-                className={cn(
-                  "rounded-lg border-2 p-1.5 transition-colors",
-                  theme.presets.color === palette.id
-                    ? "border-blue-500"
-                    : "border-transparent hover:border-zinc-300"
-                )}
-                title={palette.name}
-              >
-                <span className="flex h-7 w-full overflow-hidden rounded-md">
-                  <span
-                    className="h-full flex-1"
-                    style={{ background: palette.primary }}
-                  />
-                  <span
-                    className="h-full flex-1"
-                    style={{ background: palette.background }}
-                  />
-                  <span
-                    className="h-full flex-1"
-                    style={{ background: palette.secondary }}
-                  />
-                </span>
-              </button>
-            ))}
-          </div>
-        </div>
-
-        <div>
-          <p className="text-[11px] font-semibold uppercase tracking-wide text-zinc-400">
-            Sudut
-          </p>
-          <div className="mt-2 flex gap-1.5">
-            {RADIUS_PRESETS.map((preset) => (
-              <button
-                key={preset.id}
-                type="button"
-                onClick={() =>
-                  updateTheme((t) => ({
-                    ...t,
-                    presets: { ...t.presets, radius: preset.id },
-                  }))
-                }
-                className={cn(
-                  "flex-1 rounded-md border px-1 py-1.5 text-[11px] transition-colors",
-                  theme.presets.radius === preset.id
-                    ? "border-blue-500 bg-blue-50 text-blue-700"
-                    : "border-zinc-200 text-zinc-500 hover:border-zinc-300"
-                )}
-              >
-                {preset.name}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        <div>
-          <p className="text-[11px] font-semibold uppercase tracking-wide text-zinc-400">
-            Tipografi
-          </p>
-          <div className="mt-2 space-y-1">
-            {FONT_PRESETS.map((preset) => (
-              <button
-                key={preset.id}
-                type="button"
-                onClick={() =>
-                  updateTheme((t) => ({
-                    ...t,
-                    presets: { ...t.presets, font: preset.id },
-                  }))
-                }
-                className={cn(
-                  "w-full rounded-md border px-2.5 py-2 text-left text-sm transition-colors",
-                  theme.presets.font === preset.id
-                    ? "border-blue-500 bg-blue-50 text-blue-700"
-                    : "border-zinc-200 text-zinc-600 hover:border-zinc-300"
-                )}
-                style={{ fontFamily: preset.fontHeading }}
-              >
-                {preset.name}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        <div className="grid grid-cols-2 gap-3">
-          <div>
-            <p className="text-[11px] font-semibold uppercase tracking-wide text-zinc-400">
-              Kerapatan
-            </p>
-            <Select
-              value={theme.presets.density}
-              onChange={(e) =>
-                updateTheme((t) => ({
-                  ...t,
-                  presets: { ...t.presets, density: e.target.value },
-                }))
-              }
-              className="mt-1.5"
-            >
-              {DENSITY_PRESETS.map((p) => (
-                <option key={p.id} value={p.id}>
-                  {p.name}
-                </option>
-              ))}
-            </Select>
-          </div>
-          <div>
-            <p className="text-[11px] font-semibold uppercase tracking-wide text-zinc-400">
-              Bayangan
-            </p>
-            <Select
-              value={theme.presets.shadow}
-              onChange={(e) =>
-                updateTheme((t) => ({
-                  ...t,
-                  presets: { ...t.presets, shadow: e.target.value },
-                }))
-              }
-              className="mt-1.5"
-            >
-              {SHADOW_PRESETS.map((p) => (
-                <option key={p.id} value={p.id}>
-                  {p.name}
-                </option>
-              ))}
-            </Select>
-          </div>
+          <ThemePreview tokens={tokens} compact />
+          <Button
+            variant="secondary"
+            size="sm"
+            className="w-full"
+            onClick={() => setLeftTab("style")}
+          >
+            <Palette size={13} /> Buka Panel Style
+          </Button>
         </div>
 
         <Separator />
 
         <div className="space-y-3">
-          <p className="text-[11px] font-semibold uppercase tracking-wide text-zinc-400">
-            Warna Kustom
-          </p>
-          <Field label="Warna Utama">
-            <div className="flex gap-2">
-              <Input
-                type="color"
-                className="h-9 w-12 shrink-0 cursor-pointer p-1"
-                value={theme.overrides.primary ?? "#2563eb"}
-                onChange={(e) =>
-                  updateTheme((t) => ({
-                    ...t,
-                    overrides: { ...t.overrides, primary: e.target.value },
-                  }))
-                }
-              />
-              <Input
-                value={theme.overrides.primary ?? ""}
-                placeholder="Reset (ikuti preset)"
-                onChange={(e) =>
-                  updateTheme((t) => ({
-                    ...t,
-                    overrides: { ...t.overrides, primary: e.target.value },
-                  }))
-                }
-              />
-            </div>
-          </Field>
-        </div>
-
-        <Separator />
-
-        <div className="space-y-3">
-          <p className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-zinc-400">
+          <p className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
             <Search size={11} /> SEO
           </p>
           <Field label="Judul Halaman">

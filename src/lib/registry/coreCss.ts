@@ -3,15 +3,32 @@ export const CORE_CSS = `/* ===== Buat.in shared primitives ===== */
   container-type: inline-size;
   --bi-bg: #ffffff;
   --bi-fg: #18181b;
+  --bi-card: #ffffff;
+  --bi-popover: #ffffff;
   --bi-primary: #2563eb;
   --bi-primary-fg: #ffffff;
   --bi-secondary: #eff6ff;
   --bi-muted: #64748b;
+  --bi-muted-fg: #52525b;
+  --bi-accent: #f4f4f5;
+  --bi-accent-fg: #18181b;
   --bi-border: #e2e8f0;
+  --bi-input: #e2e8f0;
+  --bi-ring: #2563eb;
+  --bi-destructive: #dc2626;
   --bi-radius: 8px;
   --bi-font-heading: 'Inter', system-ui, sans-serif;
   --bi-font-body: 'Inter', system-ui, sans-serif;
+  --bi-font-mono: ui-monospace, monospace;
   --bi-shadow: 0 10px 30px -12px rgba(0, 0, 0, 0.15);
+  --bi-control-height: 2.25rem;
+  --bi-card-padding: 1rem;
+  --bi-section-gap: 2rem;
+  --bi-chart-1: #71717a;
+  --bi-chart-2: #a1a1aa;
+  --bi-chart-3: #d4d4d8;
+  --bi-chart-4: #e4e4e7;
+  --bi-chart-5: #f4f4f5;
 }
 
 *, *::before, *::after {
@@ -84,7 +101,8 @@ a {
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  padding: 0.8rem 1.75rem;
+  min-height: var(--bi-control-height, 2.25rem);
+  padding: 0.5rem 1.75rem;
   border-radius: var(--bi-radius);
   font-weight: 600;
   font-size: 0.95rem;
@@ -120,35 +138,70 @@ a {
   background: var(--bi-bg);
   border: 1px solid var(--bi-border);
   border-radius: var(--bi-radius);
+  padding: var(--bi-card-padding, 1rem);
   overflow: hidden;
   box-shadow: var(--bi-shadow);
+}
+
+.bi-card.bi-product-card {
+  padding: 0;
 }
 `;
 
 export function buildThemeVarsCss(tokens: {
   background: string;
   foreground: string;
+  card: string;
+  popover: string;
   primary: string;
   primaryForeground: string;
   secondary: string;
   muted: string;
+  mutedForeground: string;
+  accent: string;
+  accentForeground: string;
   border: string;
+  input: string;
+  ring: string;
+  destructive: string;
   radius: string;
   fontHeading: string;
   fontBody: string;
+  fontMono: string;
   shadow: string;
+  cardPadding: string;
+  controlHeight: string;
+  sectionGap: string;
+  chart: [string, string, string, string, string];
 }): string {
   return `:root {
   --bi-bg: ${tokens.background};
   --bi-fg: ${tokens.foreground};
+  --bi-card: ${tokens.card};
+  --bi-popover: ${tokens.popover};
   --bi-primary: ${tokens.primary};
   --bi-primary-fg: ${tokens.primaryForeground};
   --bi-secondary: ${tokens.secondary};
   --bi-muted: ${tokens.muted};
+  --bi-muted-fg: ${tokens.mutedForeground};
+  --bi-accent: ${tokens.accent};
+  --bi-accent-fg: ${tokens.accentForeground};
   --bi-border: ${tokens.border};
+  --bi-input: ${tokens.input};
+  --bi-ring: ${tokens.ring};
+  --bi-destructive: ${tokens.destructive};
   --bi-radius: ${tokens.radius};
   --bi-font-heading: ${tokens.fontHeading};
   --bi-font-body: ${tokens.fontBody};
+  --bi-font-mono: ${tokens.fontMono};
   --bi-shadow: ${tokens.shadow};
+  --bi-control-height: ${tokens.controlHeight};
+  --bi-card-padding: ${tokens.cardPadding};
+  --bi-section-gap: ${tokens.sectionGap};
+  --bi-chart-1: ${tokens.chart[0]};
+  --bi-chart-2: ${tokens.chart[1]};
+  --bi-chart-3: ${tokens.chart[2]};
+  --bi-chart-4: ${tokens.chart[3]};
+  --bi-chart-5: ${tokens.chart[4]};
 }`;
 }

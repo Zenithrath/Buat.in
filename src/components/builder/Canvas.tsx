@@ -22,7 +22,7 @@ import { CSS } from "@dnd-kit/utilities";
 import { Copy, Trash2, GripVertical } from "lucide-react";
 import { useBuilderStore } from "@/lib/store/project-store";
 import { resolveTheme } from "@/lib/theme/presets";
-import { themeTokenStyle } from "@/lib/registry/shared";
+import { projectTokenStyle, themeTokenStyle } from "@/lib/registry/shared";
 import { SectionPreview } from "@/components/preview/SectionPreview";
 import { cn } from "@/lib/utils";
 import type { Node } from "@/lib/schema/types";
@@ -136,18 +136,24 @@ export function Canvas() {
       onDragEnd={handleDragEnd}
       onDragCancel={() => setDrag(null)}
     >
-      <div className="flex-1 overflow-y-auto bg-zinc-100 px-6 py-8">
+      <div className="flex-1 overflow-y-auto bg-secondary/40 px-6 py-8">
         <div
-          className="mx-auto rounded-xl bg-white shadow-sm ring-1 ring-zinc-200 transition-[width] duration-200"
+          className="mx-auto rounded-lg shadow-lg shadow-black/30 ring-1 ring-border transition-[width] duration-200"
           style={{
             width: deviceWidth ? `${deviceWidth}px` : "100%",
             maxWidth: 1100,
+            background: tokens.background,
           }}
         >
           <CanvasRoot>
             <div
               className="container-type"
-              style={themeTokenStyle(tokens) as React.CSSProperties}
+              style={
+                {
+                  ...themeTokenStyle(tokens),
+                  ...projectTokenStyle(tokens),
+                } as React.CSSProperties
+              }
             >
               {sections.length === 0 ? (
                 <EmptyCanvas dragActive={drag !== null} />
@@ -192,16 +198,16 @@ function EmptyCanvas({ dragActive }: { dragActive: boolean }) {
   return (
     <div
       className={cn(
-        "flex min-h-64 flex-col items-center justify-center gap-3 rounded-xl border-2 border-dashed p-10 text-center",
-        dragActive ? "border-blue-400 bg-blue-50" : "border-zinc-300 bg-zinc-50"
+        "flex min-h-64 flex-col items-center justify-center gap-3 rounded-lg border-2 border-dashed p-10 text-center",
+        dragActive ? "border-brand bg-brand/5" : "border-border bg-background"
       )}
     >
-      <p className="text-sm font-medium text-zinc-500">
+      <p className="text-sm font-medium text-muted-foreground">
         {dragActive
           ? "Lepaskan di sini untuk menambahkan komponen"
           : "Kanvas kosong — seret komponen dari panel kiri"}
       </p>
-      <p className="text-xs text-zinc-400">
+      <p className="text-xs text-muted-foreground/70">
         Mulai dari Navbar, Hero, atau komponen lain sesuai kebutuhan Anda.
       </p>
     </div>
@@ -212,7 +218,7 @@ function DropIndicator({ visible }: { visible: boolean }) {
   return (
     <div
       className={cn(
-        "mx-3 h-0.5 rounded-full bg-blue-500 transition-all",
+        "mx-3 h-0.5 rounded-full bg-brand transition-all",
         visible ? "my-1 opacity-100" : "opacity-0"
       )}
     />
@@ -260,12 +266,12 @@ function SortableSection({
         className={cn(
           "group relative transition-shadow",
           selected
-            ? "shadow-[0_0_0_2px_#2563eb] z-10"
+            ? "shadow-[0_0_0_2px_#e6007e] z-10"
             : "hover:shadow-[0_0_0_1px_rgba(0,0,0,0.12)]"
         )}
       >
         {selected ? (
-          <div className="absolute left-0 top-0 z-20 -translate-y-full flex items-center gap-0.5 rounded-t-md bg-blue-600 px-1 py-0.5">
+          <div className="absolute left-0 top-0 z-20 -translate-y-full flex items-center gap-0.5 rounded-t-md bg-brand px-1 py-0.5">
             <span className="px-1.5 text-[11px] font-medium text-white">
               {index + 1}
             </span>
@@ -275,7 +281,7 @@ function SortableSection({
                 e.stopPropagation();
                 onDuplicate();
               }}
-              className="rounded p-1 text-white/90 hover:bg-blue-500"
+              className="rounded p-1 text-white/90 hover:bg-brand-hover"
               title="Duplikat"
             >
               <Copy size={12} />
@@ -298,7 +304,7 @@ function SortableSection({
           {...attributes}
           {...listeners}
           className={cn(
-            "absolute right-1 top-1 z-20 rounded p-1 text-zinc-300 opacity-0 transition-opacity group-hover:opacity-100 hover:text-zinc-600",
+            "absolute right-1 top-1 z-20 rounded p-1 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100 hover:text-foreground",
             dragging && "opacity-100"
           )}
           title="Seret untuk menggeser urutan"

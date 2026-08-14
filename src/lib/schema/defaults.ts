@@ -1,4 +1,5 @@
 import { SCHEMA_VERSION, type Node, type ProjectDocument } from "./types";
+import { DEFAULT_THEME_PRESETS } from "@/lib/theme/presets";
 import { uid } from "@/lib/utils";
 
 export function createDefaultNode(componentType: string): Node {
@@ -19,18 +20,15 @@ export function createProjectDocument(
   name: string,
   sections: Node[]
 ): ProjectDocument {
+  const presets = { ...DEFAULT_THEME_PRESETS };
+  delete (presets as { density?: string }).density;
+  delete (presets as { shadow?: string }).shadow;
   return {
     schemaVersion: SCHEMA_VERSION,
     projectId,
     name,
     theme: {
-      presets: {
-        color: "blue",
-        radius: "soft",
-        font: "modern",
-        density: "balanced",
-        shadow: "soft",
-      },
+      presets,
       overrides: {},
     },
     settings: { device: "desktop" },

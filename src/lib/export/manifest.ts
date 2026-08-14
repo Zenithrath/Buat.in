@@ -28,7 +28,7 @@ export function buildGeneratorManifest(doc: ProjectDocument) {
 }
 
 export function buildFontsHtml(doc: ProjectDocument): string {
-  const preset = getFontPreset(doc.theme.presets.font);
+  const preset = getFontPreset(doc.theme.presets.font ?? "geist");
   const hrefs = preset.googleFonts.map(
     (f) => `https://fonts.googleapis.com/css2?family=${f}&display=swap`
   );

@@ -22,7 +22,7 @@ export function PreviewModal({
 
   return (
     <Modal open={open} onClose={onClose} title="Pratinjau Situs" wide>
-      <div className="overflow-hidden rounded-lg border border-zinc-200">
+      <div className="overflow-hidden rounded-lg border border-border">
         <iframe
           title="Pratinjau situs"
           srcDoc={html}
@@ -30,7 +30,7 @@ export function PreviewModal({
           sandbox="allow-scripts"
         />
       </div>
-      <p className="mt-3 text-center text-xs text-zinc-400">
+      <p className="mt-3 text-center text-xs text-muted-foreground">
         Pratinjau ini adalah file <code className="font-mono">index.html</code>{" "}
         hasil export sesungguhnya.
       </p>

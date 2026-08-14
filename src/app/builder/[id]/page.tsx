@@ -22,17 +22,20 @@ export default function BuilderPage({ params }: PageProps<"/builder/[id]">) {
 
   if (loadError) {
     return (
-      <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-zinc-50 px-4 text-center">
-        <h1 className="text-xl font-bold text-zinc-900">
+      <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-background px-4 text-center text-foreground">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.35em] text-muted-foreground">
+          [ ERROR 404 ]
+        </p>
+        <h1 className="font-display text-2xl font-bold">
           Project tidak ditemukan
         </h1>
-        <p className="max-w-sm text-sm text-zinc-500">
+        <p className="max-w-sm text-sm text-muted-foreground">
           Project ini mungkin belum pernah dibuat, atau data penyimpanan lokal
           sudah terhapus.
         </p>
         <Link
           href="/builder"
-          className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+          className="mt-2 rounded-md bg-brand px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-brand-hover"
         >
           Buat website baru
         </Link>

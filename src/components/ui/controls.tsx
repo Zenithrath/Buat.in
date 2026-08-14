@@ -1,43 +1,26 @@
+import { ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { Separator } from "@/components/ui/separator";
 
 export function Field({
   label,
   children,
   className,
+  htmlFor,
 }: {
   label: string;
   children: React.ReactNode;
   className?: string;
+  htmlFor?: string;
 }) {
   return (
-    <label className={cn("block", className)}>
-      <span className="mb-1 block text-xs font-medium text-zinc-500">
-        {label}
-      </span>
+    <div className={cn("space-y-1.5", className)}>
+      <Label htmlFor={htmlFor}>{label}</Label>
       {children}
-    </label>
-  );
-}
-
-const controlClass =
-  "w-full rounded-md border border-zinc-200 bg-white px-2.5 py-1.5 text-sm text-zinc-900 placeholder:text-zinc-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500";
-
-export function Input({
-  className,
-  ...props
-}: React.InputHTMLAttributes<HTMLInputElement>) {
-  return <input className={cn(controlClass, className)} {...props} />;
-}
-
-export function Textarea({
-  className,
-  ...props
-}: React.TextareaHTMLAttributes<HTMLTextAreaElement>) {
-  return (
-    <textarea
-      className={cn(controlClass, "min-h-20 resize-y leading-relaxed", className)}
-      {...props}
-    />
+    </div>
   );
 }
 
@@ -47,12 +30,22 @@ export function Select({
   ...props
 }: React.SelectHTMLAttributes<HTMLSelectElement>) {
   return (
-    <select className={cn(controlClass, "cursor-pointer", className)} {...props}>
-      {children}
-    </select>
+    <div className="relative">
+      <select
+        className={cn(
+          "h-8 w-full cursor-pointer appearance-none rounded-md border border-input bg-transparent py-1 pl-2.5 pr-7 text-xs text-foreground shadow-sm transition-colors focus:outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50",
+          className
+        )}
+        {...props}
+      >
+        {children}
+      </select>
+      <ChevronDown
+        size={13}
+        className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground"
+      />
+    </div>
   );
 }
 
-export function Separator({ className }: { className?: string }) {
-  return <div className={cn("h-px bg-zinc-200", className)} />;
-}
+export { Input, Textarea, Label, Separator };

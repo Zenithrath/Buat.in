@@ -6,7 +6,8 @@ export type SectionStyleKey =
   | "padding"
   | "textAlign"
   | "contentWidth"
-  | "background";
+  | "background"
+  | "backgroundCustom";
 
 export type SectionStyle = Partial<Record<SectionStyleKey, string>>;
 
@@ -35,11 +36,28 @@ export interface Page {
 }
 
 export interface ThemePresetSelection {
-  color: string;
-  radius: string;
-  font: string;
-  density: string;
-  shadow: string;
+  /** Gaya struktural: vega | nova | maia | lyra | mira */
+  style?: string;
+  /** Warna dasar permukaan: neutral | stone | zinc | mauve | olive | mist | taupe */
+  baseColor?: string;
+  /** Warna utama project: neutral | red | ... | rose */
+  theme?: string;
+  /** Radius: none | small | medium | large | xlarge */
+  radius?: string;
+  /** Font: geist | inter | figtree | manrope | dmsans | ibmplex | jetbrains */
+  font?: string;
+  /** Font heading: "inherit" | FontId */
+  fontHeading?: string;
+  /** Palette chart: neutral | theme | categorical */
+  chart?: string;
+  /** Tampilan project: light | dark (default light) */
+  appearance?: "light" | "dark";
+  /** Font mono: jetbrains | inherit */
+  fontMono?: string;
+  /** Legacy */
+  color?: string;
+  density?: string;
+  shadow?: string;
 }
 
 export interface Theme {

@@ -6,6 +6,7 @@ import type {
   Theme,
 } from "@/lib/schema/types";
 import { createBlankProject, createDefaultNode } from "@/lib/schema/defaults";
+import { normalizePresets } from "@/lib/theme/presets";
 import { uid } from "@/lib/utils";
 
 const HISTORY_LIMIT = 50;
@@ -28,6 +29,13 @@ function mapNode(nodes: Node[], id: string, fn: (node: Node) => Node): Node[] {
 
 export type SaveStatus = "idle" | "saving" | "saved";
 
+export type LeftTab =
+  | "pages"
+  | "components"
+  | "blocks"
+  | "style"
+  | "assets";
+
 interface BuilderState {
   document: ProjectDocument;
   selectedId: string | null;
@@ -36,13 +44,16 @@ interface BuilderState {
   saveStatus: SaveStatus;
   loaded: boolean;
   loadError: boolean;
+  leftTab: LeftTab;
 
   select: (id: string | null) => void;
   setDevice: (device: Device) => void;
   setDocument: (doc: ProjectDocument) => void;
   markLoadError: () => void;
+  setLeftTab: (tab: LeftTab) => void;
   updateNode: (id: string, updater: (node: Node) => Node) => void;
   addSection: (componentType: string, index?: number) => void;
+  addBlock: (sections: Node[]) => void;
   removeSection: (id: string) => void;
   duplicateSection: (id: string) => void;
   moveSection: (fromIndex: number, toIndex: number) => void;
@@ -63,11 +74,14 @@ export const useBuilderStore = create<BuilderState>((set, get) => ({
   saveStatus: "idle",
   loaded: false,
   loadError: false,
+  leftTab: "pages",
 
   select: (id) => set({ selectedId: id }),
 
   markLoadError: () =>
     set({ loadError: true, loaded: false }),
+
+  setLeftTab: (tab) => set({ leftTab: tab }),
 
   setDevice: (device) =>
     set({
@@ -79,7 +93,7 @@ export const useBuilderStore = create<BuilderState>((set, get) => ({
 
   setDocument: (doc) =>
     set({
-      document: doc,
+      document: normalizeDocument(doc),
       past: [],
       future: [],
       loaded: true,
@@ -118,6 +132,20 @@ export const useBuilderStore = create<BuilderState>((set, get) => ({
     };
     commit(set, get, nextDoc);
     set({ selectedId: node.id });
+  },
+
+  addBlock: (nodes) => {
+    const { document } = get();
+    const nextDoc: ProjectDocument = {
+      ...document,
+      pages: [
+        {
+          ...document.pages[0],
+          sections: [...document.pages[0].sections, ...nodes],
+        },
+      ],
+    };
+    commit(set, get, nextDoc);
   },
 
   removeSection: (id) => {
@@ -251,10 +279,21 @@ export function loadProject(projectId: string): ProjectDocument | null {
     if (!raw) return null;
     const doc = JSON.parse(raw) as ProjectDocument;
     if (doc.projectId !== projectId) return null;
-    return doc;
+    return normalizeDocument(doc);
   } catch {
     return null;
   }
+}
+
+/** Menormalisasi preset theme lama (color/radius/font legacy) ke skema baru. */
+export function normalizeDocument(doc: ProjectDocument): ProjectDocument {
+  return {
+    ...doc,
+    theme: {
+      ...doc.theme,
+      presets: normalizePresets(doc.theme?.presets ?? {}),
+    },
+  };
 }
 
 export function getSelectedNode(state: BuilderState): Node | null {

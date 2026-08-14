@@ -55,9 +55,13 @@ export function resolveSectionStyles(
   tokens: ResolvedTokens
 ): SectionStyleProps {
   const styles = node.styles;
+  const bg = styles.background ?? "default";
   return {
     padding: scalePx(PADDING_SCALE[styles.padding ?? "lg"] ?? PADDING_SCALE.lg, tokens),
-    background: styles.background ?? "default",
+    background:
+      bg === "custom"
+        ? styles.backgroundCustom || tokens.background
+        : backgroundToken(bg, tokens),
     textAlign: styles.textAlign ?? "center",
     contentWidth: CONTENT_WIDTH[styles.contentWidth ?? "default"] ?? 1120,
   };
@@ -67,6 +71,7 @@ export function sectionStyleVars(node: Node, tokens: ResolvedTokens): string {
   const s = resolveSectionStyles(node, tokens);
   return [
     `--bi-pad: ${s.padding}`,
+    `--bi-bg: ${s.background}`,
     `--bi-align: ${s.textAlign}`,
     `--bi-cw: ${s.contentWidth ? `${s.contentWidth}px` : "100%"}`,
   ].join("; ");
@@ -136,14 +141,72 @@ export function themeTokenStyle(
   return {
     "--bi-bg": tokens.background,
     "--bi-fg": tokens.foreground,
+    "--bi-card": tokens.card,
+    "--bi-popover": tokens.popover,
     "--bi-primary": tokens.primary,
     "--bi-primary-fg": tokens.primaryForeground,
     "--bi-secondary": tokens.secondary,
     "--bi-muted": tokens.muted,
+    "--bi-muted-fg": tokens.mutedForeground,
+    "--bi-accent": tokens.accent,
+    "--bi-accent-fg": tokens.accentForeground,
     "--bi-border": tokens.border,
+    "--bi-input": tokens.input,
+    "--bi-ring": tokens.ring,
+    "--bi-destructive": tokens.destructive,
     "--bi-radius": tokens.radius,
     "--bi-font-heading": tokens.fontHeading,
     "--bi-font-body": tokens.fontBody,
+    "--bi-font-mono": tokens.fontMono,
     "--bi-shadow": tokens.shadow,
+    "--bi-control-height": tokens.controlHeight,
+    "--bi-card-padding": tokens.cardPadding,
+    "--bi-section-gap": tokens.sectionGap,
+    "--bi-chart-1": tokens.chart[0],
+    "--bi-chart-2": tokens.chart[1],
+    "--bi-chart-3": tokens.chart[2],
+    "--bi-chart-4": tokens.chart[3],
+    "--bi-chart-5": tokens.chart[4],
+  };
+}
+
+/**
+ * Token project dengan nama semantik (--primary, --background, ...).
+ * Dipakai untuk "scope" di area situs pengguna di kanvas dan preview
+ * tema, sehingga primitif Tailwind (bg-primary, text-foreground, dll.)
+ * yang dirender di dalam scope ikut token project — bukan token editor.
+ */
+export function projectTokenStyle(
+  tokens: ResolvedTokens
+): Record<string, string> {
+  return {
+    "--background": tokens.background,
+    "--foreground": tokens.foreground,
+    "--card": tokens.card,
+    "--card-foreground": tokens.foreground,
+    "--popover": tokens.popover,
+    "--popover-foreground": tokens.foreground,
+    "--primary": tokens.primary,
+    "--primary-foreground": tokens.primaryForeground,
+    "--secondary": tokens.secondary,
+    "--secondary-foreground": tokens.foreground,
+    "--muted": tokens.muted,
+    "--muted-foreground": tokens.mutedForeground,
+    "--accent": tokens.accent,
+    "--accent-foreground": tokens.accentForeground,
+    "--destructive": tokens.destructive,
+    "--destructive-foreground": "#ffffff",
+    "--border": tokens.border,
+    "--input": tokens.input,
+    "--ring": tokens.ring,
+    "--radius": tokens.radius,
+    "--font-sans": tokens.fontBody,
+    "--font-heading": tokens.fontHeading,
+    "--font-mono": tokens.fontMono,
+    "--chart-1": tokens.chart[0],
+    "--chart-2": tokens.chart[1],
+    "--chart-3": tokens.chart[2],
+    "--chart-4": tokens.chart[3],
+    "--chart-5": tokens.chart[4],
   };
 }

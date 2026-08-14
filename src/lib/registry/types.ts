@@ -46,6 +46,21 @@ export interface ComponentManifest {
   contentControls: ContentControl[];
   previewRenderer: ComponentType<{ node: Node; theme: Theme }>;
   exportAdapter: (node: Node, ctx: ExportContext) => ExportResult;
+  /** Kontrol gaya tambahan khusus komponen (opsional). */
+  styleControls?: SectionStyleControl[];
+  /** Kemampuan tema yang dibutuhkan komponen (opsional). */
+  themeCapabilities?: ("radius" | "shadow" | "fonts")[];
+}
+
+export interface SectionStyleControl {
+  key: string;
+  label: string;
+  group?: string;
+  type: "select" | "slider";
+  options?: ContentControlOption[];
+  min?: number;
+  max?: number;
+  defaultValue?: string | number;
 }
 
 export interface PreviewRendererProps {

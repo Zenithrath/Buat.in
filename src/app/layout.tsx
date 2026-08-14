@@ -1,10 +1,26 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { EB_Garamond, Geist, Geist_Mono, Inter_Tight } from "next/font/google";
 import "./globals.css";
 
-const inter = Inter({
-  variable: "--font-inter",
+const geist = Geist({
+  variable: "--font-geist",
   subsets: ["latin"],
+});
+
+const geistMono = Geist_Mono({
+  variable: "--font-geist-mono",
+  subsets: ["latin"],
+});
+
+const interTight = Inter_Tight({
+  variable: "--font-inter-tight",
+  subsets: ["latin"],
+});
+
+const garamond = EB_Garamond({
+  variable: "--font-garamond",
+  subsets: ["latin"],
+  style: ["italic"],
 });
 
 export const metadata: Metadata = {
@@ -17,9 +33,12 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="id"
-      className={`${inter.variable} h-full scroll-smooth antialiased`}
+      data-scroll-behavior="smooth"
+      className={`${geist.variable} ${geistMono.variable} ${interTight.variable} ${garamond.variable} dark h-full scroll-smooth antialiased`}
     >
-      <body className="min-h-full">{children}</body>
+      <body className="min-h-full bg-background font-sans text-foreground">
+        {children}
+      </body>
     </html>
   );
 }

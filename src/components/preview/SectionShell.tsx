@@ -33,6 +33,7 @@ export function SectionShell({
         {
           ...themeTokenStyle(tokens),
           "--bi-pad": section.padding,
+          "--bi-bg": section.background,
           "--bi-align": section.textAlign,
           "--bi-cw": section.contentWidth
             ? `${section.contentWidth}px`
