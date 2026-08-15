@@ -664,9 +664,22 @@ export function Canvas() {
       onClick={() => select(null)}
     >
       <div
-        className="flex min-h-full min-w-max justify-center p-10 transition-transform duration-100 origin-top"
+        className="flex min-h-full min-w-max justify-center p-10"
         style={{
-          transform: `scale(${zoomScale}) translate(${panOffset.x / zoomScale}px, ${panOffset.y / zoomScale}px)`,
+          // Hindari transform/zoom pada ancestor contentEditable: Chromium
+          // punya bug sticky-caret (kursor berhenti maju, teks jadi terbalik/
+          // mirror). Pada zoom 100% tidak ada scaling sama sekali.
+          ...(zoomScale !== 1
+            ? {
+                zoom: zoomScale,
+                transform:
+                  panOffset.x === 0 && panOffset.y === 0
+                    ? undefined
+                    : `translate(${panOffset.x / zoomScale}px, ${panOffset.y / zoomScale}px)`,
+              }
+            : panOffset.x === 0 && panOffset.y === 0
+              ? undefined
+              : { transform: `translate(${panOffset.x}px, ${panOffset.y}px)` }),
         }}
       >
         <div

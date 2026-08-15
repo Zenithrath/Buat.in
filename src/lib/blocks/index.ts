@@ -32,10 +32,10 @@ export const blockRegistry: BlockManifest[] = [
       {
         componentType: "hero-centered",
         props: {
-          badgeText: "Selamat datang",
+          badgeText: "Buka setiap hari",
           title: "Belanja kebutuhan Anda di satu tempat",
           description:
-            "Temukan produk pilihan dengan harga terbaik, dikirim cepat ke seluruh Indonesia.",
+            "Produk pilihan dengan harga terjangkau, dikirim cepat ke seluruh Indonesia.",
           primaryCtaText: "Lihat Katalog",
           primaryCtaUrl: "#produk",
           secondaryCtaText: "Tentang Kami",
@@ -120,7 +120,7 @@ export const blockRegistry: BlockManifest[] = [
         componentType: "hero-centered",
         props: {
           badgeText: "Koleksi baru",
-          title: "Gaya terbaru, harga terbaik",
+          title: "Koleksi musim ini, harga masuk akal",
           description:
             "Belanja koleksi musim ini dengan gratis ongkir untuk pesanan di atas Rp 300.000.",
           primaryCtaText: "Belanja Sekarang",

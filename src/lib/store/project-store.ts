@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import type {
+  Asset,
   Device,
   Node,
   NodeLayout,
@@ -218,6 +219,8 @@ interface BuilderState {
   moveNode: (id: string, parentId: string | null, index: number) => void;
   reorderChildren: (parentId: string | null, fromIndex: number, toIndex: number) => void;
   updateTheme: (updater: (theme: Theme) => Theme) => void;
+  addAssets: (assets: Asset[]) => void;
+  removeAsset: (assetId: string) => void;
   renameProject: (name: string) => void;
   updateSeo: (updater: (seo: ProjectDocument["seo"]) => ProjectDocument["seo"]) => void;
   selectAll: () => void;
@@ -367,6 +370,23 @@ export const useBuilderStore = create<BuilderState>((set, get) => ({
       const fallback = pages.find((p) => p.isHome) ?? pages[0];
       set({ activePageId: fallback.id, selectedId: null });
     }
+  },
+
+  addAssets: (assets) => {
+    const { document } = get();
+    const existing = new Set(document.assets.map((asset) => asset.id));
+    const fresh = assets.filter((asset) => !existing.has(asset.id));
+    if (fresh.length === 0) return;
+    commit(set, get, { ...document, assets: [...document.assets, ...fresh] });
+  },
+
+  removeAsset: (assetId) => {
+    const { document } = get();
+    if (!document.assets.some((asset) => asset.id === assetId)) return;
+    commit(set, get, {
+      ...document,
+      assets: document.assets.filter((asset) => asset.id !== assetId),
+    });
   },
 
   updateNode: (id, updater) => {

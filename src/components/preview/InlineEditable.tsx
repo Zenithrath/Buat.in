@@ -64,8 +64,13 @@ export function InlineEditableText({
 
   const value = valueOverride ?? valueFor(node, propKey, fallback);
 
+  // Konten dimiliki browser (uncontrolled) selama pengguna mengetik. React
+  // hanya menyinkronkan saat elemen tidak sedang difokus, agar kursor tidak
+  // ter-reset ke kiri dan huruf tidak tertulis terbalik/mirror.
   useEffect(() => {
-    if (elementRef.current !== document.activeElement) {
+    const element = elementRef.current;
+    if (element && element !== document.activeElement && element.innerText !== value) {
+      element.innerText = value;
       setDraft(value);
     }
   }, [value]);
@@ -119,12 +124,29 @@ export function InlineEditableText({
       )}
       onPointerDown={(event) => event.stopPropagation()}
       onClick={(event) => {
-        event.preventDefault();
+        // Jangan preventDefault: Chrome menempatkan kursor di titik klik
+        // lewat default action. Mencegahnya membuat kursor terkunci di
+        // posisi awal teks.
         event.stopPropagation();
-        event.currentTarget.focus();
       }}
       onDoubleClick={(event) => event.stopPropagation()}
-      onInput={(event) => setDraft(event.currentTarget.innerText)}
+      onInput={() => {
+        // Chromium bug "reverse typing": di dalam ancestor ber-transform,
+        // kursor bisa macet di posisi awal sehingga huruf tertulis terbalik.
+        // Jika span bukan activeElement, fokuskan ulang dan letakkan kursor
+        // di akhir teks agar pengetikan kembali normal.
+        const element = elementRef.current;
+        if (!element) return;
+        if (document.activeElement !== element) {
+          element.focus();
+          const range = document.createRange();
+          range.selectNodeContents(element);
+          range.collapse(false);
+          const selection = window.getSelection();
+          selection?.removeAllRanges();
+          selection?.addRange(range);
+        }
+      }}
       onBlur={commit}
       onKeyDown={handleKeyDown}
     >

@@ -3,6 +3,7 @@ import { resolveTheme } from "@/lib/theme/presets";
 import { CORE_CSS, buildThemeVarsCss } from "@/lib/registry/coreCss";
 import { componentMap } from "@/lib/registry";
 import { escapeHtml, propString } from "@/lib/registry/shared";
+import type { ExportAsset } from "@/lib/registry/types";
 import {
   buildFontsHtml,
   buildGeneratorManifest,
@@ -13,6 +14,70 @@ import {
 export interface ExportFile {
   path: string;
   content: string;
+  /** Konten berupa payload base64 biner (mis. gambar) — ditulis apa adanya. */
+  base64?: boolean;
+}
+
+const IMAGE_EXTENSIONS: Record<string, string> = {
+  "image/png": "png",
+  "image/jpeg": "jpg",
+  "image/webp": "webp",
+  "image/gif": "gif",
+  "image/svg+xml": "svg",
+  "image/x-icon": "ico",
+};
+
+/** Ambil nama file unik untuk gambar inline, beri suffix -2, -3 bila bentrok. */
+function uniqueAssetName(
+  mimeType: string,
+  used: Set<string>
+): string {
+  const extension = IMAGE_EXTENSIONS[mimeType] ?? "png";
+  let candidate = `gambar-1.${extension}`;
+  let counter = 1;
+  while (used.has(candidate)) {
+    counter += 1;
+    candidate = `gambar-${counter}.${extension}`;
+  }
+  used.add(candidate);
+  return candidate;
+}
+
+/** Daftarkan gambar data-URL ke kumpulan file ekspor, dedup, dan beri nama file unik. */
+function resolveAssetFileName(
+  dataUrl: string,
+  assetUrls: Map<string, string>,
+  assetNames: Set<string>,
+  assetFiles: ExportFile[]
+): string {
+  const known = assetUrls.get(dataUrl);
+  if (known) return known;
+  const match = /^data:(image\/[\w.+-]+);base64,([A-Za-z0-9+/=]+)$/.exec(dataUrl);
+  const mimeType = match?.[1] ?? "image/png";
+  const payload = match?.[2] ?? "";
+  const fileName = uniqueAssetName(mimeType, assetNames);
+  assetUrls.set(dataUrl, fileName);
+  if (payload) {
+    assetFiles.push({ path: `assets/${fileName}`, content: payload, base64: true });
+  }
+  return fileName;
+}
+
+function pushDeclaredAssets(
+  assets: ExportAsset[] | undefined,
+  assetUrls: Map<string, string>,
+  assetNames: Set<string>,
+  assetFiles: ExportFile[]
+) {
+  for (const asset of assets ?? []) {
+    if (!assetUrls.has(asset.dataUrl)) {
+      const match = /^data:(image\/[\w.+-]+);base64,([A-Za-z0-9+/=]+)$/.exec(asset.dataUrl);
+      if (!match) continue;
+      const fileName = uniqueAssetName(match[1], assetNames);
+      assetUrls.set(asset.dataUrl, fileName);
+      assetFiles.push({ path: `assets/${fileName}`, content: match[2], base64: true });
+    }
+  }
 }
 
 export function buildExportFiles(doc: ProjectDocument): ExportFile[] {
@@ -23,6 +88,24 @@ export function buildExportFiles(doc: ProjectDocument): ExportFile[] {
   const usedCss = new Set<string>();
   const jsParts: string[] = [];
   const usedJs = new Set<string>();
+  const assetFiles: ExportFile[] = [];
+  const assetUrls = new Map<string, string>();
+  const assetNames = new Set<string>();
+
+  /** Tulis ulang gambar inline (data URL) menjadi file di assets/ dan ganti
+   *  referensinya agar website hasil ekspor tetap mandiri tanpa URL eksternal. */
+  const materializeImages = (html: string): string => {
+    let next = html;
+    next = next.replace(/(src)="(data:(image\/[\w.+-]+);base64,[A-Za-z0-9+/=]+)"/g, (_all, _attr, dataUrl) => {
+      const fileName = resolveAssetFileName(dataUrl, assetUrls, assetNames, assetFiles);
+      return `src="assets/${fileName}"`;
+    });
+    next = next.replace(/url\("(data:(image\/[\w.+-]+);base64,[A-Za-z0-9+/=]+)"\)/g, (_all, dataUrl) => {
+      const fileName = resolveAssetFileName(dataUrl, assetUrls, assetNames, assetFiles);
+      return `url("assets/${fileName}")`;
+    });
+    return next;
+  };
 
   const pushCss = (css: string) => {
     if (!css || usedCss.has(css)) return;
@@ -42,6 +125,7 @@ export function buildExportFiles(doc: ProjectDocument): ExportFile[] {
     const result = manifest.exportAdapter(section, ctx);
     pushCss(result.css);
     pushJs(result.js);
+    pushDeclaredAssets(result.assets, assetUrls, assetNames, assetFiles);
     let html = result.html;
 
     // Keep editable compact-sidebar labels identical in the exported HTML.
@@ -146,7 +230,7 @@ export function buildExportFiles(doc: ProjectDocument): ExportFile[] {
       );
     }
 
-    return bodyHtml;
+    return materializeImages(bodyHtml);
   };
 
   const description =
@@ -252,7 +336,8 @@ document.querySelectorAll('[data-dashboard-action="export"]').forEach(function (
     { path: "README.md", content: buildReadme(doc) },
     { path: "DEPLOYMENT.md", content: buildDeploymentGuide(doc) },
     { path: "LICENSE.md", content: buildLicense() },
-    { path: "generator-manifest.json", content: generatorManifest + "\n" }
+    { path: "generator-manifest.json", content: generatorManifest + "\n" },
+    ...assetFiles
   );
 
   return files;

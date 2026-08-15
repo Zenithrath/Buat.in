@@ -13,7 +13,7 @@ export const dataTableManifest: Omit<
   version: "1.0.0",
   defaultProps: {
     title: "Transaksi Terbaru",
-    subtitle: "Daftar 5 transaksi pelanggan paling mutakhir",
+    subtitle: "Daftar 5 transaksi pelanggan terbaru",
     rowsJson: JSON.stringify([
       { id: "TX101", customer: "Budi Santoso", item: "Paket Premium", amount: "Rp 499.000", status: "Selesai", date: "14 Aug 2026" },
       { id: "TX102", customer: "Siti Rahma", item: "Paket Hemat", amount: "Rp 99.000", status: "Proses", date: "14 Aug 2026" },

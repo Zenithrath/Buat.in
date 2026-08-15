@@ -44,6 +44,21 @@ import {
   modalConfirmComponent,
   dashboardActivityListComponent,
   sidebarIconComponent,
+  sectionBasicComponent,
+  breadcrumbComponent,
+  backToTopComponent,
+  logoClientsComponent,
+  sliderTestimonialComponent,
+  socialProofComponent,
+  processStepsComponent,
+  bannerPromoComponent,
+  stackAvatarComponent,
+  progressBarComponent,
+  paginationComponent,
+  formAddDataComponent,
+  barFilterComponent,
+  sparklineComponent,
+  calendarWidgetComponent,
 } from "@/asset-comp";
 
 export type { ComponentCategory };
@@ -85,6 +100,23 @@ export const componentRegistry: ComponentRegistryItem[] = [
   modalCenterComponent,
   modalSheetComponent,
   modalConfirmComponent,
+  // Generic content
+  sectionBasicComponent,
+  breadcrumbComponent,
+  backToTopComponent,
+  logoClientsComponent,
+  sliderTestimonialComponent,
+  socialProofComponent,
+  processStepsComponent,
+  bannerPromoComponent,
+  // Dashboard data & widgets
+  stackAvatarComponent,
+  progressBarComponent,
+  paginationComponent,
+  formAddDataComponent,
+  barFilterComponent,
+  sparklineComponent,
+  calendarWidgetComponent,
 ];
 
 export const componentMap: Record<string, ComponentRegistryItem> =

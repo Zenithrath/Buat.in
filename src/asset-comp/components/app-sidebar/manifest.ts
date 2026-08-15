@@ -18,11 +18,11 @@ export const appSidebarManifest: Omit<
     userName: "Alex Rivers",
     userRole: "Administrator",
     linksJson: JSON.stringify([
-      { id: "s1", label: "Overview", icon: "layout-dashboard", active: true },
-      { id: "s2", label: "Analytics", icon: "bar-chart-3", active: false },
-      { id: "s3", label: "Transaksi", icon: "credit-card", active: false },
-      { id: "s4", label: "Pengguna", icon: "users", active: false },
-      { id: "s5", label: "Pengaturan", icon: "settings", active: false },
+      { id: "s1", label: "Overview", url: "/", icon: "layout-dashboard", active: true },
+      { id: "s2", label: "Analytics", url: "#analitik", icon: "bar-chart-3", active: false },
+      { id: "s3", label: "Transaksi", url: "#transaksi", icon: "credit-card", active: false },
+      { id: "s4", label: "Pengguna", url: "#pengguna", icon: "users", active: false },
+      { id: "s5", label: "Pengaturan", url: "#pengaturan", icon: "settings", active: false },
     ]),
   },
   contentControls: [
@@ -37,6 +37,7 @@ export const appSidebarManifest: Omit<
       type: "array",
       itemSchema: [
         { key: "label", label: "Nama menu", type: "text" },
+        { key: "url", label: "Tautan (URL atau #bagian)", type: "link" },
         { key: "icon", label: "Ikon", type: "text" },
         { key: "active", label: "Menu aktif", type: "boolean" },
       ],

@@ -2,7 +2,7 @@
 
 import type { Node, Theme } from "@/lib/schema/types";
 import { resolveTheme } from "@/lib/theme/presets";
-import { propString, themeTokenStyle } from "@/lib/registry/shared";
+import { propString, sanitizeUrl, themeTokenStyle } from "@/lib/registry/shared";
 import { InlineEditableText } from "@/components/preview/InlineEditable";
 import { nodeList, listBoolean, listValue, uniqueId } from "../_shared/content";
 import { useRepeaterEditor } from "../_shared/inline";
@@ -20,16 +20,17 @@ import {
 interface LinkItem {
   id: string;
   label: string;
+  url: string;
   icon: string;
   active: boolean;
 }
 
 const DEFAULT_LINKS: LinkItem[] = [
-  { id: "overview", label: "Ringkasan", icon: "layout-dashboard", active: true },
-  { id: "analytics", label: "Analitik", icon: "bar-chart-3", active: false },
-  { id: "billing", label: "Keuangan", icon: "credit-card", active: false },
-  { id: "people", label: "Klien", icon: "users", active: false },
-  { id: "settings", label: "Pengaturan", icon: "settings", active: false },
+  { id: "overview", label: "Ringkasan", url: "/", icon: "layout-dashboard", active: true },
+  { id: "analytics", label: "Analitik", url: "#analitik", icon: "bar-chart-3", active: false },
+  { id: "billing", label: "Keuangan", url: "#keuangan", icon: "credit-card", active: false },
+  { id: "people", label: "Klien", url: "#klien", icon: "users", active: false },
+  { id: "settings", label: "Pengaturan", url: "#pengaturan", icon: "settings", active: false },
 ];
 
 const ICON_MAP: Record<string, LucideIcon> = {
@@ -53,6 +54,7 @@ function parseLinks(node: Node): LinkItem[] {
       return {
         id: uniqueId("app-menu", index, label),
         label,
+        url: listValue(item, "url", "#"),
         icon: listValue(item, "icon", "layout-dashboard"),
         active: listBoolean(item, "active"),
       };
@@ -105,16 +107,33 @@ export function AppSidebarPreview({ node, theme }: { node: Node; theme: Theme })
         </p>
         {links.map((link, index) => {
           const Icon = ICON_MAP[link.icon] ?? LayoutDashboard;
-          return (
+          const href = sanitizeUrl(link.url);
+          const sharedProps = {
+            key: link.id,
+            "aria-current": link.active ? ("page" as const) : undefined,
+            className: `flex min-w-0 items-center gap-3 rounded-lg px-3 py-2.5 text-left text-xs font-medium transition-colors ${
+              link.active
+                ? "bg-primary text-primary-foreground shadow-sm"
+                : "text-muted-foreground hover:bg-muted hover:text-foreground"
+            }`,
+          };
+          return href !== "#" ? (
+            <a
+              {...sharedProps}
+              href={href}
+              onClick={(event) => {
+                event.preventDefault();
+                event.stopPropagation();
+              }}
+            >
+              <Icon aria-hidden="true" size={16} strokeWidth={1.9} className="shrink-0" />
+              <span className="min-w-0 flex-1 truncate"><InlineEditableText node={node} propKey={linksKey} value={link.label} onCommit={(next) => setValue(index, "label", next)} /></span>
+              {link.active ? <ChevronRight aria-hidden="true" size={14} className="shrink-0 opacity-70" /> : null}
+            </a>
+          ) : (
             <button
-              key={link.id}
+              {...sharedProps}
               type="button"
-              aria-current={link.active ? "page" : undefined}
-              className={`flex min-w-0 items-center gap-3 rounded-lg px-3 py-2.5 text-left text-xs font-medium transition-colors ${
-                link.active
-                  ? "bg-primary text-primary-foreground shadow-sm"
-                  : "text-muted-foreground hover:bg-muted hover:text-foreground"
-              }`}
             >
               <Icon aria-hidden="true" size={16} strokeWidth={1.9} className="shrink-0" />
               <span className="min-w-0 flex-1 truncate"><InlineEditableText node={node} propKey={linksKey} value={link.label} onCommit={(next) => setValue(index, "label", next)} /></span>

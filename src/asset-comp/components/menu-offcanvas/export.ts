@@ -5,7 +5,7 @@ import { arrayNavigationLinks, navInstanceId } from "../_shared/navigation";
 
 export function menuOffcanvasExport(node: Node): ExportResult {
   const trigger = propString(node, "triggerText").trim() || "Buka navigasi";
-  const title = propString(node, "title").trim() || "Temukan yang Anda butuhkan.";
+  const title = propString(node, "title").trim() || "Semua halaman penting dalam satu panel.";
   const description = propString(node, "description").trim() || "Semua halaman penting tersusun dalam satu panel yang ringkas.";
   const side = propString(node, "side") === "left" ? "left" : "right";
   const cta = propString(node, "ctaText").trim() || "Mulai proyek";

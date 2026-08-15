@@ -17,6 +17,8 @@ import { getActivePage, useBuilderStore } from "@/lib/store/project-store";
 import { componentRegistry } from "@/lib/registry";
 import { templateRegistry, TEMPLATE_CATEGORY_LABELS } from "@/templates";
 import type { ComponentManifest } from "@/lib/registry/types";
+import type { Asset } from "@/lib/schema/types";
+import { uid } from "@/lib/utils";
 import { TemplatePreview } from "./TemplatePreview";
 import { cn } from "@/lib/utils";
 
@@ -407,14 +409,63 @@ function ComponentsPanel() {
 
 /* ─── Assets panel ────────────────────────── */
 function AssetsPanel() {
-  const [uploaded, setUploaded] = useState<{ name: string; url: string }[]>([]);
+  const assets = useBuilderStore((s) => s.document.assets);
+  const addAssets = useBuilderStore((s) => s.addAssets);
+  const removeAsset = useBuilderStore((s) => s.removeAsset);
+  const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const files = Array.from(e.target.files ?? []);
-    files.forEach((f) => {
-      const url = URL.createObjectURL(f);
-      setUploaded((prev) => [...prev, { name: f.name, url }]);
+    const readers = files.map(
+      (file) =>
+        new Promise<Asset | null>((resolve) => {
+          if (!file.type.startsWith("image/")) {
+            resolve(null);
+            return;
+          }
+          const reader = new FileReader();
+          reader.onload = () => {
+            resolve({
+              id: uid(),
+              url: String(reader.result ?? ""),
+              fileName: file.name,
+              mimeType: file.type,
+              size: file.size,
+              width: 0,
+              height: 0,
+            });
+          };
+          reader.onerror = () => resolve(null);
+          reader.readAsDataURL(file);
+        })
+    );
+    Promise.all(readers).then((results) => {
+      const fresh = results.filter((asset): asset is Asset => asset !== null);
+      if (fresh.length > 0) addAssets(fresh);
+      if (fresh.length < files.length) {
+        setError("Beberapa file dilewati — hanya gambar (PNG, JPG, WebP, SVG, GIF) yang bisa diunggah.");
+        setTimeout(() => setError(null), 4000);
+      }
     });
+    e.target.value = "";
+  }
+
+  async function copyAsset(asset: Asset) {
+    try {
+      await navigator.clipboard.writeText(asset.url);
+      setCopiedId(asset.id);
+      setTimeout(() => setCopiedId(null), 2000);
+    } catch {
+      setError("Gagal menyalin — gunakan browser yang mendukung clipboard.");
+      setTimeout(() => setError(null), 4000);
+    }
+  }
+
+  function formatSize(bytes: number): string {
+    if (bytes < 1024) return `${bytes} B`;
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(0)} KB`;
+    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
   }
 
   return (
@@ -423,26 +474,53 @@ function AssetsPanel() {
       <label className="flex flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed border-border bg-muted/30 py-7 cursor-pointer hover:border-brand/60 hover:bg-brand/5 transition-colors">
         <ImageIcon size={22} className="text-muted-foreground" />
         <p className="text-[11px] font-semibold text-foreground">Unggah Gambar</p>
-        <p className="text-[9px] text-muted-foreground">PNG, JPG, SVG, WebP</p>
+        <p className="text-[9px] text-muted-foreground">PNG, JPG, SVG, WebP, GIF</p>
         <input type="file" accept="image/*" multiple className="hidden" onChange={handleFileChange} />
       </label>
+      <p className="rounded-md bg-muted/60 px-2.5 py-2 text-[9.5px] leading-4 text-muted-foreground">
+        Klik gambar di bawah untuk menyalin URL-nya, lalu tempel di kolom gambar komponen (klik gambar di kanvas → tempel URL).
+      </p>
 
-      {uploaded.length === 0 ? (
+      {error ? <p className="rounded-md bg-rose-500/10 px-2.5 py-2 text-[10px] text-rose-600">{error}</p> : null}
+
+      {assets.length === 0 ? (
         <p className="text-center text-[10px] text-muted-foreground py-4">
           Belum ada gambar diunggah
         </p>
       ) : (
         <div className="grid grid-cols-2 gap-2">
-          {uploaded.map((a, i) => (
+          {assets.map((asset) => (
             <div
-              key={i}
+              key={asset.id}
               className="group relative rounded-md border overflow-hidden bg-muted/40 aspect-square cursor-pointer hover:ring-1 hover:ring-brand"
+              onClick={() => copyAsset(asset)}
+              title="Klik untuk menyalin URL gambar"
             >
-              {/* eslint-disable-next-line @next/next/no-img-element -- pratinjau lokal via blob URL */}
-              <img src={a.url} alt={a.name} className="h-full w-full object-cover" />
-              <div className="absolute inset-x-0 bottom-0 bg-black/50 px-1.5 py-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
-                <p className="text-[9px] text-white truncate">{a.name}</p>
+              {/* eslint-disable-next-line @next/next/no-img-element -- pratinjau lokal via data URL */}
+              <img src={asset.url} alt={asset.fileName} className="h-full w-full object-cover" />
+              <div className="absolute inset-x-0 bottom-0 bg-black/60 px-1.5 py-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                <p className="text-[9px] text-white truncate">{asset.fileName}</p>
+                <p className="text-[8px] text-white/70">{formatSize(asset.size)}</p>
               </div>
+              <span
+                className={`absolute inset-x-0 top-0 bg-brand px-1.5 py-1 text-center text-[9px] font-bold text-brand-foreground transition-opacity ${
+                  copiedId === asset.id ? "opacity-100" : "opacity-0"
+                }`}
+              >
+                Disalin!
+              </span>
+              <button
+                type="button"
+                aria-label={`Hapus ${asset.fileName}`}
+                title="Hapus gambar"
+                onClick={(event) => {
+                  event.stopPropagation();
+                  removeAsset(asset.id);
+                }}
+                className="absolute right-1 top-1 grid size-5 place-items-center rounded-md bg-black/50 text-white opacity-0 transition-opacity hover:bg-black/75 group-hover:opacity-100"
+              >
+                <X size={11} />
+              </button>
             </div>
           ))}
         </div>

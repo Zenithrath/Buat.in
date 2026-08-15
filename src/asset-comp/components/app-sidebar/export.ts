@@ -5,16 +5,17 @@ import { escapeHtml, propString } from "@/lib/registry/shared";
 interface SidebarLink {
   id: string;
   label: string;
+  url: string;
   icon: string;
   active: boolean;
 }
 
 const DEFAULT_LINKS: SidebarLink[] = [
-  { id: "overview", label: "Ringkasan", icon: "layout-dashboard", active: true },
-  { id: "analytics", label: "Analitik", icon: "bar-chart-3", active: false },
-  { id: "billing", label: "Keuangan", icon: "credit-card", active: false },
-  { id: "people", label: "Klien", icon: "users", active: false },
-  { id: "settings", label: "Pengaturan", icon: "settings", active: false },
+  { id: "overview", label: "Ringkasan", url: "/", icon: "layout-dashboard", active: true },
+  { id: "analytics", label: "Analitik", url: "#analitik", icon: "bar-chart-3", active: false },
+  { id: "billing", label: "Keuangan", url: "#keuangan", icon: "credit-card", active: false },
+  { id: "people", label: "Klien", url: "#klien", icon: "users", active: false },
+  { id: "settings", label: "Pengaturan", url: "#pengaturan", icon: "settings", active: false },
 ];
 
 function textOrFallback(node: Node, key: string, fallback: string): string {
@@ -31,6 +32,7 @@ function parseLinks(node: Node): SidebarLink[] {
       .map((item, index) => ({
         id: String(item.id ?? `menu-${index + 1}`).trim() || `menu-${index + 1}`,
         label: String(item.label ?? "").trim(),
+        url: String(item.url ?? "").trim() || "#",
         icon: String(item.icon ?? "layout-dashboard"),
         active: item.active === true,
       }))
@@ -69,13 +71,18 @@ export function appSidebarExport(node: Node): ExportResult {
   const links = parseLinks(node);
 
   const linksHtml = links
-    .map(
-      (link) => `<button class="bi-sidebar-link${link.active ? " active is-active" : ""}" type="button" data-dashboard-nav-link aria-label="Buka ${escapeHtml(link.label)}"${link.active ? ' aria-current="page"' : ""}>
-          ${iconMarkup(link.icon)}
-          <span class="bi-sidebar-link-label">${escapeHtml(link.label)}</span>
-          ${link.active ? '<span class="bi-sidebar-link-caret" aria-hidden="true">›</span>' : ""}
-        </button>`
-    )
+    .map((link) => {
+      const classes = `bi-sidebar-link${link.active ? " active is-active" : ""}`;
+      const label = `<span class="bi-sidebar-link-label">${escapeHtml(link.label)}</span>`;
+      const caret = link.active ? '<span class="bi-sidebar-link-caret" aria-hidden="true">›</span>' : "";
+      const activeAttr = link.active ? ' aria-current="page"' : "";
+      const inner = `${iconMarkup(link.icon)}\n          ${label}\n          ${caret}`;
+      const href = link.url.trim();
+      if (href && href !== "#") {
+        return `<a class="${classes}" href="${escapeHtml(href)}" aria-label="Buka ${escapeHtml(link.label)}"${activeAttr}>\n          ${inner}\n        </a>`;
+      }
+      return `<button class="${classes}" type="button" data-dashboard-nav-link aria-label="Buka ${escapeHtml(link.label)}"${activeAttr}>\n          ${inner}\n        </button>`;
+    })
     .join("\n        ");
 
   const html = `<aside class="bi-sidebar" aria-label="Navigasi aplikasi">
@@ -122,7 +129,7 @@ export function appSidebarExport(node: Node): ExportResult {
 .bi-brand-tag { flex: 0 0 auto; padding: 0.2rem 0.35rem; border: 1px solid color-mix(in srgb, var(--bi-primary) 25%, var(--bi-border)); border-radius: 0.3rem; background: color-mix(in srgb, var(--bi-primary) 10%, transparent); color: var(--bi-primary); font-family: var(--bi-font-mono); font-size: 0.5625rem; font-weight: 800; letter-spacing: 0.04em; }
 .bi-sidebar-menu { display: flex; flex: 1; flex-direction: column; gap: 0.25rem; min-width: 0; }
 .bi-nav-heading { margin: 0 0 0.25rem; padding: 0 0.625rem; color: var(--bi-muted-fg); font-size: 0.625rem; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; }
-.bi-sidebar-link { width: 100%; display: flex; min-width: 0; align-items: center; gap: 0.75rem; padding: 0.625rem 0.75rem; border: 1px solid transparent; border-radius: var(--bi-radius); background: transparent; color: var(--bi-muted-fg); cursor: pointer; font: inherit; font-size: 0.75rem; font-weight: 600; line-height: 1; text-align: left; transition: background 150ms ease, color 150ms ease, border-color 150ms ease; }
+.bi-sidebar-link { width: 100%; display: flex; min-width: 0; align-items: center; gap: 0.75rem; padding: 0.625rem 0.75rem; border: 1px solid transparent; border-radius: var(--bi-radius); background: transparent; color: var(--bi-muted-fg); cursor: pointer; font: inherit; font-size: 0.75rem; font-weight: 600; line-height: 1; text-align: left; text-decoration: none; box-sizing: border-box; transition: background 150ms ease, color 150ms ease, border-color 150ms ease; }
 .bi-sidebar-link:hover { background: var(--bi-muted); color: var(--bi-fg); }
 .bi-sidebar-link.active, .bi-sidebar-link.is-active { border-color: color-mix(in srgb, var(--bi-primary) 18%, transparent); background: var(--bi-primary); color: var(--bi-primary-fg); box-shadow: 0 3px 10px color-mix(in srgb, var(--bi-primary) 18%, transparent); }
 .bi-sidebar-link-icon { width: 1rem; height: 1rem; flex: 0 0 auto; }

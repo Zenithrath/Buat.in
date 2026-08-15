@@ -11,7 +11,7 @@ export const menuOffcanvasManifest: Omit<ComponentManifest, "previewRenderer" | 
   version: "2.0.0",
   defaultProps: {
     triggerText: "Buka navigasi",
-    title: "Temukan yang Anda butuhkan.",
+    title: "Semua halaman penting dalam satu panel.",
     description: "Semua halaman penting tersusun dalam satu panel yang ringkas.",
     side: "right",
     links: [

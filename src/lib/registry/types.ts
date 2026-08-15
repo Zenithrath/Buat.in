@@ -62,6 +62,15 @@ export interface ExportResult {
   css: string;
   /** Interaksi statis khusus komponen. Digabung ke js/main.js saat export. */
   js?: string;
+  /** Gambar yang dipakai komponen (data URL) — ditulis ke folder assets/ saat ekspor. */
+  assets?: ExportAsset[];
+}
+
+/** Gambar inline (data URL) milik komponen; eksportir menuliskannya sebagai file di assets/. */
+export interface ExportAsset {
+  fileName: string;
+  mimeType: string;
+  dataUrl: string;
 }
 
 export interface ComponentManifest {

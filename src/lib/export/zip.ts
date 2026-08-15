@@ -13,7 +13,7 @@ export async function buildProjectZip(doc: ProjectDocument): Promise<Blob> {
     for (const part of parts.slice(0, -1)) {
       folder = folder.folder(part)!;
     }
-    folder.file(parts[parts.length - 1], file.content);
+    folder.file(parts[parts.length - 1], file.content, file.base64 ? { base64: true } : undefined);
   }
 
   return zip.generateAsync({
