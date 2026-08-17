@@ -174,6 +174,7 @@ export type SaveStatus = "idle" | "saving" | "saved";
 export type LeftTab =
   | "design"
   | "templates"
+  | "sections"
   | "components"
   | "layers"
   | "assets"

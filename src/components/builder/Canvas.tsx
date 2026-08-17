@@ -28,6 +28,7 @@ import {
   type CanvasChildrenOptions,
 } from "@/components/preview/CanvasChildrenContext";
 import { cn } from "@/lib/utils";
+import { handleLinkNavigationClick } from "@/lib/preview/link-navigation";
 import { CANVAS_ROOT_ID, GRID_DROP_PREFIX } from "./BuilderDndProvider";
 
 const DEVICE_WIDTHS: Record<string, number> = {
@@ -506,6 +507,7 @@ function EmptyCanvas({ dragActive }: { dragActive: boolean }) {
 export function Canvas() {
   const document = useBuilderStore((state) => state.document);
   const activePageId = useBuilderStore((state) => state.activePageId);
+  const setActivePage = useBuilderStore((state) => state.setActivePage);
   const selectedId = useBuilderStore((state) => state.selectedId);
   const select = useBuilderStore((state) => state.select);
   const selectAll = useBuilderStore((state) => state.selectAll);
@@ -581,6 +583,28 @@ export function Canvas() {
     element.addEventListener("wheel", handleWheel, { passive: false });
     return () => element.removeEventListener("wheel", handleWheel);
   }, [setZoomLevel, zoomLevel]);
+
+  useEffect(() => {
+    const element = canvasRef.current;
+    if (!element) return;
+    // Phase CAPTURE: berjalan sebelum event.stopPropagation() dari komponen
+    // preview (mis. InlineEditableText), sehingga klik tautan di kanvas selalu
+    // dicegat. Tautan antar halaman project berpindah halaman di dalam
+    // builder (setActivePage), anchor digulirkan, tautan eksternal/404
+    // diblokir agar tidak keluar dari editor.
+    const handleClick = (event: MouseEvent) =>
+      handleLinkNavigationClick(event, {
+        mode: "canvas",
+        pages: document.pages,
+        onNavigateToPage: (pageId) => {
+          setActivePage(pageId);
+          select(null);
+          element.scrollTo({ top: 0, behavior: "smooth" });
+        },
+      });
+    element.addEventListener("click", handleClick, true);
+    return () => element.removeEventListener("click", handleClick, true);
+  }, [document.pages, setActivePage, select]);
 
   const handleMouseDown = useCallback(
     (event: React.MouseEvent) => {

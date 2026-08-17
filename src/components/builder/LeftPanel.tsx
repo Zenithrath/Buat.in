@@ -5,6 +5,7 @@ import { useDraggable } from "@dnd-kit/core";
 import {
   LayoutTemplate,
   Blocks,
+  PanelsTopLeft,
   Image as ImageIcon,
   Search,
   Crown,
@@ -23,12 +24,13 @@ import { TemplatePreview } from "./TemplatePreview";
 import { cn } from "@/lib/utils";
 
 /* ─────────────────────────────────────────────
-   Panel tabs — Templates | Components | Assets
+   Panel tabs — Templates | Sections | Components | Assets
 ───────────────────────────────────────────── */
-type PanelTab = "templates" | "components" | "assets";
+type PanelTab = "templates" | "sections" | "components" | "assets";
 
 const PANEL_TABS: { id: PanelTab; icon: LucideIcon; label: string }[] = [
   { id: "templates", icon: LayoutTemplate, label: "Template" },
+  { id: "sections", icon: PanelsTopLeft, label: "Section" },
   { id: "components", icon: Blocks, label: "Komponen" },
   { id: "assets", icon: ImageIcon, label: "Gambar" },
 ];
@@ -84,6 +86,7 @@ const FRIENDLY_NAMES: Record<string, string> = {
   "modal-sheet": "Panel Geser (Sheet)",
   "modal-confirm": "Dialog Konfirmasi",
   "grid-container": "Grid / Kolom",
+  "section-basic": "Section Kosong",
   "app-sidebar": "Sidebar Aplikasi",
   "sidebar-icon": "Sidebar Ikon",
   "dashboard-header": "Header Dashboard",
@@ -118,6 +121,7 @@ const COMPONENT_GROUPS: ComponentGroup[] = [
   { id: "footer", label: "Footer / Bagian Bawah", scope: "landing", ids: ["footer-basic"] },
   { id: "modal", label: "Popup / Modal", scope: "both", ids: ["modal-center", "modal-sheet", "modal-confirm"] },
   { id: "layout", label: "Tata Letak / Grid", scope: "both", ids: ["grid-container"] },
+  { id: "section", label: "Section / Bagian", scope: "both", ids: ["section-basic"] },
   { id: "sidebar", label: "Sidebar / Menu Samping", scope: "dashboard", ids: ["app-sidebar", "sidebar-icon"] },
   { id: "dash-header", label: "Header Dashboard", scope: "dashboard", ids: ["dashboard-header"] },
   { id: "kpi", label: "Kartu Statistik (KPI)", scope: "dashboard", ids: ["kpi-card"] },
@@ -176,6 +180,30 @@ function DraggableComponent({
         <p className="text-[9px] text-muted-foreground leading-tight truncate">
           {manifest.description}
         </p>
+      </div>
+    </div>
+  );
+}
+
+/* ─── Sections panel ──────────────────────── */
+const SECTION_COMPONENT_IDS = ["section-basic", "grid-container"];
+
+function SectionsPanel() {
+  const sectionItems = componentRegistry.filter((c) =>
+    SECTION_COMPONENT_IDS.includes(c.id)
+  );
+
+  return (
+    <div className="flex flex-col gap-3 px-3 py-3">
+      <PanelHeader title="Section" count={sectionItems.length} />
+      <p className="rounded-md bg-muted/60 px-2.5 py-2 text-[9.5px] leading-4 text-muted-foreground">
+        Section adalah kerangka halaman. Tambahkan section kosong, lalu isi
+        dengan komponen lain (seret ke kanvas atau klik dua kali).
+      </p>
+      <div className="flex flex-col gap-1.5">
+        {sectionItems.map((manifest) => (
+          <DraggableComponent key={manifest.id} manifest={manifest} search="" />
+        ))}
       </div>
     </div>
   );
@@ -534,7 +562,9 @@ export function LeftPanel() {
   const leftTab = useBuilderStore((s) => s.leftTab);
   const setLeftTab = useBuilderStore((s) => s.setLeftTab);
   const activeTab: PanelTab =
-    leftTab === "components" || leftTab === "assets" ? leftTab : "templates";
+    leftTab === "components" || leftTab === "assets" || leftTab === "sections"
+      ? leftTab
+      : "templates";
 
   return (
     <div className="flex h-full">
@@ -567,6 +597,7 @@ export function LeftPanel() {
       {/* Panel content */}
       <div className="flex-1 overflow-y-auto min-w-0">
         {activeTab === "templates" && <TemplatesPanel />}
+        {activeTab === "sections" && <SectionsPanel />}
         {activeTab === "components" && <ComponentsPanel />}
         {activeTab === "assets" && <AssetsPanel />}
       </div>

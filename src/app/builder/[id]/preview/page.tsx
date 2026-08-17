@@ -9,6 +9,7 @@ import { resolveTheme, FONT_LINKS } from "@/lib/theme/presets";
 import { projectTokenStyle, themeTokenStyle } from "@/lib/registry/shared";
 import { SectionPreview } from "@/components/preview/SectionPreview";
 import { RegistryStyles } from "@/components/builder/RegistryStyles";
+import { handleLinkNavigationClick } from "@/lib/preview/link-navigation";
 import { buildDashboardCss } from "@/lib/export/html";
 
 const DASHBOARD_GROUPS = ["dashboard-header", "kpi-card", "chart-card"];
@@ -36,44 +37,31 @@ export default function DedicatedPreviewPage({
 
   useEffect(() => {
     if (doc === undefined || doc === null) return;
-    // Link internal (mis. href="/admin") diterjemahkan ke preview mode agar
-    // navigasi antar halaman berfungsi di dalam preview — bukan menuju rute
-    // Next.js yang tidak ada (404). Tautan eksternal/anchor dibiarkan.
+    const project = doc;
+    const knownPages = new Set(project.pages.map((p) => p.path));
+    const base = `/builder/${id}/preview`;
+    // Phase CAPTURE: berjalan sebelum event.stopPropagation() dari komponen
+    // preview (mis. InlineEditableText), sehingga klik tautan selalu dicegat.
+    // Perilaku disamakan dengan situs hasil ekspor: link antar halaman pindah
+    // halaman, #anchor digulirkan halus, tautan eksternal tetap terbuka.
     function onDocClick(event: MouseEvent) {
-      if (
-        event.defaultPrevented ||
-        event.button !== 0 ||
-        event.metaKey ||
-        event.ctrlKey ||
-        event.shiftKey ||
-        event.altKey
-      ) {
-        return;
-      }
-      const anchor = (event.target as HTMLElement | null)?.closest?.("a");
-      if (!anchor) return;
-      const href = anchor.getAttribute("href");
-      if (
-        !href ||
-        href.startsWith("#") ||
-        href.startsWith("//") ||
-        /^[a-z][a-z0-9+.-]*:/i.test(href)
-      ) {
-        return;
-      }
-      if (anchor.target === "_blank") return;
-      event.preventDefault();
-      const clean = href.split("#")[0] || "/";
-      const base = `/builder/${id}/preview`;
-      router.replace(
-        clean === "/"
-          ? base
-          : `${base}?page=${encodeURIComponent(clean)}${knownPages.has(clean) ? "" : "&fallback=1"}`
-      );
+      handleLinkNavigationClick(event, {
+        mode: "preview",
+        pages: project.pages,
+        onNavigateToPage: (_pageId, path) => {
+          router.replace(
+            path === "/"
+              ? base
+              : `${base}?page=${encodeURIComponent(path)}${knownPages.has(path) ? "" : "&fallback=1"}`
+          );
+        },
+        onUnknownPath: (path) => {
+          router.replace(`${base}?page=${encodeURIComponent(path)}&fallback=1`);
+        },
+      });
     }
-    const knownPages = new Set(doc.pages.map((p) => p.path));
-    document.addEventListener("click", onDocClick);
-    return () => document.removeEventListener("click", onDocClick);
+    document.addEventListener("click", onDocClick, true);
+    return () => document.removeEventListener("click", onDocClick, true);
   }, [doc, id, router]);
 
   if (doc === undefined) {

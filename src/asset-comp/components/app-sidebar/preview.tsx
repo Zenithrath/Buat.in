@@ -109,7 +109,6 @@ export function AppSidebarPreview({ node, theme }: { node: Node; theme: Theme })
           const Icon = ICON_MAP[link.icon] ?? LayoutDashboard;
           const href = sanitizeUrl(link.url);
           const sharedProps = {
-            key: link.id,
             "aria-current": link.active ? ("page" as const) : undefined,
             className: `flex min-w-0 items-center gap-3 rounded-lg px-3 py-2.5 text-left text-xs font-medium transition-colors ${
               link.active
@@ -119,6 +118,7 @@ export function AppSidebarPreview({ node, theme }: { node: Node; theme: Theme })
           };
           return href !== "#" ? (
             <a
+              key={link.id}
               {...sharedProps}
               href={href}
               onClick={(event) => {
@@ -132,6 +132,7 @@ export function AppSidebarPreview({ node, theme }: { node: Node; theme: Theme })
             </a>
           ) : (
             <button
+              key={link.id}
               {...sharedProps}
               type="button"
             >
