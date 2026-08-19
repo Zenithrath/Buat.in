@@ -31,7 +31,7 @@ export function createSaasLandingNodes(): RawTemplateNode[] {
         badgeText: "Karsa Studio - Brand & Digital",
         title: "Kami merancang brand dan website yang terasa tepat.",
         description:
-          "Partner kreatif untuk bisnis yang ingin hadir lebih jelas, lebih dipercaya, dan lebih mudah diingat.",
+          "Studio kreatif yang merancang identitas dan website untuk perusahaan yang ingin dikenali lewat karya, bukan jargon.",
         primaryCtaText: "Diskusikan Proyek",
         primaryCtaUrl: "#kontak",
         secondaryCtaText: "Lihat Layanan",
@@ -76,7 +76,7 @@ export function createSaasLandingNodes(): RawTemplateNode[] {
       props: {
         sectionTitle: "Layanan yang menyatukan gambaran besar dan detail kecil.",
         sectionSubtitle:
-          "Pilih pendampingan yang sesuai tahap bisnis Anda, atau susun ruang lingkup proyek bersama kami.",
+          "Pilih pendampingan yang sesuai tahap perusahaan Anda, atau susun ruang lingkup proyek bersama kami.",
         productsJson: JSON.stringify([
           {
             id: "strategy",
@@ -127,7 +127,7 @@ export function createSaasLandingNodes(): RawTemplateNode[] {
       props: {
         title: "Punya cerita yang perlu disampaikan dengan lebih baik?",
         description:
-          "Ceritakan konteks bisnis Anda dalam sesi perkenalan singkat. Kami akan membantu memetakan langkah yang paling masuk akal.",
+          "Ceritakan proyek Anda dalam sesi perkenalan singkat. Kami akan membantu memetakan langkah yang paling masuk akal.",
         buttonText: "Jadwalkan Konsultasi",
         buttonUrl: "mailto:halo@karsastudio.id",
         secondaryText: "Lihat Layanan",
@@ -144,7 +144,7 @@ export function createSaasLandingNodes(): RawTemplateNode[] {
       props: {
         brandName: "Karsa Studio",
         tagline:
-          "Studio brand dan digital untuk bisnis yang ingin tumbuh dengan arah yang jelas.",
+          "Studio identitas dan situs untuk perusahaan yang sedang bertumbuh.",
         link1Text: "Layanan",
         link1Url: "#layanan",
         link2Text: "Profil",

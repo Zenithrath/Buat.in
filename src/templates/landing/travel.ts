@@ -22,7 +22,7 @@ export function createTravelLandingNodes(): RawTemplateNode[] {
     },
     {
       id: "travel-hero",
-      componentType: "hero-centered",
+      componentType: "hero-split",
       name: "Hero Biru Samudra",
       props: {
         badgeText: "Paket domestik & internasional",
@@ -38,6 +38,8 @@ export function createTravelLandingNodes(): RawTemplateNode[] {
         imageAlt: "Pantai berpasir putih dengan air laut yang jernih",
         supportingText: "Berizin Kemenparekraf · Kantor di Bandung",
         imageBadgeText: "SINCE 2012",
+        imageNoteLabel: "Musim ini",
+        imageNoteText: "4.800+ tamu per tahun · 9 paket wisata aktif.",
       },
       styles: { padding: "xl" },
     },

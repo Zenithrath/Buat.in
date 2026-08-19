@@ -22,14 +22,14 @@ export function createFashionLandingNodes(): RawTemplateNode[] {
     },
     {
       id: "fashion-hero",
-      componentType: "hero-centered",
+      componentType: "hero-bg-image",
       name: "Hero Luma Objects",
       props: {
         badgeText: "Autumn / Winter 2026",
         title: "Benda untuk ruang yang dipakai, bukan hanya dipandangi.",
         description:
           "Koleksi kecil untuk rumah yang hidup: tekstil, keramik, dan objek sehari-hari dengan material yang terasa jujur.",
-        primaryCtaText: "Jelajahi koleksi",
+        primaryCtaText: "Lihat Koleksi",
         primaryCtaUrl: "#koleksi",
         secondaryCtaText: "Cerita Luma",
         secondaryCtaUrl: "#cerita",
@@ -150,7 +150,7 @@ export function createFashionLandingNodes(): RawTemplateNode[] {
         eyebrow: "Kabar dari studio",
         heading: "Masuk lebih dulu ke cerita koleksi berikutnya.",
         description: "Satu email saat karya baru, kolaborasi kecil, dan pilihan hadiah musiman dibuka.",
-        placeholder: "Email terbaik Anda",
+        placeholder: "Alamat email Anda",
         buttonText: "Ikuti kabar",
         note: "Tidak sering. Hanya saat ada sesuatu yang layak dibagikan.",
         successText: "Terima kasih—kabar dari studio akan kami kirimkan ke email Anda.",

@@ -22,7 +22,7 @@ export function createSekolahLandingNodes(): RawTemplateNode[] {
     },
     {
       id: "sekolah-hero",
-      componentType: "hero-centered",
+      componentType: "hero-bg-image",
       name: "Hero Citra Insan",
       props: {
         badgeText: "Penerimaan murid baru 2026/2027",

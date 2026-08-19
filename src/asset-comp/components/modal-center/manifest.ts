@@ -14,9 +14,9 @@ export const modalCenterManifest: Omit<ComponentManifest, "previewRenderer" | "e
     heading: "Semua detail penting tetap dekat tanpa memindahkan pengunjung dari halaman ini.",
     triggerText: "Lihat detail layanan",
     dialogEyebrow: "Informasi tambahan",
-    title: "Mari bicarakan kebutuhan Anda.",
+    title: "Diskusikan proyek Anda.",
     description: "Tambahkan formulir, kartu, atau informasi lain ke dalam dialog ini dari kanvas.",
-    emptyMessage: "Tambahkan komponen ke dalam dialog ini untuk menampilkan formulir, penawaran, atau langkah berikutnya.",
+    emptyMessage: "Tambahkan komponen ke dalam dialog ini untuk menampilkan formulir atau penawaran khusus.",
     closeText: "Tutup dialog",
   },
   contentControls: [

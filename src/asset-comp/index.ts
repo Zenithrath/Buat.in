@@ -16,6 +16,8 @@ export { dropdownMenuComponent } from "./components/dropdown-menu";
 export { menuOffcanvasComponent } from "./components/menu-offcanvas";
 export { menuCircleComponent } from "./components/menu-circle";
 export { heroCenteredComponent } from "./components/hero-centered";
+export { heroSplitComponent } from "./components/hero-split";
+export { heroBgImageComponent } from "./components/hero-bg-image";
 export { productGridBasicComponent } from "./components/product-grid-basic";
 export { aboutBasicComponent } from "./components/about-basic";
 export { ctaBasicComponent } from "./components/cta-basic";

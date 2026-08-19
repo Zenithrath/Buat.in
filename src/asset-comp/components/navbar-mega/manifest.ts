@@ -21,7 +21,7 @@ export const navbarMegaManifest: Omit<ComponentManifest, "previewRenderer" | "ex
   version: "2.0.0",
   defaultProps: {
     logoText: "SORA",
-    menuText: "Jelajahi",
+    menuText: "Lihat Semua",
     linkText: "Tentang kami",
     linkUrl: "#tentang",
     ctaText: "Jadwalkan demo",

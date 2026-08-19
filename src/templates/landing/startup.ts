@@ -137,7 +137,7 @@ export function createStartupLandingNodes(): RawTemplateNode[] {
           },
           {
             name: "Scale",
-            price: "Mari bicara",
+            price: "Hubungi kami",
             period: "",
             description: "Untuk organisasi dengan kebutuhan integrasi dan kontrol khusus.",
             features: ["SAML / SSO", "Hak akses khusus", "Onboarding tim", "Pendampingan migrasi"],

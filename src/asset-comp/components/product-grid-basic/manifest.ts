@@ -16,7 +16,7 @@ export const productGridManifest: Omit<
     sectionId: "layanan",
     sectionTitle: "Layanan yang menyatukan gambaran besar dan detail kecil.",
     sectionSubtitle:
-      "Pilih pendampingan yang sesuai tahap bisnis Anda, atau susun ruang lingkup bersama kami.",
+      "Pilih pendampingan yang sesuai lingkup proyek Anda, atau susun ruang lingkup bersama kami.",
     productsJson: JSON.stringify([
       {
         id: "strategy",

@@ -28,14 +28,14 @@ export const pricingTableManifest: Omit<
   version: "2.0.0",
   defaultProps: {
     eyebrow: "Pilihan yang fleksibel",
-    title: "Pilih langkah yang sesuai ritme bisnis Anda.",
-    description: "Mulai dari fondasi yang jelas, lalu bertumbuh saat kebutuhan Anda berubah.",
+    title: "Tiga cara kami bekerja sama.",
+    description: "Mulai dari paket terkecil, lalu naik kapan saja sesuai proyek yang masuk.",
     plans: [
       {
         name: "Mulai",
         price: "Rp1,2jt",
         period: "/bulan",
-        description: "Untuk bisnis kecil yang ingin hadir dengan rapi.",
+        description: "Untuk usaha baru yang butuh identitas dan situs pertama.",
         features: ["1 halaman utama", "Form kontak", "Dukungan email"],
         buttonText: "Pilih Mulai",
         buttonUrl: "#kontak",
@@ -53,7 +53,7 @@ export const pricingTableManifest: Omit<
       },
       {
         name: "Kustom",
-        price: "Mari bicara",
+        price: "Sesuai lingkup",
         period: "",
         description: "Untuk kebutuhan yang perlu dirancang lebih khusus.",
         features: ["Arsitektur konten", "Komponen khusus", "Sesi strategi", "Pendampingan tim"],

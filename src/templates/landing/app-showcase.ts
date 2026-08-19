@@ -22,7 +22,7 @@ export function createAppShowcaseLandingNodes(): RawTemplateNode[] {
     },
     {
       id: "appshow-hero",
-      componentType: "hero-centered",
+      componentType: "hero-split",
       name: "Hero Nura",
       props: {
         badgeText: "Aplikasi keuangan pribadi",
@@ -38,6 +38,8 @@ export function createAppShowcaseLandingNodes(): RawTemplateNode[] {
         imageAlt: "Pengguna memegang ponsel dengan ringkasan pengeluaran bulanan",
         imageBadgeText: "RATING 4.8",
         supportingText: "Gratis di iOS dan Android. Tanpa kartu kredit.",
+        imageNoteLabel: "Pengguna Nura",
+        imageNoteText: "4,8 di App Store · 100rb+ unduhan · 92% tetap aktif sebulan.",
       },
       styles: { padding: "xl" },
     },

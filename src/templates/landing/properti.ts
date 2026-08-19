@@ -22,7 +22,7 @@ export function createPropertiLandingNodes(): RawTemplateNode[] {
     },
     {
       id: "properti-hero",
-      componentType: "hero-centered",
+      componentType: "hero-split",
       name: "Hero Taman Asri",
       props: {
         badgeText: "Cluster Taman Asri, Bekasi Selatan",
@@ -38,6 +38,8 @@ export function createPropertiLandingNodes(): RawTemplateNode[] {
         imageAlt: "Rumah tapak modern dua lantai dengan halaman di kawasan perumahan",
         supportingText: "Show unit buka Sabtu–Minggu 09.00–17.00",
         imageBadgeText: "MULAI DARI Rp 850 JT",
+        imageNoteLabel: "Fasilitas",
+        imageNoteText: "2,4 hektar · 850 unit · 1.800 m² playground.",
       },
       styles: { padding: "xl" },
     },

@@ -28,9 +28,9 @@ export function createCompanyLandingNodes(): RawTemplateNode[] {
       name: "Hero Karya Utama",
       props: {
         badgeText: "Strategi, identitas, dan digital experience",
-        title: "Membantu bisnis tumbuh dengan arah yang mudah dipahami.",
+        title: "Strategi dan desain yang membuat langkah Anda lebih jelas.",
         description:
-          "Kami adalah partner untuk bisnis yang ingin menyatukan strategi, identitas, dan website menjadi pengalaman yang terasa jelas bagi pelanggan.",
+          "Kami menyatukan strategi, identitas, dan website — untuk perusahaan yang ingin pelanggannya memahami nilainya tanpa penjelasan panjang.",
         primaryCtaText: "Jadwalkan konsultasi",
         primaryCtaUrl: "#kontak",
         secondaryCtaText: "Lihat layanan",
@@ -38,7 +38,7 @@ export function createCompanyLandingNodes(): RawTemplateNode[] {
         imageUrl:
           "https://images.unsplash.com/photo-1524758631624-e2822e304c36?auto=format&fit=crop&w=1600&q=88",
         imageAlt: "Tim perusahaan berdiskusi dan bekerja bersama di ruang modern",
-        supportingText: "Berangkat dari konteks bisnis Anda, lalu tumbuh menjadi sistem yang bisa dipakai tim.",
+        supportingText: "Berangkat dari masalah nyata, lalu tumbuh menjadi sistem yang dipakai tim setiap hari.",
         imageBadgeText: "SINCE 2014",
       },
       styles: { padding: "xl" },
@@ -148,8 +148,8 @@ export function createCompanyLandingNodes(): RawTemplateNode[] {
       componentType: "cta-basic",
       name: "Ajakan Konsultasi Karya Utama",
       props: {
-        title: "Mari lihat apakah kita bisa membuat langkah berikutnya terasa lebih jelas.",
-        description: "Satu sesi perkenalan cukup untuk membahas konteks, kebutuhan, dan kemungkinan arah kerja sama.",
+        title: "Diskusikan proyek Anda — kami petakan langkahnya bersama.",
+        description: "Satu sesi perkenalan cukup untuk membahas konteks, anggaran, dan kemungkinan arah kerja sama.",
         buttonText: "Mulai konsultasi",
         buttonUrl: "mailto:halo@karyautama.id",
         secondaryText: "Lihat layanan",
@@ -163,7 +163,7 @@ export function createCompanyLandingNodes(): RawTemplateNode[] {
       name: "Footer Karya Utama",
       props: {
         brandName: "KARYA UTAMA",
-        tagline: "Partner strategi, identitas, dan pengalaman digital untuk bisnis yang ingin bergerak dengan lebih terarah.",
+        tagline: "Partner strategi dan desain untuk perusahaan yang ingin bergerak lebih terarah.",
         link1Text: "Layanan",
         link1Url: "#layanan",
         link2Text: "Tim",

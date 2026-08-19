@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import type { Node, Theme } from "@/lib/schema/types";
 import { resolveTheme } from "@/lib/theme/presets";
@@ -21,7 +21,7 @@ function resolveTrend(node: Node): "up" | "down" | "neutral" {
 
 export function KpiCardPreview({ node, theme }: { node: Node; theme: Theme }) {
   const tokens = resolveTheme(theme);
-  const title = textOrFallback(node, "title", "Total Revenue");
+  const title = textOrFallback(node, "title", "Total Pendapatan");
   const value = textOrFallback(node, "value", "Rp 128.450.000");
   const change = textOrFallback(node, "change", "+14.2%");
   const trend = resolveTrend(node);
@@ -42,7 +42,7 @@ export function KpiCardPreview({ node, theme }: { node: Node; theme: Theme }) {
     >
       <div className="flex min-w-0 items-start justify-between gap-2">
         <p className="min-w-0 truncate text-[11px] font-bold uppercase tracking-[0.08em] text-muted-foreground">
-          <InlineEditableText node={node} propKey="title" fallback="Total Revenue" value={title} />
+          <InlineEditableText node={node} propKey="title" fallback="Total Pendapatan" value={title} />
         </p>
         <span className={`inline-flex shrink-0 items-center gap-1 rounded-full px-2 py-1 text-[10px] font-bold ${trendClass}`}>
           {isUp ? <TrendingUp aria-hidden="true" size={12} /> : isDown ? <TrendingDown aria-hidden="true" size={12} /> : <Minus aria-hidden="true" size={12} />}

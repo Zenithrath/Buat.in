@@ -21,7 +21,7 @@ export const navbarGlassManifest: Omit<
     link2Url: "#karya",
     link3Text: "Tentang",
     link3Url: "#tentang",
-    ctaText: "Mari bicara",
+    ctaText: "Konsultasi gratis",
     ctaUrl: "#kontak",
   },
   contentControls: [

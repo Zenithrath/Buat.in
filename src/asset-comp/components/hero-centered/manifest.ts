@@ -13,11 +13,11 @@ export const heroManifest: Omit<
   priceKey: "hero-centered",
   version: "1.1.0",
   defaultProps: {
-    badgeText: "Studio kreatif independen",
-    title: "Membuat kehadiran digital yang terasa manusiawi.",
+    badgeText: "Studio Yogyakarta · Sejak 2018",
+    title: "Identitas dan situs yang dirancang untuk dipakai, bukan dipajang.",
     description:
-      "Kami menyatukan strategi, identitas, dan website yang memudahkan orang memahami bisnis Anda.",
-    primaryCtaText: "Mulai percakapan",
+      "Studio kecil berisi 4 orang yang mengerjakan identitas, situs, dan kampanye untuk 40+ brand lokal sejak 2018.",
+    primaryCtaText: "Konsultasi proyek",
     primaryCtaUrl: "#kontak",
     secondaryCtaText: "Lihat layanan",
     secondaryCtaUrl: "#layanan",
@@ -26,7 +26,7 @@ export const heroManifest: Omit<
     imageBadgeText: "EST. 2018",
     imageNoteLabel: "Studio note",
     imageNoteText: "Dari arah besar sampai detail yang siap dipakai.",
-    supportingText: "Strategi, identitas, dan situs yang terhubung.",
+    supportingText: "4 orang inti · 40+ proyek · satu studio",
   },
   contentControls: [
     { key: "badgeText", label: "Teks Badge", group: "Hero", type: "text" },

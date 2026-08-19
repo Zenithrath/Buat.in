@@ -13,7 +13,7 @@ export const logoClientsManifest: Omit<
   priceKey: "logo-clients",
   version: "1.0.0",
   defaultProps: {
-    eyebrow: "Dipercaya oleh",
+    eyebrow: "Klien yang pernah bekerja sama",
     logosJson: JSON.stringify([
       { id: "l1", name: "Nusantara" },
       { id: "l2", name: "KaryaDigital" },

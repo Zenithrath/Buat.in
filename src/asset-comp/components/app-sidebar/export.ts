@@ -1,4 +1,4 @@
-import type { ExportResult } from "@/lib/registry/types";
+﻿import type { ExportResult } from "@/lib/registry/types";
 import type { Node } from "@/lib/schema/types";
 import { escapeHtml, propString } from "@/lib/registry/shared";
 
@@ -64,17 +64,17 @@ function iconMarkup(icon: string): string {
 }
 
 export function appSidebarExport(node: Node): ExportResult {
-  const brandName = textOrFallback(node, "brandName", "Acme Analytics");
+  const brandName = textOrFallback(node, "brandName", "Dasbor Tim");
   const brandTag = propString(node, "brandTag").trim();
-  const userName = textOrFallback(node, "userName", "Alex Rivers");
-  const userRole = textOrFallback(node, "userRole", "Administrator");
+  const userName = textOrFallback(node, "userName", "Alex Rivanto");
+  const userRole = textOrFallback(node, "userRole", "Admin");
   const links = parseLinks(node);
 
   const linksHtml = links
     .map((link) => {
       const classes = `bi-sidebar-link${link.active ? " active is-active" : ""}`;
       const label = `<span class="bi-sidebar-link-label">${escapeHtml(link.label)}</span>`;
-      const caret = link.active ? '<span class="bi-sidebar-link-caret" aria-hidden="true">›</span>' : "";
+      const caret = link.active ? '<span class="bi-sidebar-link-caret" aria-hidden="true">â€º</span>' : "";
       const activeAttr = link.active ? ' aria-current="page"' : "";
       const inner = `${iconMarkup(link.icon)}\n          ${label}\n          ${caret}`;
       const href = link.url.trim();
@@ -104,7 +104,7 @@ export function appSidebarExport(node: Node): ExportResult {
       <p class="bi-user-name">${escapeHtml(userName)}</p>
       <p class="bi-user-role">${escapeHtml(userRole)}</p>
     </div>
-    <span class="bi-user-verified" aria-label="Akun terverifikasi">✓</span>
+    <span class="bi-user-verified" aria-label="Akun terverifikasi">âœ“</span>
   </div>
 </aside>`;
 

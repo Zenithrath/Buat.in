@@ -1,4 +1,4 @@
-import type { ExportResult } from "@/lib/registry/types";
+﻿import type { ExportResult } from "@/lib/registry/types";
 import type { Node } from "@/lib/schema/types";
 import { escapeHtml, propString } from "@/lib/registry/shared";
 
@@ -41,10 +41,10 @@ const BELL_ICON = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" st
 const EXPORT_ICON = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 3v12"/><path d="m8 11 4 4 4-4"/><path d="M5 21h14"/></svg>`;
 
 export function dashboardHeaderExport(node: Node): ExportResult {
-  const title = textOrFallback(node, "title", "Overview Dashboard");
-  const breadcrumb = textOrFallback(node, "breadcrumb", "Dashboard / Analytics");
+  const title = textOrFallback(node, "title", "Ringkasan");
+  const breadcrumb = textOrFallback(node, "breadcrumb", "Dashboard / Ringkasan");
   const searchPlaceholder = textOrFallback(node, "searchPlaceholder", "Cari data, laporan, atau transaksi...");
-  const actionText = optionalText(node, "actionText", "Export Laporan");
+  const actionText = optionalText(node, "actionText", "Unduh Laporan");
   const showSearch = booleanProp(node, "showSearch", true);
   const showNotifications = booleanProp(node, "showNotifications", true);
   const notificationsMode = propString(node, "notificationsMode").trim() || "panel";
@@ -71,12 +71,12 @@ export function dashboardHeaderExport(node: Node): ExportResult {
       notificationsMode === "modal"
         ? `<div class="bi-notif-modal" id="${instance}" data-bi-notif-panel="modal" aria-hidden="true">
       <div class="bi-notif-dialog" role="dialog" aria-modal="true" aria-label="Daftar notifikasi">
-        <div class="bi-notif-head"><p>Notifikasi</p><button type="button" data-bi-notif-close aria-label="Tutup notifikasi">×</button></div>
+        <div class="bi-notif-head"><p>Notifikasi</p><button type="button" data-bi-notif-close aria-label="Tutup notifikasi">Ã—</button></div>
         <ul class="bi-notif-list">${notificationsHtml}</ul>
       </div>
     </div>`
         : `<div class="bi-notif-panel" id="${instance}" data-bi-notif-panel="panel" role="dialog" aria-label="Daftar notifikasi" aria-hidden="true">
-      <div class="bi-notif-head"><p>Notifikasi</p><button type="button" data-bi-notif-close aria-label="Tutup notifikasi">×</button></div>
+      <div class="bi-notif-head"><p>Notifikasi</p><button type="button" data-bi-notif-close aria-label="Tutup notifikasi">Ã—</button></div>
       <ul class="bi-notif-list">${notificationsHtml}</ul>
     </div>`
     }

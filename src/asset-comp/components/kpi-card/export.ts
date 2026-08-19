@@ -1,4 +1,4 @@
-import type { ExportResult } from "@/lib/registry/types";
+﻿import type { ExportResult } from "@/lib/registry/types";
 import type { Node } from "@/lib/schema/types";
 import { escapeHtml, propString } from "@/lib/registry/shared";
 
@@ -16,13 +16,13 @@ function resolveTrend(node: Node): "up" | "down" | "neutral" {
 }
 
 function trendIcon(trend: "up" | "down" | "neutral"): string {
-  if (trend === "up") return "↑";
-  if (trend === "down") return "↓";
-  return "−";
+  if (trend === "up") return "â†‘";
+  if (trend === "down") return "â†“";
+  return "âˆ’";
 }
 
 export function kpiCardExport(node: Node): ExportResult {
-  const title = textOrFallback(node, "title", "Total Revenue");
+  const title = textOrFallback(node, "title", "Total Pendapatan");
   const value = textOrFallback(node, "value", "Rp 128.450.000");
   const change = textOrFallback(node, "change", "+14.2%");
   const trend = resolveTrend(node);

@@ -15,7 +15,7 @@ export const testimonialGridManifest: Omit<
   defaultProps: {
     eyebrow: "Cerita dari mereka",
     title: "Keputusan kecil yang membuat pekerjaan terasa lebih ringan.",
-    description: "Dengar langsung dari orang-orang yang menjalankan bisnisnya setiap hari.",
+    description: "Cerita dari klien yang mengerjakan proyek bersama kami, bukan sekadar kutipan pujian.",
     columns: "3",
     items: [
       { quote: "Prosesnya terasa jernih sejak awal. Tim kami akhirnya punya bahasa yang sama untuk menjelaskan arah brand.", name: "Nadia Kurnia", role: "Founder, Rona Studio", initials: "NK" },

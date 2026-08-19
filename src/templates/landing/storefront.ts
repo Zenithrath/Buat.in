@@ -32,7 +32,7 @@ export function createStorefrontNodes(): RawTemplateNode[] {
         title: "Benda-benda baik untuk ritme sehari-hari.",
         description:
           "Ruang Rasa merangkum peralatan rumah, tekstil, dan hadiah kecil yang dibuat untuk dipakai lama dan dinikmati pelan-pelan.",
-        primaryCtaText: "Jelajahi Koleksi",
+        primaryCtaText: "Lihat Katalog",
         primaryCtaUrl: "#koleksi",
         secondaryCtaText: "Cerita Ruang Rasa",
         secondaryCtaUrl: "#tentang",

@@ -69,6 +69,8 @@ const FRIENDLY_NAMES: Record<string, string> = {
   "menu-circle": "Menu Melingkar",
   "dropdown-menu": "Menu Dropdown",
   "hero-centered": "Hero Pembuka",
+  "hero-split": "Hero Terbelah (Split)",
+  "hero-bg-image": "Hero Gambar Latar",
   "about-basic": "Bagian Tentang Kami",
   "card-feature": "Kartu Fitur",
   "product-grid-basic": "Katalog Produk",
@@ -106,7 +108,7 @@ type ComponentGroup = {
 const COMPONENT_GROUPS: ComponentGroup[] = [
   { id: "navbar", label: "Navbar / Menu Atas", scope: "landing", ids: ["navbar-minimal", "navbar-centered", "navbar-split", "navbar-glass", "navbar-mega", "navbar-fullscreen"] },
   { id: "menu", label: "Menu & Dropdown", scope: "landing", ids: ["menu-offcanvas", "menu-circle", "dropdown-menu"] },
-  { id: "hero", label: "Hero / Bagian Pembuka", scope: "landing", ids: ["hero-centered"] },
+  { id: "hero", label: "Hero / Bagian Pembuka", scope: "landing", ids: ["hero-centered", "hero-split", "hero-bg-image"] },
   { id: "about", label: "Tentang Kami", scope: "landing", ids: ["about-basic"] },
   { id: "cards", label: "Kartu", scope: "landing", ids: ["card-feature"] },
   { id: "product", label: "Produk & Katalog", scope: "landing", ids: ["product-grid-basic"] },

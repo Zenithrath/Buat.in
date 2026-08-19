@@ -13,9 +13,9 @@ export const dashboardHeaderManifest: Omit<
   priceKey: "dashboard-header",
   version: "1.1.0",
   defaultProps: {
-    title: "Overview Dashboard",
-    breadcrumb: "Dashboard / Analytics",
-    searchPlaceholder: "Cari data...",
+    title: "Ringkasan",
+    breadcrumb: "Dashboard / Ringkasan",
+    searchPlaceholder: "Cari data, laporan, atau transaksi...",
     showSearch: true,
     showNotifications: true,
     notificationsMode: "panel",
@@ -24,7 +24,7 @@ export const dashboardHeaderManifest: Omit<
       { id: "n2", title: "Pembayaran baru diterima", time: "1 jam lalu" },
       { id: "n3", title: "Pengingat: rapat tim 14.00", time: "3 jam lalu" },
     ]),
-    actionText: "Export Laporan",
+    actionText: "Unduh Laporan",
   },
   contentControls: [
     { key: "title", label: "Judul Halaman", group: "Header", type: "text" },

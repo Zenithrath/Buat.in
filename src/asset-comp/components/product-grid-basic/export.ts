@@ -130,6 +130,13 @@ export function productGridExport(node: Node): ExportResult {
 .bi-service-action { display: inline-flex; align-items: center; gap: 0.35rem; margin-top: 1.25rem; color: var(--bi-primary); font-size: 0.75rem; font-weight: 700; }
 .bi-service-action-link { color: inherit; text-decoration: none; }
 .bi-service-action b { font-size: 0.95rem; }
+
+@media (max-width: 640px) {
+  .bi-services-grid { grid-template-columns: 1fr; }
+  .bi-service-media { height: 8.5rem; }
+  .bi-services-heading h2 { font-size: 1.75rem; }
+  .bi-service-body { padding: 1rem; }
+}
 `;
 
   return { html, css };

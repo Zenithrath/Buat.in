@@ -81,7 +81,16 @@ export function calendarWidgetExport(node: Node): ExportResult {
 .bi-calendar-cell { display: grid; aspect-ratio: 1 / 1; place-items: center; border-radius: 999px; color: var(--bi-muted-fg); font-size: 0.75rem; opacity: 0.6; }
 .bi-calendar-cell.is-event { background: color-mix(in srgb, var(--bi-primary) 12%, transparent); color: var(--bi-primary); font-weight: 600; opacity: 1; }
 .bi-calendar-cell.is-today { box-shadow: 0 0 0 2px var(--bi-primary); color: var(--bi-fg); font-weight: 700; opacity: 1; }
-.bi-calendar-cell.is-empty { opacity: 0; }`;
+.bi-calendar-cell.is-empty { opacity: 0; }
+
+@media (max-width: 480px) {
+  .bi-calendar-widget { padding: 0.75rem; }
+  .bi-calendar-weekdays { gap: 0.125rem; }
+  .bi-calendar-grid { gap: 0.125rem; }
+  .bi-calendar-cell { font-size: 0.6875rem; }
+  .bi-calendar-today { font-size: 0.5625rem; padding: 0.2rem 0.5rem; }
+  .bi-calendar-header { flex-direction: column; align-items: flex-start; gap: 0.4rem; }
+}`;
 
   return { html, css };
 }

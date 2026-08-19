@@ -10,10 +10,10 @@ export const formNewsletterManifest: Omit<ComponentManifest, "previewRenderer" |
   priceKey: "form-newsletter",
   version: "2.0.0",
   defaultProps: {
-    eyebrow: "Catatan kecil untuk bisnis yang bertumbuh",
+    eyebrow: "Catatan dari studio",
     heading: "Dapatkan ide yang benar-benar bisa dipakai.",
-    description: "Satu email ringkas setiap beberapa minggu, berisi pelajaran dari proyek, brand, dan pengalaman digital.",
-    placeholder: "Email terbaik Anda",
+    description: "Satu email ringkas setiap beberapa minggu, berisi studi kasus, proses kerja, dan tautan sumber daya yang kami pakai sendiri.",
+    placeholder: "Alamat email Anda",
     buttonText: "Berlangganan",
     note: "Tanpa spam. Berhenti kapan saja.",
     successText: "Terima kasih—Anda sudah masuk ke daftar kami.",

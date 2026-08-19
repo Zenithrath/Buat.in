@@ -10,7 +10,7 @@ export const menuCircleManifest: Omit<ComponentManifest, "previewRenderer" | "ex
   priceKey: "menu-circle",
   version: "2.0.0",
   defaultProps: {
-    buttonText: "Jelajahi",
+    buttonText: "Lihat Menu",
     title: "Akses cepat tanpa memenuhi layar.",
     description: "Cocok untuk aksi kecil, navigasi kreatif, atau halaman portofolio.",
     items: [

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import type { Node, Theme } from "@/lib/schema/types";
 import { resolveTheme } from "@/lib/theme/presets";
@@ -68,10 +68,10 @@ function parseLinks(node: Node): LinkItem[] {
 
 export function AppSidebarPreview({ node, theme }: { node: Node; theme: Theme }) {
   const tokens = resolveTheme(theme);
-  const brandName = textOrFallback(node, "brandName", "Acme Analytics");
+  const brandName = textOrFallback(node, "brandName", "Dasbor Tim");
   const brandTag = propString(node, "brandTag").trim();
-  const userName = textOrFallback(node, "userName", "Alex Rivers");
-  const userRole = textOrFallback(node, "userRole", "Administrator");
+  const userName = textOrFallback(node, "userName", "Alex Rivanto");
+  const userRole = textOrFallback(node, "userRole", "Admin");
   const links = parseLinks(node);
   const linksKey = node.props.links === undefined ? "linksJson" : "links";
   const { setValue } = useRepeaterEditor(node, linksKey);
@@ -89,7 +89,7 @@ export function AppSidebarPreview({ node, theme }: { node: Node; theme: Theme })
           {brandInitial}
         </div>
         <div className="min-w-0 flex-1">
-          <h2 className="truncate text-sm font-bold leading-tight tracking-tight"><InlineEditableText node={node} propKey="brandName" fallback="Acme Analytics" value={brandName} /></h2>
+          <h2 className="truncate text-sm font-bold leading-tight tracking-tight"><InlineEditableText node={node} propKey="brandName" fallback="Dasbor Tim" value={brandName} /></h2>
           <p className="mt-0.5 truncate text-[10px] font-medium text-muted-foreground">
             Workspace operasional
           </p>
@@ -151,8 +151,8 @@ export function AppSidebarPreview({ node, theme }: { node: Node; theme: Theme })
             <span className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full border-2 border-card bg-emerald-500" />
           </div>
           <div className="min-w-0 flex-1">
-            <p className="truncate text-xs font-semibold leading-tight"><InlineEditableText node={node} propKey="userName" fallback="Alex Rivers" value={userName} /></p>
-            <p className="mt-0.5 truncate text-[10px] text-muted-foreground"><InlineEditableText node={node} propKey="userRole" fallback="Administrator" value={userRole} /></p>
+            <p className="truncate text-xs font-semibold leading-tight"><InlineEditableText node={node} propKey="userName" fallback="Alex Rivanto" value={userName} /></p>
+            <p className="mt-0.5 truncate text-[10px] text-muted-foreground"><InlineEditableText node={node} propKey="userRole" fallback="Admin" value={userRole} /></p>
           </div>
           <ShieldCheck aria-label="Akun terverifikasi" size={15} className="shrink-0 text-emerald-500" />
         </div>

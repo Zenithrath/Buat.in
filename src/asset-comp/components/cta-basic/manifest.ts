@@ -15,7 +15,7 @@ export const ctaManifest: Omit<
   defaultProps: {
     title: "Punya cerita yang perlu disampaikan dengan lebih baik?",
     description:
-      "Ceritakan konteks bisnis Anda dalam sesi perkenalan singkat. Kami bantu memetakan langkah yang paling masuk akal.",
+      "Ceritakan proyek Anda dalam sesi 30 menit. Kami petakan ruang lingkup, anggaran, dan jadwalnya sebelum Anda memutuskan apa pun.",
     buttonText: "Jadwalkan konsultasi",
     buttonUrl: "#kontak",
     secondaryText: "Lihat layanan",

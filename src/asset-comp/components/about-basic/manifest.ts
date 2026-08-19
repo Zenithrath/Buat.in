@@ -17,7 +17,7 @@ export const aboutManifest: Omit<
     eyebrow: "Tentang kami",
     title: "Strategi yang berpijak pada manusia, bukan tren sesaat.",
     description:
-      "Kami membantu bisnis menerjemahkan cerita dan ambisinya menjadi identitas yang utuh dan mudah dipahami.",
+      "Kami menerjemahkan cerita dan ambisi sebuah usaha menjadi identitas yang utuh, konsisten, dan mudah dipahami pelanggannya.",
     imageUrl: "",
     imageAlt: "Tim berdiskusi di studio",
     imageNoteLabel: "Cara kami bekerja",

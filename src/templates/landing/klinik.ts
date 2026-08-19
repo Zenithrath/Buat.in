@@ -22,7 +22,7 @@ export function createKlinikLandingNodes(): RawTemplateNode[] {
     },
     {
       id: "klinik-hero",
-      componentType: "hero-centered",
+      componentType: "hero-bg-image",
       name: "Hero Klinik Sehat Keluarga",
       props: {
         badgeText: "Praktek dokter umum & gigi",

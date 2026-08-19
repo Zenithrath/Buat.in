@@ -15,9 +15,9 @@ export const cardFeatureManifest: Omit<
   defaultProps: {
     icon: "sparkles",
     eyebrow: "Keunggulan",
-    title: "Dibuat untuk bergerak lebih cepat",
+    title: "Satu fokus, satu keputusan yang jelas",
     description:
-      "Struktur yang rapi membantu tim dan pelanggan memahami langkah berikutnya tanpa kebingungan.",
+      "Setiap kartu menjelaskan satu hal: apa yang dikerjakan, untuk siapa, dan apa hasilnya. Tanpa jargon.",
     linkText: "Pelajari lebih lanjut",
     linkUrl: "#",
   },

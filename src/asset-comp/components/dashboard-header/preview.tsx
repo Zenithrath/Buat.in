@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useRef, useState } from "react";
 import { Bell, Search, Sparkles, X } from "lucide-react";
@@ -50,10 +50,10 @@ export function DashboardHeaderPreview({ node, theme }: { node: Node; theme: The
   const tokens = resolveTheme(theme);
   const device = usePreviewDevice();
   const canvasMobile = device === "mobile";
-  const title = textOrFallback(node, "title", "Overview Dashboard");
-  const breadcrumb = textOrFallback(node, "breadcrumb", "Dashboard / Analytics");
+  const title = textOrFallback(node, "title", "Ringkasan");
+  const breadcrumb = textOrFallback(node, "breadcrumb", "Dashboard / Ringkasan");
   const searchPlaceholder = textOrFallback(node, "searchPlaceholder", "Cari data, laporan, atau transaksi...");
-  const actionText = optionalText(node, "actionText", "Export Laporan");
+  const actionText = optionalText(node, "actionText", "Unduh Laporan");
   const showSearch = booleanProp(node, "showSearch", true);
   const showNotifications = booleanProp(node, "showNotifications", true);
   const notificationsMode = listProp(node, "notificationsMode") || "panel";
@@ -119,8 +119,8 @@ export function DashboardHeaderPreview({ node, theme }: { node: Node; theme: The
       style={themeTokenStyle(tokens)}
     >
       <div className="min-w-0">
-        <p className="truncate text-[11px] font-medium text-muted-foreground"><InlineEditableText node={node} propKey="breadcrumb" fallback="Dashboard / Analytics" value={breadcrumb} /></p>
-        <h1 className="mt-0.5 truncate text-lg font-bold leading-tight tracking-tight"><InlineEditableText node={node} propKey="title" fallback="Overview Dashboard" value={title} /></h1>
+        <p className="truncate text-[11px] font-medium text-muted-foreground"><InlineEditableText node={node} propKey="breadcrumb" fallback="Dashboard / Ringkasan" value={breadcrumb} /></p>
+        <h1 className="mt-0.5 truncate text-lg font-bold leading-tight tracking-tight"><InlineEditableText node={node} propKey="title" fallback="Ringkasan" value={title} /></h1>
       </div>
 
       <div className="flex shrink-0 items-center gap-2 sm:gap-3">

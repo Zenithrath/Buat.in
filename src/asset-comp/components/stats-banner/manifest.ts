@@ -15,7 +15,7 @@ export const statsBannerManifest: Omit<ComponentManifest, "previewRenderer" | "e
     sectionBg: "primary",
     stats: [
       { value: "74", suffix: "+", label: "proyek diluncurkan" },
-      { value: "8", suffix: " tahun", label: "menemani bisnis tumbuh" },
+      { value: "8", suffix: " tahun", label: "beroperasi dari Yogyakarta" },
       { value: "96", suffix: "%", label: "klien kembali bekerja sama" },
       { value: "12", suffix: " kota", label: "kolaborasi lintas Indonesia" },
     ],

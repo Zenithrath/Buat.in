@@ -17,7 +17,7 @@ export const faqAccordionManifest: Omit<ComponentManifest, "previewRenderer" | "
       { question: "Berapa lama proses pembuatan website?", answer: "Ruang lingkup sederhana biasanya dapat selesai dalam 2–4 minggu. Kami menyepakati jadwal yang jelas sebelum pekerjaan dimulai." },
       { question: "Apakah saya bisa mengubah isi setelah website selesai?", answer: "Bisa. Anda dapat mengubah teks, gambar, tautan, warna, dan susunan bagian langsung dari builder tanpa menulis kode." },
       { question: "Apakah website ini nyaman dibuka dari ponsel?", answer: "Ya. Setiap bagian sudah dirancang responsif, lalu dapat diperiksa kembali melalui mode desktop, tablet, dan ponsel di kanvas." },
-      { question: "Bagaimana jika kebutuhan saya bertambah?", answer: "Mulai dari struktur yang paling penting terlebih dahulu. Bagian baru dapat ditambahkan kapan saja saat bisnis Anda tumbuh." },
+      { question: "Bagaimana jika kebutuhan saya bertambah?", answer: "Mulai dari struktur yang paling penting terlebih dahulu. Bagian baru dapat ditambahkan kapan saja saat proyek Anda berkembang." },
     ],
   },
   contentControls: [

@@ -15,7 +15,7 @@ export const footerManifest: Omit<
   defaultProps: {
     brandName: "Karsa Studio",
     brandUrl: "#",
-    tagline: "Studio brand dan digital untuk bisnis yang ingin tumbuh dengan arah yang jelas.",
+    tagline: "Studio identitas dan situs di Yogyakarta — mengerjakan proyek nyata sejak 2018.",
     copyrightText: "© 2026 Karsa Studio. Semua hak dilindungi.",
     linksJson: JSON.stringify([
       { label: "Layanan", url: "#layanan" },

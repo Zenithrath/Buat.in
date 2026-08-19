@@ -19,7 +19,7 @@ import { propString } from "@/lib/registry/shared";
 import type { ContentControl, ContentControlItemSchema } from "@/lib/registry/types";
 import { cn } from "@/lib/utils";
 import { Tabs } from "@/components/ui/tabs";
-import { Field, Input, Textarea, Select, Separator } from "@/components/ui/controls";
+import { Field, Input, Textarea, Select, Separator, ImageField } from "@/components/ui/controls";
 import { Button } from "@/components/ui/button";
 import { ThemeCustomizer } from "./ThemeCustomizer";
 import type { Node, NodeLayout } from "@/lib/schema/types";
@@ -194,10 +194,12 @@ function VisualListEditor({
   control,
   value,
   onChange,
+  pages,
 }: {
   control: ContentControl;
   value: unknown;
   onChange: (value: unknown) => void;
+  pages: { id: string; name: string; path: string; isHome: boolean }[];
 }) {
   const items = parseVisualList(value);
   const schema = inferItemSchema(control, items);
@@ -293,6 +295,40 @@ function VisualListEditor({
                           <option key={option.value} value={option.value}>{option.label}</option>
                         ))}
                       </Select>
+                    ) : field.type === "image" ? (
+                      <ImageField
+                        value={inputValue}
+                        onChange={(value) => updateItem(index, field, value)}
+                        label={field.label}
+                      />
+                    ) : field.type === "link" ? (
+                      <div className="space-y-1.5">
+                        <Input
+                          type="text"
+                          value={inputValue}
+                          onChange={(event) => updateItem(index, field, event.target.value)}
+                          placeholder="https://… atau #bagian"
+                          className="text-xs"
+                        />
+                        <Select
+                          value={pages.some((page) => page.path === inputValue) ? inputValue : ""}
+                          onChange={(event) => {
+                            if (event.target.value) updateItem(index, field, event.target.value);
+                          }}
+                          className="h-6 text-[11px]"
+                          aria-label="Tautkan ke halaman"
+                        >
+                          <option value="" disabled>
+                            Tautkan ke halaman…
+                          </option>
+                          {pages.map((page) => (
+                            <option key={page.id} value={page.path}>
+                              {page.name} — {page.path}
+                              {page.isHome ? " · beranda" : ""}
+                            </option>
+                          ))}
+                        </Select>
+                      </div>
                     ) : (
                       <Input
                         type={field.type === "number" ? "number" : "text"}
@@ -420,10 +456,18 @@ function NodeInspector({
                         control={control}
                         value={node.props[control.key]}
                         onChange={(value) => patchProps(control.key, value)}
+                        pages={pages}
                       />
                     ) : (
                     <Field key={control.key} label={control.label}>
-                      {control.type === "textarea" ? (
+                      {control.type === "image" ? (
+                        <ImageField
+                          value={propString(node, control.key)}
+                          onChange={(value) => patchProps(control.key, value)}
+                          placeholder={control.placeholder}
+                          label={control.label}
+                        />
+                      ) : control.type === "textarea" ? (
                         <Textarea
                           value={propString(node, control.key)}
                           onChange={(e) => patchProps(control.key, e.target.value)}

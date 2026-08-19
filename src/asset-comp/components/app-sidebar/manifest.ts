@@ -13,13 +13,13 @@ export const appSidebarManifest: Omit<
   priceKey: "app-sidebar",
   version: "1.0.0",
   defaultProps: {
-    brandName: "Acme Analytics",
+    brandName: "Dasbor Tim",
     brandTag: "PRO",
-    userName: "Alex Rivers",
-    userRole: "Administrator",
+    userName: "Alex Rivanto",
+    userRole: "Admin",
     linksJson: JSON.stringify([
-      { id: "s1", label: "Overview", url: "/", icon: "layout-dashboard", active: true },
-      { id: "s2", label: "Analytics", url: "#analitik", icon: "bar-chart-3", active: false },
+      { id: "s1", label: "Ringkasan", url: "/", icon: "layout-dashboard", active: true },
+      { id: "s2", label: "Analitik", url: "#analitik", icon: "bar-chart-3", active: false },
       { id: "s3", label: "Transaksi", url: "#transaksi", icon: "credit-card", active: false },
       { id: "s4", label: "Pengguna", url: "#pengguna", icon: "users", active: false },
       { id: "s5", label: "Pengaturan", url: "#pengaturan", icon: "settings", active: false },

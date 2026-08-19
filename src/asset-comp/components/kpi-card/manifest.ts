@@ -13,7 +13,7 @@ export const kpiCardManifest: Omit<
   priceKey: "kpi-card",
   version: "1.0.0",
   defaultProps: {
-    title: "Total Revenue",
+    title: "Total Pendapatan",
     value: "Rp 128.450.000",
     change: "+14.2%",
     trend: "up",

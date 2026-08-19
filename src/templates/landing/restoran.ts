@@ -24,7 +24,7 @@ export function createRestoranLandingNodes(): RawTemplateNode[] {
     },
     {
       id: "restoran-hero",
-      componentType: "hero-centered",
+      componentType: "hero-split",
       name: "Hero Selera Nusantara",
       props: {
         badgeText: "Buka setiap hari 10.00–22.00",
@@ -40,6 +40,8 @@ export function createRestoranLandingNodes(): RawTemplateNode[] {
         imageAlt: "Meja makan kayu dengan masakan rumahan di restoran Kota Lama",
         supportingText: "Bumbu diulek pagi-pagi, dimasak saat Anda memesan.",
         imageBadgeText: "KOTA LAMA",
+        imageNoteLabel: "Dapur kami",
+        imageNoteText: "Sejak 2009 · 80 kursi · 600 porsi sehari.",
       },
       styles: { padding: "xl" },
     },

@@ -14,7 +14,7 @@ export const modalSheetManifest: Omit<ComponentManifest, "previewRenderer" | "ex
     heading: "Ringkas untuk ponsel, tetap leluasa saat dibuka dari desktop.",
     triggerText: "Buka panel cepat",
     panelEyebrow: "Panel cepat",
-    title: "Pilih langkah berikutnya.",
+    title: "Pilih aksi berikutnya.",
     description: "Buat penawaran, ringkasan, atau formulir tetap mudah dijangkau tanpa meninggalkan halaman.",
     emptyMessage: "Tambahkan komponen ke dalam panel ini untuk membuat aksi lanjutan terasa lebih mudah.",
     closeText: "Selesai",

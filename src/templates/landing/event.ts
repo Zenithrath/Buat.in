@@ -22,7 +22,7 @@ export function createEventLandingNodes(): RawTemplateNode[] {
     },
     {
       id: "event-hero",
-      componentType: "hero-centered",
+      componentType: "hero-bg-image",
       name: "Hero Ngobrolin Produk 2026",
       props: {
         badgeText: "10–12 Oktober 2026 · Jakarta",
