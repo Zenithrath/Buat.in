@@ -7,6 +7,7 @@ import type {
   Page,
   ProjectDocument,
   ProjectType,
+  SourceTemplateEdit,
   Theme,
 } from "@/lib/schema/types";
 import {
@@ -17,7 +18,7 @@ import {
 } from "@/lib/schema/defaults";
 import { normalizePresets } from "@/lib/theme/presets";
 import { getComponent } from "@/lib/registry";
-import { templateRegistry } from "@/templates";
+import { getTemplateSource, templateRegistry } from "@/templates";
 import { uid } from "@/lib/utils";
 
 const HISTORY_LIMIT = 50;
@@ -225,6 +226,7 @@ interface BuilderState {
   removeAsset: (assetId: string) => void;
   renameProject: (name: string) => void;
   updateSeo: (updater: (seo: ProjectDocument["seo"]) => ProjectDocument["seo"]) => void;
+  updateSourceEdit: (selector: string, edit: SourceTemplateEdit) => void;
   selectAll: () => void;
   applyTemplate: (templateId: string) => void;
   undo: () => void;
@@ -621,6 +623,19 @@ export const useBuilderStore = create<BuilderState>((set, get) => ({
     commit(set, get, { ...document, seo: updater(document.seo) });
   },
 
+  updateSourceEdit: (selector, edit) => {
+    const { document } = get();
+    if (!document.sourceTemplateId) return;
+    const previous = document.sourceEdits?.[selector] ?? {};
+    commit(set, get, {
+      ...document,
+      sourceEdits: {
+        ...(document.sourceEdits ?? {}),
+        [selector]: { ...previous, ...edit },
+      },
+    });
+  },
+
   selectAll: () => {
     const { document, activePageId } = get();
     const sections = getActivePage(document, activePageId).sections;
@@ -648,6 +663,8 @@ export const useBuilderStore = create<BuilderState>((set, get) => ({
       // to a landing template (or vice versa).
       name: hasAutomaticName ? tmpl.name : document.name,
       projectType: categoryToProjectType(tmpl.category),
+      sourceTemplateId: getTemplateSource(tmpl.id) ? tmpl.id : undefined,
+      sourceEdits: getTemplateSource(tmpl.id) ? {} : undefined,
       pages: document.pages.map((page) =>
         page.id === getActivePage(document, activePageId).id
           ? { ...page, sections: nodes }

@@ -15,7 +15,7 @@ import {
 import { createBlankProject, createTemplateProject } from "@/lib/schema/defaults";
 import { autosaveProject } from "@/lib/store/project-store";
 import type { ProjectType } from "@/lib/schema/types";
-import { templateRegistry, type TemplateDefinition } from "@/templates";
+import { getTemplateSource, templateRegistry, type TemplateDefinition } from "@/templates";
 import { cn, uid } from "@/lib/utils";
 
 // TemplatePreview ditarik melalui chain import (SectionPreview → registry →
@@ -43,9 +43,9 @@ export default function NewProjectPage() {
 
   const filteredTemplates = useMemo(
     () =>
-      templateRegistry.filter(
-        (template) => filter === "all" || template.category === filter
-      ),
+      templateRegistry
+        .filter((template) => filter === "all" || template.category === filter)
+        .sort((a, b) => Number(Boolean(getTemplateSource(b.id))) - Number(Boolean(getTemplateSource(a.id)))),
     [filter]
   );
 
@@ -206,6 +206,11 @@ export default function NewProjectPage() {
                       <span className="rounded-md bg-muted px-2 py-1 text-[9px] font-bold uppercase tracking-[0.12em] text-muted-foreground">
                         {template.category === "dashboard" ? "Dashboard" : template.category === "auth" ? "Login & autentikasi" : "Landing page"}
                       </span>
+                      {getTemplateSource(template.id) ? (
+                        <span className="rounded-md bg-brand/10 px-2 py-1 text-[9px] font-bold uppercase tracking-[0.12em] text-brand">
+                          ZIP asli
+                        </span>
+                      ) : null}
                       {template.tier === "pro" ? <span className="text-[9px] font-bold uppercase tracking-[0.14em] text-brand">Pro</span> : null}
                     </div>
                     <h3 className="mt-3 text-sm font-bold tracking-tight">{template.name}</h3>

@@ -343,3 +343,123 @@ html {
   backdrop-filter: blur(20px) saturate(1.4);
   -webkit-backdrop-filter: blur(20px) saturate(1.4);
 }
+
+/* Landing polish: consistent rhythm, readable measure, and calmer section joins. */
+.landing-page {
+  --landing-content: 1240px;
+  overflow-x: hidden;
+}
+
+.landing-page > .site-header > div,
+.landing-page main > section > div,
+.landing-page footer > div {
+  max-width: var(--landing-content);
+}
+
+.landing-page .site-header {
+  height: 72px;
+}
+
+.landing-page .site-header > div {
+  height: 72px;
+}
+
+.landing-page .site-header nav {
+  gap: clamp(1.25rem, 3vw, 2.75rem);
+}
+
+.landing-page main > section:first-child > div {
+  min-height: min(760px, calc(100svh - 72px));
+  justify-content: center;
+  padding-top: clamp(6rem, 14vh, 10rem);
+  padding-bottom: clamp(6rem, 14vh, 10rem);
+}
+
+.landing-page main > section:first-child h1 {
+  max-width: 930px;
+  text-wrap: balance;
+}
+
+.landing-page main > section:first-child p.hero-item {
+  max-width: 560px;
+}
+
+.landing-page main > section:not(:first-child) > div {
+  padding-top: clamp(4.5rem, 8vw, 7rem);
+  padding-bottom: clamp(4.5rem, 8vw, 7rem);
+}
+
+.landing-page #cara-kerja,
+.landing-page #harga {
+  clip-path: none !important;
+}
+
+.landing-page #cara-kerja > div,
+.landing-page #harga > div {
+  padding-top: clamp(4.5rem, 8vw, 7rem) !important;
+}
+
+.landing-page .meta-label {
+  line-height: 1.35;
+}
+
+.landing-page section h2,
+.landing-page section h3 {
+  text-wrap: balance;
+}
+
+.landing-page section p {
+  max-width: 62ch;
+}
+
+.landing-page .group.grid {
+  min-height: 112px;
+  align-items: center;
+}
+
+.landing-page #harga .grid > div > div {
+  min-height: 100%;
+}
+
+.landing-page #harga .grid {
+  align-items: stretch;
+}
+
+.landing-page #faq summary {
+  min-height: 76px;
+}
+
+.landing-page footer {
+  position: relative;
+}
+
+@media (max-width: 767px) {
+  .landing-page .site-header > div {
+    padding-inline: 1.25rem;
+  }
+
+  .landing-page main > section:first-child > div {
+    min-height: 680px;
+    align-items: flex-start;
+    padding-top: 6.5rem;
+    padding-bottom: 6rem;
+  }
+
+  .landing-page main > section:first-child h1 {
+    max-width: 100%;
+    font-size: clamp(2.65rem, 13vw, 4.5rem);
+  }
+
+  .landing-page main > section:first-child p.hero-item {
+    max-width: 34rem;
+  }
+
+  .landing-page .group.grid {
+    min-height: 0;
+    row-gap: .65rem;
+  }
+
+  .landing-page #faq summary {
+    min-height: 0;
+  }
+}

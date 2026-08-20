@@ -31,6 +31,12 @@ export interface TemplateDefinition {
   createNodes: () => RawTemplateNode[];
 }
 
+export interface TemplateSource {
+  folder: string;
+  archive: string;
+  entry: string;
+}
+
 import { createSaasLandingNodes } from "./landing/saas";
 import { createStorefrontNodes } from "./landing/storefront";
 import { createPortfolioLandingNodes } from "./landing/portfolio";
@@ -742,3 +748,23 @@ export const TEMPLATE_CATEGORY_LABELS: Record<TemplateCategory, string> = {
   dashboard: "Dashboard",
   auth: "Login & autentikasi",
 };
+
+/** Arsip asli yang diekstrak ke src/template-sources. */
+export const TEMPLATE_SOURCES: Record<string, TemplateSource> = {
+  "landing-agensi-kreatif": { folder: "bino", archive: "bino.zip", entry: "bino/index.html" },
+  "landing-arsitek": { folder: "balay-master", archive: "balay-master.zip", entry: "balay-master/index.html" },
+  "landing-portofolio-onepage": { folder: "flameonepage-gh-pages", archive: "flameonepage-gh-pages.zip", entry: "flameonepage-gh-pages/index.html" },
+  "landing-studio-kreatif": { folder: "made", archive: "made.zip", entry: "made/index.html" },
+  "landing-hotel": { folder: "royal-master", archive: "royal-master.zip", entry: "royal-master/index.html" },
+  "landing-restoran-modern": { folder: "tasty-master", archive: "tasty-master.zip", entry: "tasty-master/index.html" },
+  "landing-kafe-menu": { folder: "website-menu-03", archive: "website-menu-03.zip", entry: "website-menu-03/index.html" },
+  "dashboard-admin": { folder: "adminator", archive: "adminator.zip", entry: "index.html" },
+  "dashboard-operasional": { folder: "shadcn-admin-main", archive: "shadcn-admin-main.zip", entry: "shadcn-admin-main/index.html" },
+  "auth-login-minimal": { folder: "login-form-02", archive: "login-form-02.zip", entry: "login-form-02/index.html" },
+  "auth-login-split": { folder: "login-form-20", archive: "login-form-20.zip", entry: "login-form-20/index.html" },
+  "auth-login-gradasi": { folder: "login-form-v16", archive: "login-form-v16.zip", entry: "Login_v16/index.html" },
+};
+
+export function getTemplateSource(templateId: string): TemplateSource | undefined {
+  return TEMPLATE_SOURCES[templateId];
+}

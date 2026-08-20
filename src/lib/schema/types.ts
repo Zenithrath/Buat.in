@@ -106,6 +106,12 @@ export interface Seo {
   description: string;
 }
 
+export interface SourceTemplateEdit {
+  text?: string;
+  src?: string;
+  href?: string;
+}
+
 export interface Asset {
   id: string;
   url: string;
@@ -128,4 +134,8 @@ export interface ProjectDocument {
   pages: Page[];
   assets: Asset[];
   seo: Seo;
+  /** ID template sumber asli, jika project dibuat dari arsip di src. */
+  sourceTemplateId?: string;
+  /** Perubahan konten yang diterapkan ke HTML source saat export. */
+  sourceEdits?: Record<string, SourceTemplateEdit>;
 }

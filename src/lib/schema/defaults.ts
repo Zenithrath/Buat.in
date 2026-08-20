@@ -6,7 +6,7 @@ import {
 } from "./types";
 import { DEFAULT_THEME_PRESETS } from "@/lib/theme/presets";
 import { uid } from "@/lib/utils";
-import { templateRegistry, type RawTemplateNode } from "@/templates";
+import { getTemplateSource, templateRegistry, type RawTemplateNode } from "@/templates";
 
 /** Kategori template dipetakan ke tipe proyek builder (auth = halaman tunggal ala landing). */
 export function categoryToProjectType(
@@ -124,6 +124,11 @@ export function createTemplateProject(
     materializeTemplateNodes(template?.createNodes() ?? []),
     categoryToProjectType(template?.category ?? requestedCategory)
   );
+
+  if (template && getTemplateSource(template.id)) {
+    document.sourceTemplateId = template.id;
+    document.sourceEdits = {};
+  }
 
   if (!template?.theme) return document;
 

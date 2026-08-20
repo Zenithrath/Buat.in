@@ -16,6 +16,7 @@ import {
   Trash2,
 } from "lucide-react";
 import { getComponent } from "@/lib/registry";
+import { getTemplateSource } from "@/templates";
 import { projectTokenStyle, propString, themeTokenStyle } from "@/lib/registry/shared";
 import { getActivePage, useBuilderStore } from "@/lib/store/project-store";
 import { resolveTheme } from "@/lib/theme/presets";
@@ -30,6 +31,7 @@ import {
 import { cn } from "@/lib/utils";
 import { handleLinkNavigationClick } from "@/lib/preview/link-navigation";
 import { CANVAS_ROOT_ID, GRID_DROP_PREFIX } from "./BuilderDndProvider";
+import { SourceTemplateCanvas } from "./SourceTemplateCanvas";
 
 const DEVICE_WIDTHS: Record<string, number> = {
   desktop: 1440,
@@ -733,6 +735,16 @@ export function Canvas() {
   );
 
   const zoomScale = zoomLevel / 100;
+
+  if (document.sourceTemplateId && getTemplateSource(document.sourceTemplateId)) {
+    return (
+      <SourceTemplateCanvas
+        document={document}
+        device={device}
+        zoom={zoomScale}
+      />
+    );
+  }
 
   return (
     <div

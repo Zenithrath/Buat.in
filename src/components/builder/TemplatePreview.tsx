@@ -13,19 +13,21 @@ import {
 } from "@/components/preview/CanvasChildrenContext";
 import type { Node, Theme } from "@/lib/schema/types";
 import type { TemplateDefinition } from "@/templates";
+import { getTemplateSource } from "@/templates";
 import { cn } from "@/lib/utils";
 
 /**
  * Pratinjau template live (ala WordPress): node template asli dirender
  * memakai renderer preview lalu diskala kecil. Dashboard disusun seperti
  * layout aslinya (sidebar di kiri, konten di kanan) agar mudah dikenali.
- * Mode `autoFit` menyesuaikan skala dengan lebar kontainer sehingga
- * template tampil utuh tanpa terpotong.
+ * Mode `autoFit` menyesuaikan skala dengan lebar kontainer. Kartu template
+ * sengaja hanya menampilkan bagian atas (biasanya navbar + hero) agar preview
+ * tetap ringkas; template lengkap tetap diterapkan saat dipilih.
  */
 export function TemplatePreview({
   template,
   scale = 0.14,
-  sectionCount = 6,
+  sectionCount = 2,
   className,
   autoFit = false,
 }: {
@@ -49,6 +51,7 @@ export function TemplatePreview({
 
   const tokens = useMemo(() => resolveTheme(theme), [theme]);
   const isDashboard = template.category === "dashboard";
+  const source = getTemplateSource(template.id);
 
   const wrapperRef = useRef<HTMLDivElement>(null);
   const innerRef = useRef<HTMLDivElement>(null);
@@ -98,6 +101,27 @@ export function TemplatePreview({
 
   const sidebarNodes = isDashboard ? nodes.filter(isSidebarNode) : [];
   const mainNodes = isDashboard ? nodes.filter((node) => !isSidebarNode(node)) : nodes;
+
+  if (source) {
+    return (
+      <div
+        ref={wrapperRef}
+        className={cn("relative h-52 overflow-hidden bg-white", className)}
+      >
+        <iframe
+          title={`${template.name} source preview`}
+          src={`/api/template-source/${template.id}/${source.entry}`}
+          className="pointer-events-none absolute left-0 top-0 border-0"
+          style={{
+            width: 1440,
+            height: 900,
+            transform: `scale(${finalScale || 0.14})`,
+            transformOrigin: "top left",
+          }}
+        />
+      </div>
+    );
+  }
 
   return (
     <PreviewEditingProvider>

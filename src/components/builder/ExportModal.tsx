@@ -5,9 +5,11 @@ import { FileCode2, Loader2, CheckCircle2, AlertCircle } from "lucide-react";
 import { useBuilderStore } from "@/lib/store/project-store";
 import { buildExportFiles } from "@/lib/export/html";
 import { buildProjectZip, downloadZip } from "@/lib/export/zip";
+import { buildSourceProjectZip } from "@/lib/export/source-zip";
 import { Button } from "@/components/ui/button";
 import { Modal } from "@/components/ui/modal";
 import { cn } from "@/lib/utils";
+import { getTemplateSource } from "@/templates";
 
 type Phase = "choose" | "generating" | "done" | "error";
 
@@ -22,7 +24,9 @@ export function ExportModal({ open, onClose }: { open: boolean; onClose: () => v
     setPhase("generating");
     setError("");
     try {
-      const blob = await buildProjectZip(document);
+      const blob = document.sourceTemplateId
+        ? await buildSourceProjectZip(document)
+        : await buildProjectZip(document);
       downloadZip(blob, `${document.name || "website"}.zip`);
       setPhase("done");
     } catch (e) {
@@ -30,6 +34,18 @@ export function ExportModal({ open, onClose }: { open: boolean; onClose: () => v
       setError("Terjadi kesalahan saat membuat ZIP. Coba lagi.");
       setPhase("error");
     }
+  }
+
+  function downloadOriginalTemplate() {
+    if (!document.sourceTemplateId) return;
+    const source = getTemplateSource(document.sourceTemplateId);
+    if (!source) return;
+    const link = window.document.createElement("a");
+    link.href = `/api/template-source/${document.sourceTemplateId}/source.zip`;
+    link.download = source.archive;
+    window.document.body.appendChild(link);
+    link.click();
+    window.document.body.removeChild(link);
   }
 
   function reset() {
@@ -92,15 +108,26 @@ export function ExportModal({ open, onClose }: { open: boolean; onClose: () => v
           <p className="mb-2 flex items-center gap-1.5 text-xs font-semibold text-muted-foreground">
             <FileCode2 size={13} /> Isi ZIP
           </p>
-          <div className="grid grid-cols-2 gap-x-6 gap-y-1 rounded-lg border border-border bg-muted/40 p-3 font-mono text-[11px] text-muted-foreground">
-            {buildExportFiles(document)
-              .filter((f) => !f.path.includes("manifest"))
-              .map((f) => (
-                <div key={f.path} className="truncate">
-                  {f.path}
-                </div>
-              ))}
-          </div>
+          {document.sourceTemplateId ? (
+            <div className="rounded-lg border border-brand/30 bg-brand/5 p-3 text-xs leading-relaxed text-muted-foreground">
+              <strong className="text-foreground">Source ZIP asli:</strong>{" "}
+              {getTemplateSource(document.sourceTemplateId)?.archive}
+              <br />
+              Struktur HTML, CSS, JavaScript, font, gambar, dan asset lainnya
+              dipertahankan. Perubahan teks, link, dan gambar diterapkan ke
+              source saat export project editable.
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 gap-x-6 gap-y-1 rounded-lg border border-border bg-muted/40 p-3 font-mono text-[11px] text-muted-foreground">
+              {buildExportFiles(document)
+                .filter((f) => !f.path.includes("manifest"))
+                .map((f) => (
+                  <div key={f.path} className="truncate">
+                    {f.path}
+                  </div>
+                ))}
+            </div>
+          )}
         </div>
 
         <div className="flex items-center justify-between rounded-lg border border-border bg-muted/40 px-3 py-2.5 text-xs text-muted-foreground">
@@ -129,8 +156,13 @@ export function ExportModal({ open, onClose }: { open: boolean; onClose: () => v
           <Button variant="secondary" onClick={onClose}>
             Tutup
           </Button>
+          {document.sourceTemplateId ? (
+            <Button variant="brand" onClick={downloadOriginalTemplate}>
+              Unduh ZIP Asli
+            </Button>
+          ) : null}
           <Button
-            variant="brand"
+            variant={document.sourceTemplateId ? "secondary" : "brand"}
             onClick={handleExport}
             disabled={phase === "generating" || target !== "html"}
           >
@@ -139,7 +171,7 @@ export function ExportModal({ open, onClose }: { open: boolean; onClose: () => v
                 <Loader2 size={14} className="animate-spin" /> Membuat ZIP...
               </>
             ) : (
-              "Unduh Project.zip"
+              document.sourceTemplateId ? "Unduh Project Editable.zip" : "Unduh Project.zip"
             )}
           </Button>
         </div>

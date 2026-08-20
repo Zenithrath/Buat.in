@@ -222,7 +222,7 @@ function GridPattern({ id }: { id: string }) {
 
 export default function LandingPage() {
   return (
-    <div className="flex min-h-screen flex-col bg-ink font-sans text-paper">
+    <div className="landing-page flex min-h-screen flex-col bg-ink font-sans text-paper">
       {/* ─── Header ─────────────────────────── */}
       <header className="site-header sticky top-0 z-50 h-16 border-b border-line-dark bg-ink text-paper">
         <div className="mx-auto flex h-16 w-full max-w-[1440px] items-center justify-between px-5 sm:px-8 lg:px-12">

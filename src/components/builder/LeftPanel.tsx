@@ -16,7 +16,7 @@ import {
 } from "lucide-react";
 import { getActivePage, useBuilderStore } from "@/lib/store/project-store";
 import { componentRegistry } from "@/lib/registry";
-import { templateRegistry, TEMPLATE_CATEGORY_LABELS } from "@/templates";
+import { getTemplateSource, templateRegistry, TEMPLATE_CATEGORY_LABELS } from "@/templates";
 import type { ComponentManifest } from "@/lib/registry/types";
 import type { Asset, Node } from "@/lib/schema/types";
 import { uid } from "@/lib/utils";
@@ -241,24 +241,46 @@ function MiniComponentPreview({ manifest }: { manifest: ComponentManifest }) {
 }
 
 /* ─── Sections panel ──────────────────────── */
-const SECTION_COMPONENT_IDS = ["section-basic", "grid-container"];
+// Fondasi landing page yang tersedia langsung di tab Section.
+const LANDING_SECTION_GROUPS = COMPONENT_GROUPS.filter(
+  (group) => group.scope === "landing" || group.scope === "both"
+).filter((group) => !["modal", "layout", "bantuan"].includes(group.id));
+
+const SECTION_COMPONENT_IDS = Array.from(
+  new Set(LANDING_SECTION_GROUPS.flatMap((group) => group.ids))
+);
 
 function SectionsPanel() {
-  const sectionItems = componentRegistry.filter((c) =>
-    SECTION_COMPONENT_IDS.includes(c.id)
-  );
+  const sectionItems = componentRegistry.filter((c) => SECTION_COMPONENT_IDS.includes(c.id));
+  const availableIds = new Set(sectionItems.map((item) => item.id));
 
   return (
     <div className="flex flex-col gap-3 px-3 py-3">
       <PanelHeader title="Section" count={sectionItems.length} />
       <p className="rounded-md bg-muted/60 px-2.5 py-2 text-[9.5px] leading-4 text-muted-foreground">
-        Section adalah kerangka halaman. Tambahkan section kosong, lalu isi
-        dengan komponen lain (seret ke kanvas atau klik dua kali).
+        Pilih blok utama halaman untuk ditambahkan ke kanvas. Seret ke kanvas
+        atau klik dua kali untuk menambahkannya.
       </p>
-      <div className="flex flex-col gap-1.5">
-        {sectionItems.map((manifest) => (
-          <DraggableComponent key={manifest.id} manifest={manifest} search="" />
-        ))}
+      <div className="flex flex-col gap-4">
+        {LANDING_SECTION_GROUPS.map((group) => {
+          const manifests = group.ids
+            .filter((id) => availableIds.has(id))
+            .map((id) => sectionItems.find((item) => item.id === id))
+            .filter((item): item is ComponentManifest => Boolean(item));
+
+          if (manifests.length === 0) return null;
+
+          return (
+            <div key={group.id} className="flex flex-col gap-1.5">
+              <p className="px-0.5 text-[9px] font-bold uppercase tracking-[0.14em] text-muted-foreground">
+                {group.label}
+              </p>
+              {manifests.map((manifest) => (
+                <DraggableComponent key={manifest.id} manifest={manifest} search="" />
+              ))}
+            </div>
+          );
+        })}
       </div>
     </div>
   );
@@ -276,7 +298,7 @@ function TemplatesPanel() {
     const matchQ = !q || t.name.toLowerCase().includes(q) || t.tags.some((tag) => tag.includes(q));
     const matchFilter = filter === "all" || t.category === filter;
     return matchQ && matchFilter;
-  });
+  }).sort((a, b) => Number(Boolean(getTemplateSource(b.id))) - Number(Boolean(getTemplateSource(a.id))));
 
   function handleApply(templateId: string) {
     if (typeof applyTemplate === "function") applyTemplate(templateId);
@@ -363,6 +385,11 @@ function TemplatesPanel() {
                     <Crown size={9} />PRO
                   </span>
                 )}
+                {getTemplateSource(tmpl.id) ? (
+                  <span className="shrink-0 rounded px-1.5 py-0.5 bg-brand/10 text-brand text-[9px] font-bold">
+                    ZIP ASLI
+                  </span>
+                ) : null}
               </div>
 
               {/* Tags */}
