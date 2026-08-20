@@ -14,6 +14,7 @@ export const footerManifest: Omit<
   version: "1.1.0",
   defaultProps: {
     brandName: "Karsa Studio",
+    logoImageUrl: "",
     brandUrl: "#",
     tagline: "Studio identitas dan situs di Yogyakarta — mengerjakan proyek nyata sejak 2018.",
     copyrightText: "© 2026 Karsa Studio. Semua hak dilindungi.",
@@ -31,6 +32,7 @@ export const footerManifest: Omit<
   },
   contentControls: [
     { key: "brandName", label: "Nama Brand", group: "Brand", type: "text" },
+    { key: "logoImageUrl", label: "Logo Gambar (opsional)", group: "Brand", type: "image" },
     { key: "brandUrl", label: "Tujuan nama brand", group: "Brand", type: "link" },
     { key: "tagline", label: "Tagline", group: "Brand", type: "textarea" },
     { key: "copyrightText", label: "Teks Hak Cipta", group: "Footer", type: "text" },

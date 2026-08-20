@@ -51,3 +51,4 @@ export { formAddDataComponent } from "./components/form-add-data";
 export { barFilterComponent } from "./components/bar-filter";
 export { sparklineComponent } from "./components/sparkline";
 export { calendarWidgetComponent } from "./components/calendar-widget";
+export { authLoginComponent } from "./components/auth-login";

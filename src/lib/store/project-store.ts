@@ -10,6 +10,7 @@ import type {
   Theme,
 } from "@/lib/schema/types";
 import {
+  categoryToProjectType,
   createBlankProject,
   createDefaultNode,
   materializeTemplateNodes,
@@ -646,7 +647,7 @@ export const useBuilderStore = create<BuilderState>((set, get) => ({
       // but do not leave an automatic dashboard name behind after switching
       // to a landing template (or vice versa).
       name: hasAutomaticName ? tmpl.name : document.name,
-      projectType: tmpl.category,
+      projectType: categoryToProjectType(tmpl.category),
       pages: document.pages.map((page) =>
         page.id === getActivePage(document, activePageId).id
           ? { ...page, sections: nodes }

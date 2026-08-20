@@ -10,6 +10,7 @@ import { navInstanceId } from "../_shared/navigation";
 import { usePreviewDevice } from "@/components/preview/PreviewDeviceContext";
 import { InlineEditableLink, InlineEditableText } from "@/components/preview/InlineEditable";
 import { useRepeaterEditor } from "../_shared/inline";
+import { BrandMark } from "../_shared/logo";
 
 interface MegaLink { id: string; label: string; url: string; }
 interface MegaColumn { id: string; heading: string; links: MegaLink[]; }
@@ -65,7 +66,7 @@ export function NavbarMegaPreview({ node, theme }: { node: BuilderNode; theme: T
 
   return <header ref={root} className={`relative z-30 w-full bg-background ${padding}`} style={{ ...themeTokenStyle(tokens), ...projectTokenStyle(tokens) }}>
     <nav className="relative mx-auto flex max-w-6xl items-center justify-between gap-4" aria-label="Navigasi utama">
-      <a href="#" className="flex items-center gap-2 font-[family-name:var(--font-heading)] text-lg font-black tracking-[0.06em] text-foreground"><span className="size-2 rounded-full bg-primary" /><InlineEditableText node={node} propKey="logoText" value={logo} fallback="SORA" /></a>
+      <a href="#" className="flex items-center gap-2 font-[family-name:var(--font-heading)] text-lg font-black tracking-[0.06em] text-foreground"><BrandMark node={node} name={logo} hideLetter imgClassName="size-6 rounded-md object-cover" /><InlineEditableText node={node} propKey="logoText" value={logo} fallback="SORA" /></a>
       <div className={`${desktop} items-center gap-6`}>
         <button type="button" onClick={() => setOpen((value) => !value)} aria-expanded={open} aria-controls={menuId} className="inline-flex items-center gap-1 rounded-full px-3 py-2 text-sm font-semibold text-foreground transition-colors hover:bg-muted"><InlineEditableText node={node} propKey="menuText" value={menuText} fallback="Jelajahi" /><ChevronDown className={`transition-transform ${open ? "rotate-180" : ""}`} size={15} /></button>
         <InlineEditableLink node={node} propKey="linkText" urlKey="linkUrl" value={sideText} urlValue={sideUrl} fallback="Tentang kami" linkClassName="text-sm font-semibold text-muted-foreground transition-colors hover:text-foreground" />

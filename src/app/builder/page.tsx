@@ -34,7 +34,7 @@ const TemplatePreview = dynamic(
   }
 );
 
-type TemplateFilter = "all" | "landing" | "dashboard";
+type TemplateFilter = "all" | "landing" | "dashboard" | "auth";
 
 export default function NewProjectPage() {
   const router = useRouter();
@@ -158,6 +158,7 @@ export default function NewProjectPage() {
                 { id: "all", label: `Semua (${templateRegistry.length})` },
                 { id: "landing", label: `Landing Page (${templateRegistry.filter((t) => t.category === "landing").length})` },
                 { id: "dashboard", label: `Dashboard (${templateRegistry.filter((t) => t.category === "dashboard").length})` },
+                { id: "auth", label: `Login & Autentikasi (${templateRegistry.filter((t) => t.category === "auth").length})` },
               ] as { id: TemplateFilter; label: string }[]).map((tab) => (
                 <button
                   key={tab.id}
@@ -197,13 +198,13 @@ export default function NewProjectPage() {
                     creating !== null && "pointer-events-none opacity-70"
                   )}
                 >
-                  <div className="pointer-events-none mb-4 h-48 select-none overflow-hidden rounded-lg border border-border/60 bg-card">
-                    <TemplatePreview template={template} scale={0.16} />
+                  <div className="pointer-events-none mb-4 select-none overflow-hidden rounded-lg border border-border/60 bg-card">
+                    <TemplatePreview template={template} autoFit />
                   </div>
                   <div className="px-1 pb-1">
                     <div className="flex items-center justify-between gap-3">
                       <span className="rounded-md bg-muted px-2 py-1 text-[9px] font-bold uppercase tracking-[0.12em] text-muted-foreground">
-                        {template.category === "dashboard" ? "Dashboard" : "Landing page"}
+                        {template.category === "dashboard" ? "Dashboard" : template.category === "auth" ? "Login & autentikasi" : "Landing page"}
                       </span>
                       {template.tier === "pro" ? <span className="text-[9px] font-bold uppercase tracking-[0.14em] text-brand">Pro</span> : null}
                     </div>

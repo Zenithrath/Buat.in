@@ -12,6 +12,7 @@ export const progressBarManifest: Omit<
   tier: "free",
   priceKey: "progress-bar",
   version: "1.0.0",
+  canContainChildren: false,
   defaultProps: {
     label: "Target penjualan",
     value: 68,

@@ -12,6 +12,7 @@ export const dataTableManifest: Omit<
   tier: "pro",
   priceKey: "data-table",
   version: "1.0.0",
+  canContainChildren: false,
   defaultProps: {
     title: "Transaksi Terbaru",
     subtitle: "Daftar pesanan dan transaksi pelanggan",

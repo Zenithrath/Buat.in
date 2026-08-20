@@ -89,6 +89,8 @@ export function backgroundToken(
       return tokens.muted;
     case "primary":
       return tokens.primary;
+    case "glass":
+      return `color-mix(in srgb, ${tokens.card} 55%, transparent)`;
     case "transparent":
       return "transparent";
     default:
@@ -104,14 +106,20 @@ export function sectionWrapper(
   tag: "section" | "header" | "footer" = "section"
 ): ExportResult {
   const vars = sectionStyleVars(node, ctx.tokens);
+  const bg = node.styles.background ?? "default";
   return {
-    html: `<${tag} class="${sectionClass}" style="${vars}">${innerHtml}</${tag}>`,
+    html: `<${tag} class="${sectionClass}" style="${vars}" data-bg="${escapeHtml(bg)}">${innerHtml}</${tag}>`,
     css: `.${sectionClass} {
   background: var(--bi-bg, ${ctx.tokens.background});
   padding: var(--bi-pad, 40px);
   text-align: var(--bi-align, center);
   font-family: var(--bi-font-body, inherit);
   color: var(--bi-fg, inherit);
+}
+
+.${sectionClass}[data-bg="glass"] {
+  backdrop-filter: blur(20px) saturate(1.4);
+  -webkit-backdrop-filter: blur(20px) saturate(1.4);
 }
 
 .${sectionClass} .bi-container {

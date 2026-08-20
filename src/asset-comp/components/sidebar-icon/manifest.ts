@@ -9,8 +9,10 @@ export const sidebarIconManifest: Omit<ComponentManifest, "previewRenderer" | "e
   tier: "free",
   priceKey: "sidebar-icon",
   version: "2.0.0",
+  canContainChildren: false,
   defaultProps: {
     logoText: "B",
+    logoImageUrl: "",
     workspaceLabel: "Workspace",
     statusLabel: "Terhubung",
     defaultOpen: true,
@@ -24,6 +26,7 @@ export const sidebarIconManifest: Omit<ComponentManifest, "previewRenderer" | "e
   },
   contentControls: [
     { key: "logoText", label: "Teks logo", group: "Header", type: "text" },
+    { key: "logoImageUrl", label: "Logo Gambar (opsional)", group: "Header", type: "image" },
     { key: "workspaceLabel", label: "Nama ruang kerja", group: "Header", type: "text" },
     { key: "statusLabel", label: "Label status", group: "Status", type: "text" },
     { key: "defaultOpen", label: "Buka sidebar saat pertama tampil", group: "Tata letak", type: "boolean" },

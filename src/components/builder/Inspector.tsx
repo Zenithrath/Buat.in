@@ -48,6 +48,7 @@ const BACKGROUND_OPTIONS = [
   { value: "default", label: "Latar (tema)" },
   { value: "muted", label: "Redup" },
   { value: "primary", label: "Warna utama" },
+  { value: "glass", label: "Kaca (glassmorphism)" },
   { value: "custom", label: "Kustom" },
   { value: "transparent", label: "Transparan" },
 ];

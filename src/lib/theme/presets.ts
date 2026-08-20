@@ -669,6 +669,8 @@ export function normalizePresets(p: ThemePresetSelection): NormalizedPresets {
 
 export interface ResolvedTokens {
   appearance: "light" | "dark";
+  /** ID style preset aktif — dipakai sebagai `data-bi-style` di kanvas/preview. */
+  styleId: StyleId;
   background: string;
   foreground: string;
   card: string;
@@ -789,6 +791,7 @@ export function resolveTheme(theme: Theme): ResolvedTokens {
 
   return {
     appearance: p.appearance,
+    styleId: style.id,
     background: theme.overrides.background ?? base.background,
     foreground: theme.overrides.foreground ?? base.accentForeground,
     card: base.card,

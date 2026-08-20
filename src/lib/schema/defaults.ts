@@ -8,6 +8,13 @@ import { DEFAULT_THEME_PRESETS } from "@/lib/theme/presets";
 import { uid } from "@/lib/utils";
 import { templateRegistry, type RawTemplateNode } from "@/templates";
 
+/** Kategori template dipetakan ke tipe proyek builder (auth = halaman tunggal ala landing). */
+export function categoryToProjectType(
+  category: string
+): ProjectType {
+  return category === "dashboard" ? "dashboard" : "landing";
+}
+
 export function createDefaultNode(componentType: string, name?: string): Node {
   return {
     id: uid(),
@@ -115,7 +122,7 @@ export function createTemplateProject(
     projectId,
     template?.name ?? "Landing Page Baru",
     materializeTemplateNodes(template?.createNodes() ?? []),
-    template?.category ?? requestedCategory
+    categoryToProjectType(template?.category ?? requestedCategory)
   );
 
   if (!template?.theme) return document;

@@ -15,6 +15,7 @@ export const navbarGlassManifest: Omit<
   version: "2.0.0",
   defaultProps: {
     logoText: "Nawala",
+    logoImageUrl: "",
     link1Text: "Beranda",
     link1Url: "#",
     link2Text: "Karya",
@@ -26,6 +27,7 @@ export const navbarGlassManifest: Omit<
   },
   contentControls: [
     { key: "logoText", label: "Nama brand", group: "Brand", type: "text" },
+    { key: "logoImageUrl", label: "Logo Gambar (opsional)", group: "Brand", type: "image" },
     { key: "link1Text", label: "Menu 1", group: "Menu", type: "text" },
     { key: "link1Url", label: "Tujuan menu 1", group: "Menu", type: "link" },
     { key: "link2Text", label: "Menu 2", group: "Menu", type: "text" },

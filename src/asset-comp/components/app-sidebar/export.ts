@@ -1,6 +1,7 @@
 ﻿import type { ExportResult } from "@/lib/registry/types";
 import type { Node } from "@/lib/schema/types";
 import { escapeHtml, propString } from "@/lib/registry/shared";
+import { logoMarkHtml } from "../_shared/logo-export";
 
 interface SidebarLink {
   id: string;
@@ -87,7 +88,7 @@ export function appSidebarExport(node: Node): ExportResult {
 
   const html = `<aside class="bi-sidebar" aria-label="Navigasi aplikasi">
   <div class="bi-sidebar-brand">
-    <div class="bi-brand-logo" aria-hidden="true">${escapeHtml(brandName.charAt(0).toUpperCase())}</div>
+    <div class="bi-brand-logo" aria-hidden="true">${logoMarkHtml(node, brandName, "bi-brand-logo-img", "bi-brand-logo-letter")}</div>
     <div class="bi-brand-copy">
       <h2 class="bi-brand-title">${escapeHtml(brandName)}</h2>
       <p class="bi-brand-sub">Workspace operasional</p>
@@ -122,7 +123,8 @@ export function appSidebarExport(node: Node): ExportResult {
   font-family: var(--bi-font-body);
 }
 .bi-sidebar-brand { display: flex; align-items: center; gap: 0.625rem; margin-bottom: 1.25rem; padding: 0.125rem 0.125rem 1rem; border-bottom: 1px solid var(--bi-border); }
-.bi-brand-logo { display: grid; width: 2.25rem; height: 2.25rem; flex: 0 0 auto; place-items: center; border-radius: calc(var(--bi-radius) + 2px); background: var(--bi-primary); color: var(--bi-primary-fg); font-size: 0.875rem; font-weight: 800; box-shadow: 0 4px 10px color-mix(in srgb, var(--bi-primary) 25%, transparent); }
+.bi-brand-logo-letter { display: grid; width: 2.25rem; height: 2.25rem; flex: 0 0 auto; place-items: center; border-radius: calc(var(--bi-radius) + 2px); background: var(--bi-primary); color: var(--bi-primary-fg); font-size: 0.875rem; font-weight: 800; box-shadow: 0 4px 10px color-mix(in srgb, var(--bi-primary) 25%, transparent); }
+.bi-brand-logo-img { display: block; width: 2.25rem; height: 2.25rem; flex: 0 0 auto; border-radius: calc(var(--bi-radius) + 2px); object-fit: cover; }
 .bi-brand-copy { min-width: 0; flex: 1; }
 .bi-brand-title { overflow: hidden; margin: 0; color: var(--bi-fg); font-family: var(--bi-font-heading); font-size: 0.875rem; font-weight: 750; line-height: 1.2; text-overflow: ellipsis; white-space: nowrap; }
 .bi-brand-sub { overflow: hidden; margin: 0.2rem 0 0; color: var(--bi-muted-fg); font-size: 0.625rem; font-weight: 500; text-overflow: ellipsis; white-space: nowrap; }

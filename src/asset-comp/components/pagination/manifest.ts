@@ -12,6 +12,7 @@ export const paginationManifest: Omit<
   tier: "free",
   priceKey: "pagination",
   version: "1.0.0",
+  canContainChildren: false,
   defaultProps: {
     currentPage: 1,
     totalPages: 5,

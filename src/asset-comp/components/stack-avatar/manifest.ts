@@ -12,6 +12,7 @@ export const stackAvatarManifest: Omit<
   tier: "free",
   priceKey: "stack-avatar",
   version: "1.0.0",
+  canContainChildren: false,
   defaultProps: {
     avatarsJson: JSON.stringify([
       { name: "Ayu Lestari" },

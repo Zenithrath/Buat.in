@@ -309,3 +309,37 @@ html {
     animation: none;
   }
 }
+
+/* ─── Style presets terlihat di kanvas & preview tema ───
+   Area situs pengguna dibungkus `data-bi-style=<id style>`. Radius & bayangan
+   dari utilitas Tailwind preview ikut token style aktif (vega/nova/maia/lyra/
+   mira) — bukan nilai default editor. rounded-full (pill/avatar) tidak diubah. */
+[data-bi-style] .rounded-sm,
+[data-bi-style] .rounded,
+[data-bi-style] .rounded-md,
+[data-bi-style] .rounded-lg,
+[data-bi-style] .rounded-xl,
+[data-bi-style] .rounded-2xl {
+  border-radius: var(--bi-radius);
+}
+[data-bi-style] .rounded-3xl {
+  border-radius: calc(var(--bi-radius) * 1.5);
+}
+[data-bi-style] .shadow-sm,
+[data-bi-style] .shadow,
+[data-bi-style] .shadow-md,
+[data-bi-style] .shadow-lg,
+[data-bi-style] .shadow-xl,
+[data-bi-style] .shadow-2xl {
+  box-shadow: var(--bi-shadow);
+}
+
+/* Frame section di kanvas: latar & perataan dari opsi section terlihat.
+   Padding dibiarkan pada komponen agar tidak ganda. */
+.bi-section-frame {
+  background: transparent;
+}
+.bi-section-frame[data-bg="glass"] {
+  backdrop-filter: blur(20px) saturate(1.4);
+  -webkit-backdrop-filter: blur(20px) saturate(1.4);
+}

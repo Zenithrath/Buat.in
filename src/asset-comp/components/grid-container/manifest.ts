@@ -12,6 +12,7 @@ export const gridContainerManifest: Omit<
   tier: "free",
   priceKey: "grid-container",
   version: "1.0.0",
+  internalChildren: true,
   defaultProps: {
     columns: "4",
     gap: "md",

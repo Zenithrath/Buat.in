@@ -1,6 +1,7 @@
 import type { ExportResult } from "@/lib/registry/types";
 import type { Node } from "@/lib/schema/types";
 import { escapeHtml, propString, sanitizeUrl } from "@/lib/registry/shared";
+import { logoMarkHtml } from "../_shared/logo-export";
 
 export function navbarExport(node: Node): ExportResult {
   const logoText = propString(node, "logoText") || "Logo Saya";
@@ -24,7 +25,7 @@ export function navbarExport(node: Node): ExportResult {
 
   const html = `
 <nav class="bi-navbar bi-nav" data-nav-open="false" aria-label="Navigasi utama">
-  <a href="#" class="bi-nav-logo">${escapeHtml(logoText)}</a>
+  <a href="#" class="bi-nav-logo">${logoMarkHtml(node, logoText, "bi-nav-logo-img", "", undefined, true)}${escapeHtml(logoText)}</a>
   <button class="bi-nav-toggle" type="button" data-nav-toggle aria-expanded="false" aria-label="Buka menu" aria-controls="${menuId}">
     <span></span><span></span><span></span>
   </button>
@@ -49,11 +50,20 @@ export function navbarExport(node: Node): ExportResult {
   font-family: var(--bi-font-body);
 }
 .bi-nav-logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
   color: var(--bi-fg);
   font-size: 1.125rem;
   font-weight: 700;
   letter-spacing: -0.02em;
   text-decoration: none;
+}
+.bi-nav-logo-img {
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: var(--bi-radius);
+  object-fit: cover;
 }
 .bi-nav-links {
   display: flex;

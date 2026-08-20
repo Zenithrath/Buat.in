@@ -12,6 +12,7 @@ export const chartCardManifest: Omit<
   tier: "pro",
   priceKey: "chart-card",
   version: "1.0.0",
+  canContainChildren: false,
   defaultProps: {
     title: "Pendapatan & Pengunjung",
     subtitle: "Tren 6 bulan terakhir",

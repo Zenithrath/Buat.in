@@ -11,6 +11,7 @@ import {
 import { usePreviewDevice } from "@/components/preview/PreviewDeviceContext";
 import { InlineEditableLink, InlineEditableText } from "@/components/preview/InlineEditable";
 import { useBuilderStore } from "@/lib/store/project-store";
+import { BrandMark } from "../_shared/logo";
 
 interface FooterLink {
   label: string;
@@ -125,9 +126,12 @@ export function FooterPreview({ node, theme }: { node: Node; theme: Theme }) {
               urlValue={brandUrl}
               linkClassName="inline-flex items-center gap-2 text-lg font-extrabold tracking-[-0.035em] text-foreground"
             >
-              <span className="-order-1 grid size-7 place-items-center rounded-[var(--radius)] bg-primary text-xs text-primary-foreground">
-                B
-              </span>
+              <BrandMark
+                node={node}
+                name={brandName}
+                hideLetter
+                imgClassName="-order-1 size-7 shrink-0 rounded-[var(--radius)] object-cover"
+              />
             </InlineEditableLink>
             <p className="mt-3 text-sm leading-6 text-muted-foreground">
               <InlineEditableText node={node} propKey="tagline" fallback={tagline} multiline />

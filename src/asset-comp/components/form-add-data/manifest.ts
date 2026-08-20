@@ -12,6 +12,7 @@ export const formAddDataManifest: Omit<
   tier: "free",
   priceKey: "form-add-data",
   version: "1.0.0",
+  canContainChildren: false,
   defaultProps: {
     title: "Tambah data baru",
     description: "Lengkapi kolom di bawah lalu simpan.",

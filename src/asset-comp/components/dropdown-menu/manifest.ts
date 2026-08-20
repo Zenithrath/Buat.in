@@ -9,6 +9,7 @@ export const dropdownMenuManifest: Omit<ComponentManifest, "previewRenderer" | "
   tier: "free",
   priceKey: "dropdown-menu",
   version: "2.0.0",
+  canContainChildren: false,
   defaultProps: {
     buttonText: "Lihat pilihan",
     align: "left",

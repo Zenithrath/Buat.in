@@ -11,6 +11,7 @@ export const navbarFullscreenManifest: Omit<ComponentManifest, "previewRenderer"
   version: "2.0.0",
   defaultProps: {
     logoText: "TITIK TEMU",
+    logoImageUrl: "",
     eyebrow: "Menu",
     links: [
       { label: "Beranda", url: "#" },
@@ -22,6 +23,7 @@ export const navbarFullscreenManifest: Omit<ComponentManifest, "previewRenderer"
   },
   contentControls: [
     { key: "logoText", label: "Nama brand", group: "Brand", type: "text" },
+    { key: "logoImageUrl", label: "Logo Gambar (opsional)", group: "Brand", type: "image" },
     { key: "eyebrow", label: "Label menu", group: "Menu", type: "text" },
     { key: "links", label: "Daftar menu", group: "Menu", type: "array", itemSchema: [
       { key: "label", label: "Nama menu", type: "text" },

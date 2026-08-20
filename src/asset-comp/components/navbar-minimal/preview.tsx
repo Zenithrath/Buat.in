@@ -7,6 +7,7 @@ import { resolveTheme } from "@/lib/theme/presets";
 import { propString, sanitizeUrl, themeTokenStyle } from "@/lib/registry/shared";
 import { usePreviewDevice } from "@/components/preview/PreviewDeviceContext";
 import { InlineEditableLink, InlineEditableText } from "@/components/preview/InlineEditable";
+import { BrandMark } from "../_shared/logo";
 
 export function NavbarPreview({ node, theme }: { node: Node; theme: Theme }) {
   const tokens = resolveTheme(theme);
@@ -30,7 +31,8 @@ export function NavbarPreview({ node, theme }: { node: Node; theme: Theme }) {
       className="flex w-full flex-wrap items-center justify-between border-b px-5 py-3.5 transition-colors sm:px-6"
       style={themeTokenStyle(tokens)}
     >
-      <a href="#" className="font-display text-lg font-bold tracking-tight text-foreground">
+      <a href="#" className="flex items-center gap-2 font-display text-lg font-bold tracking-tight text-foreground">
+        <BrandMark node={node} name={logoText} hideLetter imgClassName="h-7 w-7 rounded-md object-cover" />
         <InlineEditableText node={node} propKey="logoText" fallback={logoText} />
       </a>
       <button

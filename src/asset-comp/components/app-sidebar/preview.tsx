@@ -6,6 +6,7 @@ import { propString, sanitizeUrl, themeTokenStyle } from "@/lib/registry/shared"
 import { InlineEditableText } from "@/components/preview/InlineEditable";
 import { nodeList, listBoolean, listValue, uniqueId } from "../_shared/content";
 import { useRepeaterEditor } from "../_shared/inline";
+import { BrandMark } from "../_shared/logo";
 import {
   BarChart3,
   ChevronRight,
@@ -75,7 +76,6 @@ export function AppSidebarPreview({ node, theme }: { node: Node; theme: Theme })
   const links = parseLinks(node);
   const linksKey = node.props.links === undefined ? "linksJson" : "links";
   const { setValue } = useRepeaterEditor(node, linksKey);
-  const brandInitial = brandName.charAt(0).toUpperCase();
   const userInitial = userName.charAt(0).toUpperCase();
 
   return (
@@ -85,9 +85,12 @@ export function AppSidebarPreview({ node, theme }: { node: Node; theme: Theme })
       style={themeTokenStyle(tokens)}
     >
       <div className="mb-5 flex items-center gap-2.5 border-b pb-4">
-        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary text-sm font-extrabold text-primary-foreground shadow-sm">
-          {brandInitial}
-        </div>
+        <BrandMark
+          node={node}
+          name={brandName}
+          imgClassName="h-9 w-9 shrink-0 rounded-lg object-cover"
+          letterClassName="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary text-sm font-extrabold text-primary-foreground shadow-sm"
+        />
         <div className="min-w-0 flex-1">
           <h2 className="truncate text-sm font-bold leading-tight tracking-tight"><InlineEditableText node={node} propKey="brandName" fallback="Dasbor Tim" value={brandName} /></h2>
           <p className="mt-0.5 truncate text-[10px] font-medium text-muted-foreground">

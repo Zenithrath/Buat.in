@@ -8,6 +8,7 @@ import { projectTokenStyle, propString, themeTokenStyle } from "@/lib/registry/s
 import { usePreviewDevice } from "@/components/preview/PreviewDeviceContext";
 import { InlineEditableLink, InlineEditableText } from "@/components/preview/InlineEditable";
 import { directNavigationLinks, navigationHoverEffect, navInstanceId } from "../_shared/navigation";
+import { BrandMark } from "../_shared/logo";
 
 function centeredLinkClass(effect: string, mobile = false) {
   const shared = mobile ? "rounded-lg px-3 py-2.5 text-sm font-semibold text-foreground hover:bg-muted" : "relative px-3 py-2 text-[11px] font-extrabold uppercase tracking-[0.13em] text-muted-foreground transition-colors hover:text-foreground";
@@ -37,7 +38,7 @@ export function NavbarCenteredPreview({ node, theme }: { node: Node; theme: Them
     <nav className="mx-auto max-w-6xl" aria-label="Navigasi utama">
       <div className="relative flex min-h-10 items-center justify-center">
         <button type="button" className={`${mobile} absolute left-0 grid size-9 place-items-center rounded-full border border-border text-foreground`} aria-label={open ? "Tutup menu" : "Buka menu"} aria-expanded={open} aria-controls={menuId} onClick={() => setOpen((value) => !value)}>{open ? <X size={17} /> : <Menu size={18} />}</button>
-        <a href="#" className="font-[family-name:var(--font-heading)] text-lg font-black tracking-[-0.055em] text-foreground"><InlineEditableText node={node} propKey="logoText" value={logo} fallback="Aruna Studio" /></a>
+        <a href="#" className="flex items-center justify-center gap-2 font-[family-name:var(--font-heading)] text-lg font-black tracking-[-0.055em] text-foreground"><BrandMark node={node} name={logo} hideLetter imgClassName="h-7 w-7 rounded-md object-cover" /><InlineEditableText node={node} propKey="logoText" value={logo} fallback="Aruna Studio" /></a>
         <InlineEditableLink node={node} propKey="ctaText" urlKey="ctaUrl" value={cta} urlValue={ctaUrl} fallback="Mulai proyek" className={`${desktop} absolute right-0`} linkClassName="inline-flex items-center gap-1.5 border-b border-foreground pb-1 text-xs font-bold text-foreground transition-colors hover:border-primary hover:text-primary"><ArrowRight size={14} /></InlineEditableLink>
       </div>
       <div className={`${desktop} mt-4 items-center justify-center gap-1 border-t border-border pt-3`}>{links.map((link, index) => <InlineEditableLink key={link.id} node={node} propKey={`link${index + 1}Text`} urlKey={`link${index + 1}Url`} value={link.label} urlValue={link.url} fallback={link.label} linkClassName={centeredLinkClass(effect)} />)}</div>

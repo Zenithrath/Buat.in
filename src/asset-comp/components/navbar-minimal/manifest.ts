@@ -14,6 +14,7 @@ export const navbarManifest: Omit<
   version: "1.0.0",
   defaultProps: {
     logoText: "Logo Saya",
+    logoImageUrl: "",
     link1Text: "Beranda",
     link1Url: "#",
     link2Text: "Tentang",
@@ -25,6 +26,7 @@ export const navbarManifest: Omit<
   },
   contentControls: [
     { key: "logoText", label: "Nama Logo", group: "Umum", type: "text" },
+    { key: "logoImageUrl", label: "Logo Gambar (opsional)", group: "Umum", type: "image" },
     { key: "link1Text", label: "Tautan 1", group: "Navigasi", type: "text" },
     { key: "link1Url", label: "Tujuan menu 1", group: "Navigasi", type: "link" },
     { key: "link2Text", label: "Tautan 2", group: "Navigasi", type: "text" },

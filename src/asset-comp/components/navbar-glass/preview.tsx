@@ -8,6 +8,7 @@ import { projectTokenStyle, propString, themeTokenStyle } from "@/lib/registry/s
 import { usePreviewDevice } from "@/components/preview/PreviewDeviceContext";
 import { InlineEditableLink, InlineEditableText } from "@/components/preview/InlineEditable";
 import { directNavigationLinks, navigationHoverEffect, navInstanceId } from "../_shared/navigation";
+import { BrandMark } from "../_shared/logo";
 
 function linkClass(effect: string, compact = false) {
   const base = compact
@@ -40,7 +41,7 @@ export function NavbarGlassPreview({ node, theme }: { node: Node; theme: Theme }
     <header className={`relative z-20 w-full ${outerPadding}`} style={{ ...themeTokenStyle(tokens), ...projectTokenStyle(tokens) }}>
       <nav className={`relative mx-auto flex max-w-6xl items-center justify-between gap-3 rounded-full border border-border/80 bg-card/75 ${navPadding} shadow-sm backdrop-blur-xl`} aria-label="Navigasi utama">
         <a href="#" className="flex min-w-0 items-center gap-2.5 rounded-full px-2 py-1.5 font-[family-name:var(--font-heading)] text-base font-extrabold tracking-[-0.04em] text-foreground">
-          <span className="grid size-6 shrink-0 place-items-center rounded-full bg-primary text-[10px] font-black text-primary-foreground">N</span>
+          <BrandMark node={node} name={logo} hideLetter imgClassName="size-6 shrink-0 rounded-full object-cover" />
           <span className="truncate"><InlineEditableText node={node} propKey="logoText" value={logo} fallback="Nawala" /></span>
         </a>
         <div className={`${desktopOnly} items-center gap-1`}>

@@ -12,6 +12,7 @@ export const calendarWidgetManifest: Omit<
   tier: "free",
   priceKey: "calendar-widget",
   version: "1.0.0",
+  canContainChildren: false,
   defaultProps: {
     monthLabel: "Agustus 2026",
     daysJson: [3, 8, 12, 17, 21, 25],

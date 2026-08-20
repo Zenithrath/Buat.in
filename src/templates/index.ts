@@ -2,7 +2,7 @@
 
 import type { Node, NodeProps, Theme } from "@/lib/schema/types";
 
-export type TemplateCategory = "landing" | "dashboard";
+export type TemplateCategory = "landing" | "dashboard" | "auth";
 
 /** Node template mentah — dilebihkan dari Node penuh agar template
  *  bisa menetapkan style/metadata khusus dashboard. */
@@ -50,6 +50,18 @@ import { createEcommerceDashboardNodes } from "./dashboard/ecommerce";
 import { createProjectDashboardNodes } from "./dashboard/project";
 import { createKeuanganDashboardNodes } from "./dashboard/keuangan";
 import { createHelpdeskDashboardNodes } from "./dashboard/helpdesk";
+import { createArsitekLandingNodes } from "./landing/arsitek";
+import { createAgensiKreatifNodes } from "./landing/agensi-kreatif";
+import { createPortofolioOnepageNodes } from "./landing/portofolio-onepage";
+import { createStudioKreatifNodes } from "./landing/studio-kreatif";
+import { createHotelLandingNodes } from "./landing/hotel";
+import { createRestoranModernNodes } from "./landing/restoran-modern";
+import { createKafeMenuNodes } from "./landing/kafe-menu";
+import { createAdminDashboardNodes } from "./dashboard/admin";
+import { createOperasionalDashboardNodes } from "./dashboard/operasional";
+import { createLoginMinimalNodes } from "./auth/login-minimal";
+import { createLoginSplitNodes } from "./auth/login-split";
+import { createLoginGradasiNodes } from "./auth/login-gradasi";
 
 export const templateRegistry: TemplateDefinition[] = [
   {
@@ -447,9 +459,286 @@ export const templateRegistry: TemplateDefinition[] = [
     },
     createNodes: createHelpdeskDashboardNodes,
   },
+  {
+    id: "landing-arsitek",
+    name: "Arsitek & Studio Desain",
+    description: "Landing page studio arsitektur dengan karya terpilih, proses kerja, tim, dan form diskusi proyek.",
+    category: "landing",
+    tier: "free",
+    tags: ["arsitek", "studio", "interior", "desain"],
+    theme: {
+      presets: {
+        style: "vega",
+        baseColor: "stone",
+        theme: "blue",
+        radius: "medium",
+        font: "inter",
+        fontHeading: "figtree",
+        fontMono: "jetbrains",
+        chart: "theme",
+        appearance: "light",
+      },
+      overrides: {},
+    },
+    createNodes: createArsitekLandingNodes,
+  },
+  {
+    id: "landing-agensi-kreatif",
+    name: "Agensi Kreatif",
+    description: "Landing page agensi kreatif dengan layanan, karya, cerita klien, dan newsletter.",
+    category: "landing",
+    tier: "free",
+    tags: ["agensi", "kreatif", "brand", "digital"],
+    theme: {
+      presets: {
+        style: "nova",
+        baseColor: "mist",
+        theme: "indigo",
+        radius: "large",
+        font: "dmsans",
+        fontHeading: "dmsans",
+        fontMono: "jetbrains",
+        chart: "theme",
+        appearance: "light",
+      },
+      overrides: {},
+    },
+    createNodes: createAgensiKreatifNodes,
+  },
+  {
+    id: "landing-portofolio-onepage",
+    name: "Portofolio One-Page",
+    description: "Portofolio satu halaman gelap dengan karya, proses, dan ajakan kolaborasi.",
+    category: "landing",
+    tier: "free",
+    tags: ["portofolio", "one-page", "freelance", "desainer"],
+    theme: {
+      presets: {
+        style: "maia",
+        baseColor: "zinc",
+        theme: "amber",
+        radius: "medium",
+        font: "manrope",
+        fontHeading: "figtree",
+        fontMono: "jetbrains",
+        chart: "theme",
+        appearance: "dark",
+      },
+      overrides: {},
+    },
+    createNodes: createPortofolioOnepageNodes,
+  },
+  {
+    id: "landing-studio-kreatif",
+    name: "Studio Kreatif",
+    description: "Landing page studio kreatif berwarna dengan layanan, karya, tim, dan penghargaan.",
+    category: "landing",
+    tier: "free",
+    tags: ["studio", "kreatif", "desain", "penghargaan"],
+    theme: {
+      presets: {
+        style: "nova",
+        baseColor: "mist",
+        theme: "rose",
+        radius: "large",
+        font: "dmsans",
+        fontHeading: "dmsans",
+        fontMono: "jetbrains",
+        chart: "theme",
+        appearance: "light",
+      },
+      overrides: {},
+    },
+    createNodes: createStudioKreatifNodes,
+  },
+  {
+    id: "landing-hotel",
+    name: "Hotel & Resort",
+    description: "Halaman hotel mewah dengan kamar, fasilitas, paket menginap, dan reservasi.",
+    category: "landing",
+    tier: "free",
+    tags: ["hotel", "resort", "penginapan", "liburan"],
+    theme: {
+      presets: {
+        style: "maia",
+        baseColor: "stone",
+        theme: "amber",
+        radius: "large",
+        font: "dmsans",
+        fontHeading: "dmsans",
+        fontMono: "jetbrains",
+        chart: "theme",
+        appearance: "light",
+      },
+      overrides: {},
+    },
+    createNodes: createHotelLandingNodes,
+  },
+  {
+    id: "landing-restoran-modern",
+    name: "Restoran Modern",
+    description: "Halaman restoran api kayu dengan menu musiman, suasana, ulasan, dan reservasi.",
+    category: "landing",
+    tier: "free",
+    tags: ["restoran", "modern", "makanan", "reservasi"],
+    theme: {
+      presets: {
+        style: "nova",
+        baseColor: "stone",
+        theme: "orange",
+        radius: "medium",
+        font: "figtree",
+        fontHeading: "figtree",
+        fontMono: "jetbrains",
+        chart: "theme",
+        appearance: "light",
+      },
+      overrides: {},
+    },
+    createNodes: createRestoranModernNodes,
+  },
+  {
+    id: "landing-kafe-menu",
+    name: "Menu Kafe Digital",
+    description: "Halaman menu kafe dengan daftar menu bergambar, promo, ulasan, dan newsletter.",
+    category: "landing",
+    tier: "free",
+    tags: ["kafe", "menu", "kopi", "minuman"],
+    theme: {
+      presets: {
+        style: "maia",
+        baseColor: "stone",
+        theme: "orange",
+        radius: "large",
+        font: "manrope",
+        fontHeading: "manrope",
+        fontMono: "jetbrains",
+        chart: "theme",
+        appearance: "light",
+      },
+      overrides: {},
+    },
+    createNodes: createKafeMenuNodes,
+  },
+  {
+    id: "dashboard-admin",
+    name: "Dashboard Admin",
+    description: "Dashboard admin klasik dengan KPI, grafik, tabel pesanan, aktivitas, dan form data.",
+    category: "dashboard",
+    tier: "pro",
+    tags: ["dashboard", "admin", "pesanan", "laporan"],
+    theme: {
+      presets: {
+        style: "nova",
+        baseColor: "zinc",
+        theme: "blue",
+        radius: "medium",
+        font: "inter",
+        fontHeading: "figtree",
+        fontMono: "jetbrains",
+        chart: "theme",
+        appearance: "light",
+      },
+      overrides: {},
+    },
+    createNodes: createAdminDashboardNodes,
+  },
+  {
+    id: "dashboard-operasional",
+    name: "Dashboard Operasional",
+    description: "Dashboard operasional modern dengan sidebar ikon, kalender, kehadiran, dan rekap tim.",
+    category: "dashboard",
+    tier: "pro",
+    tags: ["dashboard", "operasional", "kehadiran", "jadwal"],
+    theme: {
+      presets: {
+        style: "nova",
+        baseColor: "mist",
+        theme: "teal",
+        radius: "medium",
+        font: "inter",
+        fontHeading: "figtree",
+        fontMono: "jetbrains",
+        chart: "theme",
+        appearance: "light",
+      },
+      overrides: {},
+    },
+    createNodes: createOperasionalDashboardNodes,
+  },
+  {
+    id: "auth-login-minimal",
+    name: "Login — Kartu Tengah",
+    description: "Halaman masuk minimalis dengan kartu kredensial di tengah layar.",
+    category: "auth",
+    tier: "free",
+    tags: ["login", "auth", "masuk", "minimal"],
+    theme: {
+      presets: {
+        style: "vega",
+        baseColor: "zinc",
+        theme: "blue",
+        radius: "medium",
+        font: "inter",
+        fontHeading: "figtree",
+        fontMono: "jetbrains",
+        chart: "theme",
+        appearance: "light",
+      },
+      overrides: {},
+    },
+    createNodes: createLoginMinimalNodes,
+  },
+  {
+    id: "auth-login-split",
+    name: "Login — Dua Kolom",
+    description: "Halaman masuk dua kolom dengan gambar dan panel kredensial di sisi kanan.",
+    category: "auth",
+    tier: "free",
+    tags: ["login", "auth", "masuk", "dua-kolom"],
+    theme: {
+      presets: {
+        style: "nova",
+        baseColor: "mist",
+        theme: "indigo",
+        radius: "large",
+        font: "dmsans",
+        fontHeading: "dmsans",
+        fontMono: "jetbrains",
+        chart: "theme",
+        appearance: "light",
+      },
+      overrides: {},
+    },
+    createNodes: createLoginSplitNodes,
+  },
+  {
+    id: "auth-login-gradasi",
+    name: "Login — Latar Gradasi",
+    description: "Halaman masuk dengan latar gradasi warna dan kartu putih di tengah.",
+    category: "auth",
+    tier: "free",
+    tags: ["login", "auth", "masuk", "gradasi"],
+    theme: {
+      presets: {
+        style: "maia",
+        baseColor: "mist",
+        theme: "violet",
+        radius: "large",
+        font: "dmsans",
+        fontHeading: "dmsans",
+        fontMono: "jetbrains",
+        chart: "theme",
+        appearance: "light",
+      },
+      overrides: {},
+    },
+    createNodes: createLoginGradasiNodes,
+  },
 ];
 
 export const TEMPLATE_CATEGORY_LABELS: Record<TemplateCategory, string> = {
   landing: "Landing Page",
   dashboard: "Dashboard",
+  auth: "Login & autentikasi",
 };

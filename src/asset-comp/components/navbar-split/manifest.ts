@@ -12,6 +12,7 @@ export const navbarSplitManifest: Omit<ComponentManifest, "previewRenderer" | "e
   version: "2.0.0",
   defaultProps: {
     logoText: "Ruang Rasa",
+    logoImageUrl: "",
     link1Text: "Koleksi", link1Url: "#koleksi",
     link2Text: "Cerita", link2Url: "#tentang",
     link3Text: "Kunjungi", link3Url: "#kontak",
@@ -19,6 +20,7 @@ export const navbarSplitManifest: Omit<ComponentManifest, "previewRenderer" | "e
   },
   contentControls: [
     { key: "logoText", label: "Nama brand", group: "Brand", type: "text" },
+    { key: "logoImageUrl", label: "Logo Gambar (opsional)", group: "Brand", type: "image" },
     { key: "link1Text", label: "Menu 1", group: "Menu", type: "text" }, { key: "link1Url", label: "Tujuan menu 1", group: "Menu", type: "link" },
     { key: "link2Text", label: "Menu 2", group: "Menu", type: "text" }, { key: "link2Url", label: "Tujuan menu 2", group: "Menu", type: "link" },
     { key: "link3Text", label: "Menu 3", group: "Menu", type: "text" }, { key: "link3Url", label: "Tujuan menu 3", group: "Menu", type: "link" },

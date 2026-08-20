@@ -1,6 +1,7 @@
 import type { ExportResult } from "@/lib/registry/types";
 import type { Node } from "@/lib/schema/types";
 import { escapeHtml, propString, sanitizeUrl } from "@/lib/registry/shared";
+import { logoMarkHtml } from "../_shared/logo-export";
 
 interface FooterLink {
   label: string;
@@ -64,7 +65,7 @@ export function footerExport(node: Node): ExportResult {
   <div class="bi-container">
     <div class="bi-footer-top">
       <div class="bi-footer-brand">
-        <a class="bi-footer-logo" href="${escapeHtml(sanitizeUrl(brandUrl))}"><span aria-hidden="true">B</span>${escapeHtml(brandName)}</a>
+        <a class="bi-footer-logo" href="${escapeHtml(sanitizeUrl(brandUrl))}">${logoMarkHtml(node, brandName, "bi-footer-logo-img", "bi-footer-logo-letter", undefined, true)}${escapeHtml(brandName)}</a>
         <p>${escapeHtml(tagline)}</p>
       </div>
       ${linksHtml ? `<nav class="bi-footer-links" aria-label="Footer">${linksHtml}</nav>` : ""}
@@ -78,7 +79,8 @@ export function footerExport(node: Node): ExportResult {
 .bi-footer-top { display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: 2rem 4rem; text-align: left; }
 .bi-footer-brand { min-width: min(100%, 12rem); max-width: 23rem; }
 .bi-footer-logo { display: inline-flex; align-items: center; gap: 0.5rem; color: var(--bi-fg); font-family: var(--bi-font-heading); font-size: 1.1rem; font-weight: 800; letter-spacing: -0.035em; }
-.bi-footer-logo span { display: grid; width: 1.75rem; height: 1.75rem; place-items: center; border-radius: var(--bi-radius); background: var(--bi-primary); color: var(--bi-primary-fg); font-family: var(--bi-font-mono); font-size: 0.75rem; }
+.bi-footer-logo-letter { display: grid; width: 1.75rem; height: 1.75rem; place-items: center; border-radius: var(--bi-radius); background: var(--bi-primary); color: var(--bi-primary-fg); font-family: var(--bi-font-mono); font-size: 0.75rem; }
+.bi-footer-logo-img { display: block; width: 1.75rem; height: 1.75rem; border-radius: var(--bi-radius); object-fit: cover; }
 .bi-footer-brand p { margin: 0.8rem 0 0; color: var(--bi-muted-fg); font-size: 0.86rem; line-height: 1.6; }
 .bi-footer-links { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 0.75rem 1.25rem; padding-top: 0.25rem; }
 .bi-footer-links a { display: inline-flex; align-items: center; gap: 0.22rem; color: var(--bi-fg); font-size: 0.82rem; font-weight: 600; }

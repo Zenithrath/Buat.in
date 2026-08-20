@@ -92,6 +92,17 @@ export interface ComponentManifest {
   exportAdapter: (node: Node, ctx: ExportContext) => ExportResult;
   /** Kontrol gaya tambahan khusus komponen (opsional). */
   styleControls?: SectionStyleControl[];
+  /**
+   * Section-as-container: apakah node boleh menampung komponen lain
+   * (slot children generik di kanvas + saat ekspor). Default true;
+   * false untuk widget kecil yang tidak layak menampung isi.
+   */
+  canContainChildren?: boolean;
+  /**
+   * Komponen ini merender children-nya sendiri (grid-container,
+   * section-basic), jadi slot generik tidak ditampilkan.
+   */
+  internalChildren?: boolean;
   /** Kemampuan tema yang dibutuhkan komponen (opsional). */
   themeCapabilities?: ("radius" | "shadow" | "fonts")[];
 }

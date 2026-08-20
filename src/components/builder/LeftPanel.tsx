@@ -18,7 +18,7 @@ import { getActivePage, useBuilderStore } from "@/lib/store/project-store";
 import { componentRegistry } from "@/lib/registry";
 import { templateRegistry, TEMPLATE_CATEGORY_LABELS } from "@/templates";
 import type { ComponentManifest } from "@/lib/registry/types";
-import type { Asset } from "@/lib/schema/types";
+import type { Asset, Node } from "@/lib/schema/types";
 import { uid } from "@/lib/utils";
 import { TemplatePreview } from "./TemplatePreview";
 import { cn } from "@/lib/utils";
@@ -73,6 +73,17 @@ const FRIENDLY_NAMES: Record<string, string> = {
   "hero-bg-image": "Hero Gambar Latar",
   "about-basic": "Bagian Tentang Kami",
   "card-feature": "Kartu Fitur",
+  "banner-promo": "Banner Promo",
+  "social-proof": "Bukti Sosial",
+  "process-steps": "Langkah Proses",
+  "logo-clients": "Logo Klien",
+  "slider-testimonial": "Slider Testimoni",
+  "stack-avatar": "Tumpukan Avatar",
+  "progress-bar": "Bilah Progres",
+  "sparkline": "Garis Mini (Sparkline)",
+  "breadcrumb": "Jejak Navigasi",
+  "pagination": "Paginasi",
+  "back-to-top": "Tombol Kembali ke Atas",
   "product-grid-basic": "Katalog Produk",
   "gallery-grid": "Galeri Foto",
   "team-grid": "Kartu Tim",
@@ -82,6 +93,7 @@ const FRIENDLY_NAMES: Record<string, string> = {
   "faq-accordion": "FAQ / Pertanyaan",
   "form-contact": "Form Kontak",
   "form-newsletter": "Form Berlangganan",
+  "auth-login": "Form Masuk",
   "cta-basic": "Ajakan Aksi (CTA)",
   "footer-basic": "Footer / Bagian Bawah",
   "modal-center": "Popup Tengah",
@@ -96,6 +108,9 @@ const FRIENDLY_NAMES: Record<string, string> = {
   "chart-card": "Kartu Grafik",
   "data-table": "Tabel Data",
   "dashboard-activity-list": "Daftar Aktivitas",
+  "calendar-widget": "Kalender & Agenda",
+  "form-add-data": "Form Tambah Data",
+  "bar-filter": "Filter & Pencarian",
 };
 
 type ComponentGroup = {
@@ -109,27 +124,28 @@ const COMPONENT_GROUPS: ComponentGroup[] = [
   { id: "navbar", label: "Navbar / Menu Atas", scope: "landing", ids: ["navbar-minimal", "navbar-centered", "navbar-split", "navbar-glass", "navbar-mega", "navbar-fullscreen"] },
   { id: "menu", label: "Menu & Dropdown", scope: "landing", ids: ["menu-offcanvas", "menu-circle", "dropdown-menu"] },
   { id: "hero", label: "Hero / Bagian Pembuka", scope: "landing", ids: ["hero-centered", "hero-split", "hero-bg-image"] },
-  { id: "about", label: "Tentang Kami", scope: "landing", ids: ["about-basic"] },
-  { id: "cards", label: "Kartu", scope: "landing", ids: ["card-feature"] },
-  { id: "product", label: "Produk & Katalog", scope: "landing", ids: ["product-grid-basic"] },
-  { id: "gallery", label: "Galeri", scope: "landing", ids: ["gallery-grid"] },
-  { id: "team", label: "Tim", scope: "landing", ids: ["team-grid"] },
-  { id: "testimonial", label: "Testimoni", scope: "landing", ids: ["testimonial-grid"] },
-  { id: "stats", label: "Statistik", scope: "landing", ids: ["stats-banner"] },
-  { id: "pricing", label: "Harga", scope: "landing", ids: ["pricing-table"] },
+  { id: "tentang", label: "Tentang & Cerita", scope: "landing", ids: ["about-basic", "process-steps"] },
+  { id: "kartu", label: "Kartu & Fitur", scope: "landing", ids: ["card-feature", "banner-promo"] },
+  { id: "produk", label: "Produk & Katalog", scope: "landing", ids: ["product-grid-basic", "gallery-grid", "logo-clients"] },
+  { id: "tim", label: "Tim & Orang", scope: "landing", ids: ["team-grid", "stack-avatar"] },
+  { id: "testimoni", label: "Testimoni & Bukti", scope: "landing", ids: ["testimonial-grid", "slider-testimonial", "social-proof"] },
+  { id: "statistik", label: "Angka & Statistik", scope: "landing", ids: ["stats-banner", "progress-bar", "sparkline"] },
+  { id: "harga", label: "Harga & Paket", scope: "landing", ids: ["pricing-table"] },
   { id: "faq", label: "FAQ / Pertanyaan", scope: "landing", ids: ["faq-accordion"] },
-  { id: "form", label: "Formulir", scope: "landing", ids: ["form-contact", "form-newsletter"] },
+  { id: "form", label: "Formulir", scope: "landing", ids: ["form-contact", "form-newsletter", "auth-login"] },
   { id: "cta", label: "Ajakan Aksi (CTA)", scope: "landing", ids: ["cta-basic"] },
   { id: "footer", label: "Footer / Bagian Bawah", scope: "landing", ids: ["footer-basic"] },
   { id: "modal", label: "Popup / Modal", scope: "both", ids: ["modal-center", "modal-sheet", "modal-confirm"] },
   { id: "layout", label: "Tata Letak / Grid", scope: "both", ids: ["grid-container"] },
   { id: "section", label: "Section / Bagian", scope: "both", ids: ["section-basic"] },
+  { id: "bantuan", label: "Navigasi Bantuan", scope: "both", ids: ["breadcrumb", "pagination", "back-to-top"] },
   { id: "sidebar", label: "Sidebar / Menu Samping", scope: "dashboard", ids: ["app-sidebar", "sidebar-icon"] },
   { id: "dash-header", label: "Header Dashboard", scope: "dashboard", ids: ["dashboard-header"] },
   { id: "kpi", label: "Kartu Statistik (KPI)", scope: "dashboard", ids: ["kpi-card"] },
-  { id: "chart", label: "Grafik", scope: "dashboard", ids: ["chart-card"] },
-  { id: "table", label: "Tabel Data", scope: "dashboard", ids: ["data-table"] },
-  { id: "activity", label: "Daftar Aktivitas", scope: "dashboard", ids: ["dashboard-activity-list"] },
+  { id: "grafik", label: "Grafik & Visual", scope: "dashboard", ids: ["chart-card", "sparkline"] },
+  { id: "tabel", label: "Tabel & Data", scope: "dashboard", ids: ["data-table", "bar-filter", "pagination"] },
+  { id: "aktivitas", label: "Aktivitas & Agenda", scope: "dashboard", ids: ["dashboard-activity-list", "calendar-widget"] },
+  { id: "form-data", label: "Form Data", scope: "dashboard", ids: ["form-add-data"] },
 ];
 
 /* ─── Component drag item ──────────────────── */
@@ -187,6 +203,43 @@ function DraggableComponent({
   );
 }
 
+/* ─── Mini preview komponen untuk panel kiri ── */
+const MINI_PREVIEW_WIDTH = 1120;
+const MINI_PREVIEW_SCALE = 0.24;
+
+function previewNode(manifest: ComponentManifest): Node {
+  return {
+    id: `preview-${manifest.id}`,
+    componentType: manifest.id,
+    name: manifest.name,
+    props: { ...manifest.defaultProps },
+    styles: {},
+    tabletOverride: {},
+    mobileOverride: {},
+    layout: {},
+    children: [],
+    metadata: { createdAt: new Date().toISOString() },
+  };
+}
+
+function MiniComponentPreview({ manifest }: { manifest: ComponentManifest }) {
+  const theme = useBuilderStore((s) => s.document.theme);
+  const Preview = manifest.previewRenderer;
+  return (
+    <div className="relative h-12 overflow-hidden rounded-sm bg-background">
+      <div
+        className="pointer-events-none absolute left-0 top-0 origin-top-left"
+        style={{
+          width: MINI_PREVIEW_WIDTH,
+          transform: `scale(${MINI_PREVIEW_SCALE})`,
+        }}
+      >
+        <Preview node={previewNode(manifest)} theme={theme} />
+      </div>
+    </div>
+  );
+}
+
 /* ─── Sections panel ──────────────────────── */
 const SECTION_COMPONENT_IDS = ["section-basic", "grid-container"];
 
@@ -214,7 +267,7 @@ function SectionsPanel() {
 /* ─── Templates panel ─────────────────────── */
 function TemplatesPanel() {
   const [search, setSearch] = useState("");
-  const [filter, setFilter] = useState<"all" | "landing" | "dashboard">("all");
+  const [filter, setFilter] = useState<"all" | "landing" | "dashboard" | "auth">("all");
   const applyTemplate = useBuilderStore((s) => s.applyTemplate);
   const [applied, setApplied] = useState<string | null>(null);
 
@@ -253,7 +306,7 @@ function TemplatesPanel() {
 
       {/* Category filter pills */}
       <div className="flex gap-1.5">
-        {(["all", "landing", "dashboard"] as const).map((cat) => (
+        {(["all", "landing", "dashboard", "auth"] as const).map((cat) => (
           <button
             key={cat}
             onClick={() => setFilter(cat)}
@@ -294,8 +347,8 @@ function TemplatesPanel() {
                 applied === tmpl.id ? "border-emerald-500 bg-emerald-50 dark:bg-emerald-900/20" : "border-border"
               )}
             >
-              <div className="pointer-events-none mb-2.5 h-40 select-none overflow-hidden rounded-md border border-border/50 bg-card">
-                <TemplatePreview template={tmpl} />
+              <div className="pointer-events-none mb-2.5 select-none overflow-hidden rounded-md border border-border/50 bg-card">
+                <TemplatePreview template={tmpl} autoFit />
               </div>
 
               <div className="flex items-start justify-between gap-1">
@@ -427,7 +480,13 @@ function ComponentsPanel() {
                       <DraggableComponent key={manifest.id} manifest={manifest} search={search} />
                     ))}
                   </div>
-                ) : null}
+                ) : (
+                  <div className="grid grid-cols-4 gap-1 border-t border-border bg-muted/20 p-1.5">
+                    {items.slice(0, 4).map((manifest) => (
+                      <MiniComponentPreview key={manifest.id} manifest={manifest} />
+                    ))}
+                  </div>
+                )}
               </div>
             );
           })}

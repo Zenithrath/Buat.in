@@ -12,6 +12,7 @@ export const sparklineManifest: Omit<
   tier: "free",
   priceKey: "sparkline",
   version: "1.0.0",
+  canContainChildren: false,
   defaultProps: {
     label: "Penjualan minggu ini",
     value: "Rp 24,5 juta",

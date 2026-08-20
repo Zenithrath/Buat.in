@@ -21,6 +21,7 @@ export const navbarMegaManifest: Omit<ComponentManifest, "previewRenderer" | "ex
   version: "2.0.0",
   defaultProps: {
     logoText: "SORA",
+    logoImageUrl: "",
     menuText: "Lihat Semua",
     linkText: "Tentang kami",
     linkUrl: "#tentang",
@@ -34,6 +35,7 @@ export const navbarMegaManifest: Omit<ComponentManifest, "previewRenderer" | "ex
   },
   contentControls: [
     { key: "logoText", label: "Nama brand", group: "Brand", type: "text" },
+    { key: "logoImageUrl", label: "Logo Gambar (opsional)", group: "Brand", type: "image" },
     { key: "menuText", label: "Teks menu utama", group: "Navigasi", type: "text" },
     { key: "linkText", label: "Tautan samping", group: "Navigasi", type: "text" },
     { key: "linkUrl", label: "Tujuan tautan samping", group: "Navigasi", type: "link" },

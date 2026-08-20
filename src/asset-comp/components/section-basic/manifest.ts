@@ -12,6 +12,7 @@ export const sectionBasicManifest: Omit<
   tier: "free",
   priceKey: "section-basic",
   version: "1.0.0",
+  internalChildren: true,
   defaultProps: {
     heading: "Judul section Anda",
     paragraph: "Tulis deskripsi singkat di sini, lalu seret komponen lain ke dalam section ini untuk memperkaya halaman.",

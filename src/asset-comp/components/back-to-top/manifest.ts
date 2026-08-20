@@ -12,6 +12,7 @@ export const backToTopManifest: Omit<
   tier: "free",
   priceKey: "back-to-top",
   version: "1.0.0",
+  canContainChildren: false,
   defaultProps: {
     label: "Kembali ke atas",
     position: "right",

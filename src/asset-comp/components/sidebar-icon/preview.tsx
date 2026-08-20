@@ -21,6 +21,7 @@ import { usePreviewEditing } from "@/components/preview/PreviewEditingContext";
 import { usePreviewDevice } from "@/components/preview/PreviewDeviceContext";
 import { listValue, nodeList, uniqueId } from "../_shared/content";
 import { useRepeaterEditor } from "../_shared/inline";
+import { BrandMark } from "../_shared/logo";
 
 type SidebarLink = { id: string; icon: string; label: string; url: string };
 
@@ -94,9 +95,12 @@ export function SidebarIconPreview({ node, theme }: { node: Node; theme: Theme }
       style={{ ...themeTokenStyle(tokens), ...projectTokenStyle(tokens) }}
     >
       <div className={`flex items-center border-b border-border pb-3 ${open ? "justify-between gap-2" : "justify-center"}`}>
-        <span className="grid size-9 shrink-0 place-items-center rounded-[calc(var(--radius)*.75)] bg-primary text-sm font-black text-primary-foreground">
-          <InlineEditableText node={node} propKey="logoText" fallback="B" value={logo.slice(0, 3)} />
-        </span>
+        <BrandMark
+          node={node}
+          name={logo}
+          imgClassName="size-9 shrink-0 rounded-[calc(var(--radius)*.75)] object-cover"
+          letterClassName="grid size-9 shrink-0 place-items-center rounded-[calc(var(--radius)*.75)] bg-primary text-sm font-black text-primary-foreground"
+        />
         {open ? (
           <span className="min-w-0 flex-1 truncate text-xs font-extrabold tracking-tight">
             <InlineEditableText node={node} propKey="workspaceLabel" fallback="Workspace" value={workspaceLabel} />

@@ -12,9 +12,11 @@ export const appSidebarManifest: Omit<
   tier: "free",
   priceKey: "app-sidebar",
   version: "1.0.0",
+  canContainChildren: false,
   defaultProps: {
     brandName: "Dasbor Tim",
     brandTag: "PRO",
+    logoImageUrl: "",
     userName: "Alex Rivanto",
     userRole: "Admin",
     linksJson: JSON.stringify([
@@ -28,6 +30,7 @@ export const appSidebarManifest: Omit<
   contentControls: [
     { key: "brandName", label: "Nama Brand / App", group: "Header", type: "text" },
     { key: "brandTag", label: "Label Badge", group: "Header", type: "text" },
+    { key: "logoImageUrl", label: "Logo Gambar (opsional)", group: "Header", type: "image" },
     { key: "userName", label: "Nama User", group: "User", type: "text" },
     { key: "userRole", label: "Peran User", group: "User", type: "text" },
     {

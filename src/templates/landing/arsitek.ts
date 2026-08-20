@@ -1,0 +1,207 @@
+import type { RawTemplateNode } from "@/templates";
+
+/** Studio arsitektur & desain interior — terinspirasi dari template "balay". */
+export function createArsitekLandingNodes(): RawTemplateNode[] {
+  return [
+    {
+      id: "arsitek-nav",
+      componentType: "navbar-fullscreen",
+      name: "Navigasi Balay Arsitek",
+      props: {
+        logoText: "BALAY",
+        eyebrow: "STUDIO ARSITEKTUR & INTERIOR",
+        links: [
+          { label: "Tentang", url: "#tentang" },
+          { label: "Karya", url: "#karya" },
+          { label: "Proses", url: "#proses" },
+          { label: "Tim", url: "#tim" },
+          { label: "Kontak", url: "#kontak" },
+        ],
+        ctaText: "Mulai proyek",
+        ctaUrl: "#kontak",
+      },
+      styles: { padding: "none" },
+    },
+    {
+      id: "arsitek-hero",
+      componentType: "hero-centered",
+      name: "Hero Balay",
+      props: {
+        badgeText: "Studio arsitektur — Semarang, sejak 2012",
+        title: "Ruang yang dirancang untuk cara hidup Anda, bukan sebaliknya.",
+        description:
+          "Balay merancang rumah, kantor, dan ruang komersial dengan pendekatan kontekstual: memahami iklim, kebiasaan, dan anggaran sebelum menggambar satu garis pun.",
+        primaryCtaText: "Diskusikan proyek",
+        primaryCtaUrl: "#kontak",
+        secondaryCtaText: "Lihat karya",
+        secondaryCtaUrl: "#karya",
+        imageUrl:
+          "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=1600&q=88",
+        imageAlt: "Ruang tamu minimalis dengan dinding beton ekspos dan cahaya alami",
+        supportingText: "120+ proyek selesai di 14 kota.",
+        imageBadgeText: "ST. 012 — RUMAH DI KOTA LAMA",
+      },
+      styles: { padding: "xl" },
+    },
+    {
+      id: "arsitek-tentang",
+      componentType: "about-basic",
+      name: "Tentang Studio Balay",
+      props: {
+        sectionId: "tentang",
+        eyebrow: "Tentang studio",
+        title: "Studio kecil yang percaya bangunan lahir dari percakapan.",
+        description:
+          "Balay berdiri tahun 2012 dari ruang kerja tiga orang di Jl. Pandanaran. Hari ini kami berjumlah dua belas — arsitek, desainer interior, dan pengawas lapangan — yang menyelesaikan setiap proyek dengan prinsip yang sama sejak awal: desain harus jujur terhadap material, iklim, dan anggaran pemiliknya.",
+        imageUrl:
+          "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=85",
+        imageAlt: "Maket rumah dan gambar kerja di meja studio arsitektur",
+        imageNoteLabel: "Studio kami",
+        imageNoteText: "Tiga meja gambar, satu workshop maket, dan banyak kopi.",
+        stat1Number: "12",
+        stat1Label: "arsitek & desainer interior",
+        stat2Number: "120+",
+        stat2Label: "proyek selesai sejak 2012",
+        stat3Number: "14",
+        stat3Label: "kota tempat karya berdiri",
+      },
+      styles: { padding: "xl", background: "muted" },
+    },
+    {
+      id: "arsitek-karya",
+      componentType: "gallery-grid",
+      name: "Karya Terpilih",
+      props: {
+        sectionId: "karya",
+        eyebrow: "Karya terpilih",
+        title: "Bangunan yang kami rindukan untuk dikunjungi kembali.",
+        description:
+          "Kurasi kecil dari rumah tinggal, kantor, dan ruang komersial yang selesai dalam tiga tahun terakhir.",
+        columns: "3",
+        images: [
+          {
+            url: "https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?auto=format&fit=crop&w=1200&q=85",
+            title: "Rumah Dua Muka",
+            caption: "Rumah tinggal, Semarang · 2024",
+            alt: "Rumah minimalis dua lantai dengan fasad kayu",
+          },
+          {
+            url: "https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?auto=format&fit=crop&w=1200&q=85",
+            title: "Kantor Pondok",
+            caption: "Kantor studio kreatif, Bandung · 2024",
+            alt: "Ruang kerja dengan partisi kaca dan kayu",
+          },
+          {
+            url: "https://images.unsplash.com/photo-1600585154526-990dced4db0d?auto=format&fit=crop&w=1200&q=85",
+            title: "Kafe Rangga",
+            caption: "Ruang komersial, Yogyakarta · 2023",
+            alt: "Interior kafe dengan dinding bata ekspos",
+          },
+          {
+            url: "https://images.unsplash.com/photo-1600566752355-35792bedcfea?auto=format&fit=crop&w=1200&q=85",
+            title: "Rumah Tangga Batu",
+            caption: "Rumah tinggal, Salatiga · 2023",
+            alt: "Rumah dengan batu alam dan kolam kecil",
+          },
+          {
+            url: "https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&fit=crop&w=1200&q=85",
+            title: "Loft Teras",
+            caption: "Apartemen, Jakarta · 2022",
+            alt: "Loft dengan langit-langit tinggi dan jendela besar",
+          },
+          {
+            url: "https://images.unsplash.com/photo-1615873968403-89e068629265?auto=format&fit=crop&w=1200&q=85",
+            title: "Paviliun Taman",
+            caption: "Paviliun pribadi, Solo · 2022",
+            alt: "Paviliun kayu di tengah taman",
+          },
+        ],
+      },
+      styles: { padding: "xl" },
+    },
+    {
+      id: "arsitek-proses",
+      componentType: "process-steps",
+      name: "Cara Kami Bekerja",
+      props: {
+        sectionId: "proses",
+        eyebrow: "Proses kerja",
+        heading: "Empat langkah dari percakapan menjadi bangunan.",
+        stepsJson: [
+          { title: "Diskusi awal", description: "Kunjungan lokasi dan percakapan tentang kebutuhan, anggaran, dan jadwal. Gratis dan tanpa komitmen." },
+          { title: "Konsep & skematik", description: "Pemrograman ruang, sketsa konsep, dan estimasi biaya tahap awal untuk disepakati bersama." },
+          { title: "Gambar & perizinan", description: "Gambar kerja lengkap, struktur, MEP, dan pendampingan proses perizinan hingga terbit." },
+          { title: "Pengawasan lapangan", description: "Pendampingan pelaksanaan: kontrol kualitas material, rapat berkala, dan serah terima." },
+        ],
+      },
+      styles: { padding: "xl", background: "muted" },
+    },
+    {
+      id: "arsitek-tim",
+      componentType: "team-grid",
+      name: "Tim Inti Balay",
+      props: {
+        eyebrow: "Tim",
+        title: "Orang-orang di balik meja gambar.",
+        description: "Sebagian dari tim inti yang menangani setiap proyek dari diskusi awal hingga serah terima.",
+        columns: "3",
+        members: [
+          { name: "Raka Wirawan", role: "Arsitek utama", initials: "RW", socialUrl: "#" },
+          { name: "Dewi Larasati", role: "Desainer interior", initials: "DL", socialUrl: "#" },
+          { name: "Yoga Pradana", role: "Arsitek proyek", initials: "YP", socialUrl: "#" },
+        ],
+      },
+      styles: { padding: "xl" },
+    },
+    {
+      id: "arsitek-kontak",
+      componentType: "form-contact",
+      name: "Diskusi Proyek",
+      props: {
+        eyebrow: "Mulai proyek",
+        heading: "Ceritakan rumah atau ruang yang ingin Anda wujudkan.",
+        subheading: "Isi beberapa hal dasar. Kami undang Anda bertemu di studio atau lokasi proyek dalam satu minggu.",
+        email: "studio@balay.id",
+        nameLabel: "Nama Anda",
+        namePlaceholder: "Contoh: Bagus Santoso",
+        emailLabel: "Email",
+        emailPlaceholder: "nama@email.com",
+        messageLabel: "Ceritakan proyek Anda",
+        messagePlaceholder: "Lokasi, estimasi luas, anggaran, dan target waktu…",
+        buttonText: "Kirim & jadwalkan diskusi",
+        note: "Rapat pertama gratis. Konsultasi lanjutan dihitung sebagai bagian dari fee proyek.",
+        successText: "Terima kasih. Kami akan menghubungi Anda untuk menjadwalkan diskusi awal.",
+      },
+      styles: { padding: "xl", background: "muted" },
+    },
+    {
+      id: "arsitek-footer",
+      componentType: "footer-basic",
+      name: "Footer Balay",
+      props: {
+        brandName: "BALAY",
+        tagline: "Studio arsitektur dan desain interior. Jl. Pandanaran No. 88, Semarang. Buka Senin–Jumat 09.00–17.00.",
+        link1Text: "Karya",
+        link1Url: "#karya",
+        link2Text: "Proses",
+        link2Url: "#proses",
+        link3Text: "(024) 841-2765",
+        link3Url: "tel:+62248412765",
+        copyrightText: "© 2026 Studio Balay Arsitektur.",
+      },
+      styles: { padding: "none" },
+    },
+    {
+      id: "arsitek-backtotop",
+      componentType: "back-to-top",
+      name: "Kembali ke Atas",
+      props: {
+        label: "Kembali ke atas",
+        position: "right",
+        showAfter: 320,
+        variant: "solid",
+      },
+      styles: { padding: "none" },
+    },
+  ];
+}

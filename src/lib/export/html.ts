@@ -140,7 +140,28 @@ export function buildExportFiles(doc: ProjectDocument): ExportFile[] {
 
     // Some early adapters share markup with React previews and still emit the
     // React-only `className` attribute. Static HTML needs the native spelling.
-    return html.replace(/\bclassName=/g, "class=");
+    html = html.replace(/\bclassName=/g, "class=");
+
+    // Section-as-container: komponen umum menampung children-nya sendiri di
+    // bawah bloknya (kecuali komponen yang merender children secara internal
+    // seperti grid-container/section-basic, atau widget kecil yang ditandai
+    // canContainChildren=false).
+    if (
+      !manifest.internalChildren &&
+      manifest.canContainChildren !== false &&
+      (section.children?.length ?? 0) > 0
+    ) {
+      const childrenHtml = section.children
+        .filter((child) => !child.metadata.hidden)
+        .map((child) => renderSection(child))
+        .join("\n");
+      if (childrenHtml) {
+        pushCss(NODE_CHILDREN_CSS);
+        html += `\n<div class="bi-node-children">\n${childrenHtml}\n</div>`;
+      }
+    }
+
+    return html;
   };
 
   const renderPage = (page: Page): string => {
@@ -342,6 +363,19 @@ document.querySelectorAll('[data-dashboard-action="export"]').forEach(function (
 
   return files;
 }
+
+const NODE_CHILDREN_CSS = `
+.bi-node-children {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  box-sizing: border-box;
+}
+.bi-node-children .bi-node-children { gap: 1.5rem; }
+@media (max-width: 560px) {
+  .bi-node-children { gap: 1.25rem; }
+}
+`;
 
 export function buildDashboardCss(): string {
   return `

@@ -12,6 +12,7 @@ export const kpiCardManifest: Omit<
   tier: "free",
   priceKey: "kpi-card",
   version: "1.0.0",
+  canContainChildren: false,
   defaultProps: {
     title: "Total Pendapatan",
     value: "Rp 128.450.000",

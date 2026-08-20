@@ -113,6 +113,37 @@ function isInteractiveTarget(target: EventTarget | null) {
   );
 }
 
+/** Style section (latar & perataan) agar opsi section terlihat di kanvas. */
+function sectionFrameStyle(node: Node): {
+  style: React.CSSProperties;
+  dataBg?: string;
+  active: boolean;
+} {
+  const styles = node.styles;
+  const bg = styles.background ?? "default";
+  const align = styles.textAlign ?? "center";
+  const explicit =
+    bg !== "default" || (styles.textAlign && styles.textAlign !== "center");
+  if (!explicit) return { style: {}, active: false };
+  const bgValue =
+    bg === "custom"
+      ? styles.backgroundCustom || undefined
+      : bg === "muted"
+        ? "var(--bi-muted)"
+        : bg === "primary"
+          ? "var(--bi-primary)"
+          : bg === "glass"
+            ? "color-mix(in srgb, var(--bi-card) 55%, transparent)"
+            : bg === "transparent"
+              ? "transparent"
+              : undefined;
+  return {
+    style: { background: bgValue, textAlign: align } as React.CSSProperties,
+    dataBg: bg,
+    active: true,
+  };
+}
+
 function SortableCanvasNode({
   node,
   theme,
@@ -140,6 +171,8 @@ function SortableCanvasNode({
 
   if (node.metadata.hidden) return null;
 
+  const frame = sectionFrameStyle(node);
+
   return (
     <div
       ref={setNodeRef}
@@ -147,8 +180,10 @@ function SortableCanvasNode({
         transform: CSS.Transform.toString(transform),
         transition,
         zIndex: isDragging ? 30 : undefined,
+        ...frame.style,
       }}
-      className={cn("relative min-w-0", className)}
+      className={cn("relative min-w-0", frame.active && "bi-section-frame", className)}
+      data-bg={frame.dataBg}
     >
       <div
         className={cn(
@@ -202,8 +237,41 @@ function SortableCanvasNode({
         ) : (
           <SectionPreview node={node} theme={theme} />
         )}
+        {node.componentType === "grid-container" ||
+        node.componentType === "section-basic" ||
+        manifest?.canContainChildren === false ? null : (
+          <CanvasNodeSlot node={node} theme={theme} selectedId={selectedId ?? null} />
+        )}
       </div>
     </div>
+  );
+}
+
+function CanvasNodeSlot({
+  node,
+  theme,
+  selectedId,
+}: {
+  node: Node;
+  theme: Theme;
+  selectedId: string | null;
+}) {
+  const hasChildren = node.children.length > 0;
+  return (
+    <CanvasNestedChildren
+      node={node}
+      theme={theme}
+      selectedId={selectedId}
+      layout="stack"
+      className={cn(
+        "bi-node-slot mt-2 min-h-9 rounded-lg border border-dashed transition-colors duration-150",
+        hasChildren
+          ? "border-border/70"
+          : "border-transparent opacity-40 hover:border-brand/50 hover:opacity-100 group-hover:opacity-80"
+      )}
+      emptyClassName="min-h-9 border-0 bg-transparent p-2 text-[10px] font-medium text-muted-foreground/60"
+      emptyMessage="Seret komponen ke sini — section ini menampung isi"
+    />
   );
 }
 
@@ -726,6 +794,7 @@ export function Canvas() {
                 <div
                   className="container-type min-h-full select-none"
                 data-device={device}
+                data-bi-style={tokens.styleId}
                 style={{
                   ...themeTokenStyle(tokens),
                   ...projectTokenStyle(tokens),

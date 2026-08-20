@@ -12,6 +12,7 @@ export const breadcrumbManifest: Omit<
   tier: "free",
   priceKey: "breadcrumb",
   version: "1.0.0",
+  canContainChildren: false,
   defaultProps: {
     homeUrl: "/",
     separator: "/",

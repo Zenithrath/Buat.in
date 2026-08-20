@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useMemo } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { materializeTemplateNodes } from "@/lib/schema/defaults";
 import { DEFAULT_THEME_PRESETS, resolveTheme } from "@/lib/theme/presets";
 import { projectTokenStyle, themeTokenStyle } from "@/lib/registry/shared";
@@ -19,17 +19,21 @@ import { cn } from "@/lib/utils";
  * Pratinjau template live (ala WordPress): node template asli dirender
  * memakai renderer preview lalu diskala kecil. Dashboard disusun seperti
  * layout aslinya (sidebar di kiri, konten di kanan) agar mudah dikenali.
+ * Mode `autoFit` menyesuaikan skala dengan lebar kontainer sehingga
+ * template tampil utuh tanpa terpotong.
  */
 export function TemplatePreview({
   template,
   scale = 0.14,
   sectionCount = 6,
   className,
+  autoFit = false,
 }: {
   template: TemplateDefinition;
   scale?: number;
   sectionCount?: number;
   className?: string;
+  autoFit?: boolean;
 }) {
   const { nodes, theme } = useMemo(() => {
     const materialized = materializeTemplateNodes(template.createNodes());
@@ -45,6 +49,35 @@ export function TemplatePreview({
 
   const tokens = useMemo(() => resolveTheme(theme), [theme]);
   const isDashboard = template.category === "dashboard";
+
+  const wrapperRef = useRef<HTMLDivElement>(null);
+  const innerRef = useRef<HTMLDivElement>(null);
+  const [containerWidth, setContainerWidth] = useState(0);
+  const [innerHeight, setInnerHeight] = useState(900);
+
+  useEffect(() => {
+    if (!autoFit) return;
+    const el = wrapperRef.current;
+    if (!el) return;
+    const measure = () => setContainerWidth(el.clientWidth);
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [autoFit]);
+
+  useEffect(() => {
+    const el = innerRef.current;
+    if (!el) return;
+    const measure = () => setInnerHeight(el.offsetHeight);
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [nodes]);
+
+  const finalScale = autoFit && containerWidth > 0 ? containerWidth / 1440 : scale;
+  const wrapperHeight = autoFit ? innerHeight * finalScale : undefined;
 
   const renderChildren = useCallback(
     (node: Node, options: CanvasChildrenOptions = {}) => (
@@ -71,36 +104,44 @@ export function TemplatePreview({
       <CanvasChildrenProvider renderChildren={renderChildren}>
         <PreviewDeviceProvider device="desktop">
           <div
-            data-device="desktop"
-            className={cn("w-full", className)}
-            style={{
-              width: 1440,
-              transform: `scale(${scale})`,
-              transformOrigin: "top left",
-              ...themeTokenStyle(tokens),
-              ...projectTokenStyle(tokens),
-              backgroundColor: tokens.background,
-              color: tokens.foreground,
-            } as React.CSSProperties}
+            ref={wrapperRef}
+            className={cn("relative", className)}
+            style={{ height: wrapperHeight }}
           >
-            {isDashboard ? (
-              <div className="flex min-h-full">
-                <div className="w-64 shrink-0">
-                  {sidebarNodes.map((node) => (
-                    <SectionPreview key={node.id} node={node} theme={theme} />
-                  ))}
+            <div
+              ref={innerRef}
+              data-device="desktop"
+              data-bi-style={tokens.styleId}
+              className={cn("w-full")}
+              style={{
+                width: 1440,
+                transform: `scale(${finalScale})`,
+                transformOrigin: "top left",
+                ...themeTokenStyle(tokens),
+                ...projectTokenStyle(tokens),
+                backgroundColor: tokens.background,
+                color: tokens.foreground,
+              } as React.CSSProperties}
+            >
+              {isDashboard ? (
+                <div className="flex min-h-full">
+                  <div className="w-64 shrink-0">
+                    {sidebarNodes.map((node) => (
+                      <SectionPreview key={node.id} node={node} theme={theme} />
+                    ))}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    {mainNodes.map((node) => (
+                      <SectionPreview key={node.id} node={node} theme={theme} />
+                    ))}
+                  </div>
                 </div>
-                <div className="min-w-0 flex-1">
-                  {mainNodes.map((node) => (
-                    <SectionPreview key={node.id} node={node} theme={theme} />
-                  ))}
-                </div>
-              </div>
-            ) : (
-              nodes.map((node) => (
-                <SectionPreview key={node.id} node={node} theme={theme} />
-              ))
-            )}
+              ) : (
+                nodes.map((node) => (
+                  <SectionPreview key={node.id} node={node} theme={theme} />
+                ))
+              )}
+            </div>
           </div>
         </PreviewDeviceProvider>
       </CanvasChildrenProvider>
