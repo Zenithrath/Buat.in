@@ -11,6 +11,14 @@ function applySourceEdits(html: string, edits: ProjectDocument["sourceEdits"]): 
     if (typeof edit.text === "string") element.textContent = edit.text;
     if (typeof edit.src === "string") element.setAttribute("src", edit.src);
     if (typeof edit.href === "string") element.setAttribute("href", edit.href);
+    if (typeof edit.alt === "string") element.setAttribute("alt", edit.alt);
+    if (typeof edit.value === "string") {
+      if (element.tagName.toLowerCase() === "textarea") {
+        element.textContent = edit.value;
+      } else {
+        element.setAttribute("value", edit.value);
+      }
+    }
   }
   return `<!doctype html>\n${parsed.documentElement.outerHTML}`;
 }

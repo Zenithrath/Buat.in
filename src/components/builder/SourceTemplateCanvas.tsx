@@ -32,6 +32,13 @@ function applyEdit(element: Element, edit: SourceTemplateEdit | undefined) {
   if (typeof edit.text === "string") element.textContent = edit.text;
   if (typeof edit.src === "string") element.setAttribute("src", edit.src);
   if (typeof edit.href === "string") element.setAttribute("href", edit.href);
+  if (typeof edit.alt === "string") element.setAttribute("alt", edit.alt);
+  if (
+    typeof edit.value === "string" &&
+    ["input", "textarea"].includes(element.tagName.toLowerCase())
+  ) {
+    (element as HTMLInputElement | HTMLTextAreaElement).value = edit.value;
+  }
 }
 
 export function SourceTemplateCanvas({
@@ -51,10 +58,16 @@ export function SourceTemplateCanvas({
   const installEditor = useCallback(() => {
     const frameDocument = iframeRef.current?.contentDocument;
     if (!frameDocument) return;
+    const frameBody = frameDocument.body;
+    if (!frameBody) return;
 
-    const editableElements = Array.from(
-      frameDocument.querySelectorAll("h1,h2,h3,h4,h5,h6,p,a,button,li,blockquote,label")
-    ).filter((element) => (element.textContent ?? "").trim().length > 0);
+    const editableElements = Array.from(frameBody.querySelectorAll("*"))
+      .filter((element) => {
+        const text = (element.textContent ?? "").trim();
+        const hasElementChild = element.children.length > 0;
+        const tag = element.tagName.toLowerCase();
+        return text.length > 0 && !hasElementChild && !["script", "style", "svg"].includes(tag);
+      });
 
     const cleanups: (() => void)[] = [];
     for (const element of editableElements) {
@@ -66,19 +79,33 @@ export function SourceTemplateCanvas({
       element.setAttribute("title", "Klik untuk mengedit teks");
 
       const onBlur = () => updateSourceEdit(selector, { text: element.textContent ?? "" });
-      const onClick = (event: Event) => event.preventDefault();
       element.addEventListener("blur", onBlur);
-      element.addEventListener("click", onClick);
+      cleanups.push(() => element.removeEventListener("blur", onBlur));
+    }
+
+    for (const link of Array.from(frameDocument.querySelectorAll("a"))) {
+      const selector = elementSelector(link);
+      const onClick = (event: Event) => event.preventDefault();
+      const onContextMenu = (event: Event) => {
+        event.preventDefault();
+        const next = window.prompt("URL link", link.getAttribute("href") ?? "");
+        if (next !== null) {
+          link.setAttribute("href", next);
+          updateSourceEdit(selector, { href: next });
+        }
+      };
+      link.addEventListener("click", onClick);
+      link.addEventListener("contextmenu", onContextMenu);
       cleanups.push(() => {
-        element.removeEventListener("blur", onBlur);
-        element.removeEventListener("click", onClick);
+        link.removeEventListener("click", onClick);
+        link.removeEventListener("contextmenu", onContextMenu);
       });
     }
 
     for (const image of Array.from(frameDocument.querySelectorAll("img"))) {
       const selector = elementSelector(image);
       applyEdit(image, document.sourceEdits?.[selector]);
-      image.setAttribute("title", "Double-click untuk mengganti URL gambar");
+      image.setAttribute("title", "Double-click untuk mengganti URL gambar · klik kanan untuk alt text");
       const onDoubleClick = (event: Event) => {
         event.preventDefault();
         const next = window.prompt("URL gambar baru", image.getAttribute("src") ?? "");
@@ -86,12 +113,33 @@ export function SourceTemplateCanvas({
         image.setAttribute("src", next);
         updateSourceEdit(selector, { src: next });
       };
+      const onContextMenu = (event: Event) => {
+        event.preventDefault();
+        const next = window.prompt("Alt text gambar", image.getAttribute("alt") ?? "");
+        if (next !== null) {
+          image.setAttribute("alt", next);
+          updateSourceEdit(selector, { alt: next });
+        }
+      };
       image.addEventListener("dblclick", onDoubleClick);
-      cleanups.push(() => image.removeEventListener("dblclick", onDoubleClick));
+      image.addEventListener("contextmenu", onContextMenu);
+      cleanups.push(() => {
+        image.removeEventListener("dblclick", onDoubleClick);
+        image.removeEventListener("contextmenu", onContextMenu);
+      });
+    }
+
+    for (const input of Array.from(frameDocument.querySelectorAll("input, textarea"))) {
+      const selector = elementSelector(input);
+      applyEdit(input, document.sourceEdits?.[selector]);
+      input.setAttribute("title", "Input editable");
+      const onBlur = () => updateSourceEdit(selector, { value: (input as HTMLInputElement | HTMLTextAreaElement).value });
+      input.addEventListener("blur", onBlur);
+      cleanups.push(() => input.removeEventListener("blur", onBlur));
     }
 
     const style = frameDocument.createElement("style");
-    style.textContent = `[data-buat-editable="true"]:hover { outline: 2px solid #c9a227 !important; outline-offset: 3px; cursor: text; } img:hover { outline: 2px solid #c9a227 !important; outline-offset: 3px; cursor: pointer; }`;
+    style.textContent = `[data-buat-editable="true"]:hover { outline: 2px solid #3454D1 !important; outline-offset: 3px; cursor: text; } img:hover { outline: 2px solid #3454D1 !important; outline-offset: 3px; cursor: pointer; }`;
     frameDocument.head.appendChild(style);
     cleanups.push(() => style.remove());
 

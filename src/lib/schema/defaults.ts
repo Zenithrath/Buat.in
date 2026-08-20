@@ -6,7 +6,12 @@ import {
 } from "./types";
 import { DEFAULT_THEME_PRESETS } from "@/lib/theme/presets";
 import { uid } from "@/lib/utils";
-import { getTemplateSource, templateRegistry, type RawTemplateNode } from "@/templates";
+import {
+  getTemplateSource,
+  templateRegistry,
+  type RawTemplateNode,
+  type RawTemplatePage,
+} from "@/templates";
 
 /** Kategori template dipetakan ke tipe proyek builder (auth = halaman tunggal ala landing). */
 export function categoryToProjectType(
@@ -51,6 +56,41 @@ export function materializeTemplateNodes(templateNodes: RawTemplateNode[]): Node
   });
 
   return templateNodes.map(materialize);
+}
+
+export function materializeTemplatePages(templatePages: RawTemplatePage[]) {
+  const createdAt = new Date().toISOString();
+  return templatePages.map((page) => {
+    const pageNode = materializeTemplateNodes([
+      {
+        id: `imported-page-${page.id}`,
+        componentType: "imported-page",
+        name: page.name,
+        props: {
+          sourcePath: page.sourcePath ?? "",
+          stylesheets: page.stylesheets ?? [],
+          inlineStyles: page.inlineStyles ?? [],
+        },
+        styles: {},
+        tabletOverride: {},
+        mobileOverride: {},
+        children: page.sections,
+        metadata: { importedFromZip: true },
+      },
+    ])[0];
+    return {
+      id: uid(),
+      name: page.name,
+      path: page.path,
+      isHome: page.isHome,
+      sections: [
+        {
+          ...pageNode,
+          metadata: { ...pageNode.metadata, createdAt },
+        },
+      ],
+    };
+  });
 }
 
 export function createProjectDocument(
@@ -117,13 +157,19 @@ export function createTemplateProject(
     templateRegistry.find((item) => item.id === templateIdOrProjectType) ??
     templateRegistry.find((item) => item.category === requestedCategory) ??
     templateRegistry[0];
+  const rawPages = template?.createPages?.();
+  const initialSections = rawPages?.[0]?.sections ?? template?.createNodes() ?? [];
 
   const document = createProjectDocument(
     projectId,
     template?.name ?? "Landing Page Baru",
-    materializeTemplateNodes(template?.createNodes() ?? []),
+    materializeTemplateNodes(initialSections),
     categoryToProjectType(template?.category ?? requestedCategory)
   );
+
+  if (rawPages?.length) {
+    document.pages = materializeTemplatePages(rawPages);
+  }
 
   if (template && getTemplateSource(template.id)) {
     document.sourceTemplateId = template.id;

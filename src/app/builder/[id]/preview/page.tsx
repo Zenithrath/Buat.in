@@ -97,11 +97,14 @@ export default function DedicatedPreviewPage({
   const sections = (activePage.sections ?? []).filter(
     (section) => !section.metadata.hidden
   );
+  const hasImportedPage = sections.some(
+    (section) => section.componentType === "imported-page"
+  );
   const isDashboard =
-    doc.projectType === "dashboard" ||
+    !hasImportedPage && (doc.projectType === "dashboard" ||
     sections.some(
       (s) => s.componentType === "app-sidebar" || s.componentType === "sidebar-icon"
-    );
+    ));
 
   const sidebar = sections.find(
     (s) => s.componentType === "app-sidebar" || s.componentType === "sidebar-icon"
@@ -144,6 +147,12 @@ export default function DedicatedPreviewPage({
         {sections.length === 0 ? (
           <div className="flex min-h-[60vh] flex-col items-center justify-center gap-2 p-8 text-center text-muted-foreground text-sm">
             Halaman ini belum memiliki komponen.
+          </div>
+        ) : hasImportedPage ? (
+          <div className="w-full min-h-screen">
+            {sections.map((node) => (
+              <SectionPreview key={node.id} node={node} theme={doc.theme} />
+            ))}
           </div>
         ) : isDashboard ? (
           <div className="bi-dashboard">

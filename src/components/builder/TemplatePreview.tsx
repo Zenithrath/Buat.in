@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { materializeTemplateNodes } from "@/lib/schema/defaults";
+import { materializeTemplateNodes, materializeTemplatePages } from "@/lib/schema/defaults";
 import { DEFAULT_THEME_PRESETS, resolveTheme } from "@/lib/theme/presets";
 import { projectTokenStyle, themeTokenStyle } from "@/lib/registry/shared";
 import { SectionPreview } from "@/components/preview/SectionPreview";
@@ -13,7 +13,6 @@ import {
 } from "@/components/preview/CanvasChildrenContext";
 import type { Node, Theme } from "@/lib/schema/types";
 import type { TemplateDefinition } from "@/templates";
-import { getTemplateSource } from "@/templates";
 import { cn } from "@/lib/utils";
 
 /**
@@ -38,7 +37,9 @@ export function TemplatePreview({
   autoFit?: boolean;
 }) {
   const { nodes, theme } = useMemo(() => {
-    const materialized = materializeTemplateNodes(template.createNodes());
+    const materialized = template.createPages
+      ? materializeTemplatePages(template.createPages())[0]?.sections ?? []
+      : materializeTemplateNodes(template.createNodes());
     const visible = materialized.filter((node) => !node.metadata?.hidden);
     return {
       nodes: visible.slice(0, sectionCount),
@@ -51,7 +52,7 @@ export function TemplatePreview({
 
   const tokens = useMemo(() => resolveTheme(theme), [theme]);
   const isDashboard = template.category === "dashboard";
-  const source = getTemplateSource(template.id);
+  const hasImportedPage = nodes.some((node) => node.componentType === "imported-page");
 
   const wrapperRef = useRef<HTMLDivElement>(null);
   const innerRef = useRef<HTMLDivElement>(null);
@@ -102,27 +103,6 @@ export function TemplatePreview({
   const sidebarNodes = isDashboard ? nodes.filter(isSidebarNode) : [];
   const mainNodes = isDashboard ? nodes.filter((node) => !isSidebarNode(node)) : nodes;
 
-  if (source) {
-    return (
-      <div
-        ref={wrapperRef}
-        className={cn("relative h-52 overflow-hidden bg-white", className)}
-      >
-        <iframe
-          title={`${template.name} source preview`}
-          src={`/api/template-source/${template.id}/${source.entry}`}
-          className="pointer-events-none absolute left-0 top-0 border-0"
-          style={{
-            width: 1440,
-            height: 900,
-            transform: `scale(${finalScale || 0.14})`,
-            transformOrigin: "top left",
-          }}
-        />
-      </div>
-    );
-  }
-
   return (
     <PreviewEditingProvider>
       <CanvasChildrenProvider renderChildren={renderChildren}>
@@ -147,7 +127,11 @@ export function TemplatePreview({
                 color: tokens.foreground,
               } as React.CSSProperties}
             >
-              {isDashboard ? (
+              {hasImportedPage ? (
+                nodes.map((node) => (
+                  <SectionPreview key={node.id} node={node} theme={theme} />
+                ))
+              ) : isDashboard ? (
                 <div className="flex min-h-full">
                   <div className="w-64 shrink-0">
                     {sidebarNodes.map((node) => (

@@ -1,11 +1,14 @@
-// Central template registry
+// Registry template Buat.in.
+//
+// Template yang tersedia di panel ini adalah hasil impor ZIP asli di
+// src/templates/imported-assets. Adapter di ./imported membuat node yang dikenali
+// schema Buat.in, sedangkan source HTML/CSS/JS/aset tetap dipakai sebagai
+// visual master agar hasilnya tidak berubah menjadi template basic.
 
 import type { Node, NodeProps, Theme } from "@/lib/schema/types";
 
 export type TemplateCategory = "landing" | "dashboard" | "auth";
 
-/** Node template mentah — dilebihkan dari Node penuh agar template
- *  bisa menetapkan style/metadata khusus dashboard. */
 export interface RawTemplateNode {
   id: string;
   componentType: string;
@@ -26,9 +29,21 @@ export interface TemplateDefinition {
   thumbnail?: string;
   tier: "free" | "pro";
   tags: string[];
-  /** Tema awal template; tetap bisa diganti lewat panel Tema setelah diterapkan. */
   theme?: Theme;
   createNodes: () => RawTemplateNode[];
+  /** Native pages converted from the ZIP's HTML files. */
+  createPages?: () => RawTemplatePage[];
+}
+
+export interface RawTemplatePage {
+  id: string;
+  name: string;
+  path: string;
+  isHome: boolean;
+  sourcePath?: string;
+  stylesheets?: string[];
+  inlineStyles?: string[];
+  sections: RawTemplateNode[];
 }
 
 export interface TemplateSource {
@@ -37,709 +52,170 @@ export interface TemplateSource {
   entry: string;
 }
 
-import { createSaasLandingNodes } from "./landing/saas";
-import { createStorefrontNodes } from "./landing/storefront";
-import { createPortfolioLandingNodes } from "./landing/portfolio";
-import { createStartupLandingNodes } from "./landing/startup";
-import { createFashionLandingNodes } from "./landing/fashion";
-import { createCompanyLandingNodes } from "./landing/company";
-import { createKlinikLandingNodes } from "./landing/klinik";
-import { createRestoranLandingNodes } from "./landing/restoran";
-import { createEventLandingNodes } from "./landing/event";
-import { createSekolahLandingNodes } from "./landing/sekolah";
-import { createPropertiLandingNodes } from "./landing/properti";
-import { createTravelLandingNodes } from "./landing/travel";
-import { createAppShowcaseLandingNodes } from "./landing/app-showcase";
-import { createNonprofitLandingNodes } from "./landing/nonprofit";
-import { createAnalyticsDashboardNodes } from "./dashboard/analytics";
-import { createEcommerceDashboardNodes } from "./dashboard/ecommerce";
-import { createProjectDashboardNodes } from "./dashboard/project";
-import { createKeuanganDashboardNodes } from "./dashboard/keuangan";
-import { createHelpdeskDashboardNodes } from "./dashboard/helpdesk";
-import { createArsitekLandingNodes } from "./landing/arsitek";
-import { createAgensiKreatifNodes } from "./landing/agensi-kreatif";
-import { createPortofolioOnepageNodes } from "./landing/portofolio-onepage";
-import { createStudioKreatifNodes } from "./landing/studio-kreatif";
-import { createHotelLandingNodes } from "./landing/hotel";
-import { createRestoranModernNodes } from "./landing/restoran-modern";
-import { createKafeMenuNodes } from "./landing/kafe-menu";
-import { createAdminDashboardNodes } from "./dashboard/admin";
-import { createOperasionalDashboardNodes } from "./dashboard/operasional";
-import { createLoginMinimalNodes } from "./auth/login-minimal";
-import { createLoginSplitNodes } from "./auth/login-split";
-import { createLoginGradasiNodes } from "./auth/login-gradasi";
+import { createBinoPages } from "./imported/bino";
+import { createBalayMasterPages } from "./imported/balay-master";
+import { createFlameonepagePages } from "./imported/flameonepage-gh-pages";
+import { createMadePages } from "./imported/made";
+import { createRoyalMasterPages } from "./imported/royal-master";
+import { createTastyMasterPages } from "./imported/tasty-master";
+import { createWebsiteMenuPages } from "./imported/website-menu-03";
+import { createAdminatorPages } from "./imported/adminator";
+import { createShadcnAdminPages } from "./imported/shadcn-admin-main";
+import { createLoginForm02Pages } from "./imported/login-form-02";
+import { createLoginForm20Pages } from "./imported/login-form-20";
+import { createLoginFormV16Pages } from "./imported/login-form-v16";
+
+function firstPageNodes(createPages: () => RawTemplatePage[]): RawTemplateNode[] {
+  return createPages()[0]?.sections ?? [];
+}
+
+const importedTheme: Theme = {
+  presets: {
+    style: "vega",
+    baseColor: "stone",
+    theme: "blue",
+    radius: "medium",
+    font: "inter",
+    fontHeading: "figtree",
+    fontMono: "jetbrains",
+    chart: "theme",
+    appearance: "light",
+  },
+  overrides: {},
+};
 
 export const templateRegistry: TemplateDefinition[] = [
   {
-    id: "landing-saas",
-    name: "Company Profile Studio",
-    description: "Landing page perusahaan statis dengan cerita brand, layanan, profil, dan ajakan konsultasi.",
+    id: "landing-agensi-kreatif",
+    name: "bino",
+    description: "Template ZIP asli bino untuk landing page agensi kreatif.",
     category: "landing",
     tier: "free",
-    tags: ["company-profile", "studio", "landing", "bisnis"],
-    createNodes: createSaasLandingNodes,
-  },
-  {
-    id: "landing-storefront",
-    name: "Toko Online",
-    description: "Template e-commerce lengkap dengan navbar, hero, katalog produk, tentang, dan footer.",
-    category: "landing",
-    tier: "free",
-    tags: ["toko", "ecommerce", "fashion", "produk"],
-    createNodes: createStorefrontNodes,
-  },
-  {
-    id: "landing-portfolio",
-    name: "Portofolio Kreatif",
-    description: "Portofolio editorial gelap dengan galeri karya, cerita studio, testimoni, dan ajakan kolaborasi.",
-    category: "landing",
-    tier: "free",
-    tags: ["portfolio", "creative", "editorial", "studio"],
-    theme: {
-      presets: {
-        style: "maia",
-        baseColor: "zinc",
-        theme: "amber",
-        radius: "medium",
-        font: "manrope",
-        fontHeading: "figtree",
-        fontMono: "jetbrains",
-        chart: "theme",
-        appearance: "dark",
-      },
-      overrides: {},
-    },
-    createNodes: createPortfolioLandingNodes,
-  },
-  {
-    id: "landing-startup",
-    name: "Landing Produk",
-    description: "Landing produk lengkap dengan fitur, statistik, harga, testimoni, FAQ, dan CTA yang nyata.",
-    category: "landing",
-    tier: "free",
-    tags: ["produk", "bisnis", "harga", "layanan"],
-    theme: {
-      presets: {
-        style: "nova",
-        baseColor: "mist",
-        theme: "blue",
-        radius: "large",
-        font: "figtree",
-        fontHeading: "figtree",
-        fontMono: "jetbrains",
-        chart: "theme",
-        appearance: "light",
-      },
-      overrides: {},
-    },
-    createNodes: createStartupLandingNodes,
-  },
-  {
-    id: "landing-fashion",
-    name: "eCommerce Fashion",
-    description: "Toko visual untuk koleksi musiman, lookbook, cerita pelanggan, dan newsletter yang elegan.",
-    category: "landing",
-    tier: "free",
-    tags: ["fashion", "ecommerce", "lookbook", "retail"],
-    theme: {
-      presets: {
-        style: "maia",
-        baseColor: "stone",
-        theme: "rose",
-        radius: "large",
-        font: "manrope",
-        fontHeading: "manrope",
-        fontMono: "jetbrains",
-        chart: "theme",
-        appearance: "light",
-      },
-      overrides: {},
-    },
-    createNodes: createFashionLandingNodes,
-  },
-  {
-    id: "landing-company",
-    name: "Company Profile",
-    description: "Company profile profesional dengan capaian, layanan, tim, testimoni, dan form konsultasi.",
-    category: "landing",
-    tier: "free",
-    tags: ["company-profile", "business", "services", "team"],
-    theme: {
-      presets: {
-        style: "vega",
-        baseColor: "stone",
-        theme: "blue",
-        radius: "medium",
-        font: "inter",
-        fontHeading: "figtree",
-        fontMono: "jetbrains",
-        chart: "theme",
-        appearance: "light",
-      },
-      overrides: {},
-    },
-    createNodes: createCompanyLandingNodes,
-  },
-  {
-    id: "dashboard-analytics",
-    name: "Analytics Dashboard",
-    description: "Dashboard operasional dengan sidebar, header, KPI, grafik, dan aktivitas proyek.",
-    category: "dashboard",
-    tier: "pro",
-    tags: ["dashboard", "analytics", "admin", "data"],
-    createNodes: createAnalyticsDashboardNodes,
-  },
-  {
-    id: "landing-klinik",
-    name: "Klinik Kesehatan",
-    description: "Halaman klinik dengan layanan, tim dokter, testimoni pasien, dan jadwal konsultasi.",
-    category: "landing",
-    tier: "free",
-    tags: ["klinik", "kesehatan", "dokter", "layanan"],
-    theme: {
-      presets: {
-        style: "maia",
-        baseColor: "mist",
-        theme: "teal",
-        radius: "large",
-        font: "figtree",
-        fontHeading: "figtree",
-        fontMono: "jetbrains",
-        chart: "theme",
-        appearance: "light",
-      },
-      overrides: {},
-    },
-    createNodes: createKlinikLandingNodes,
-  },
-  {
-    id: "landing-restoran",
-    name: "Restoran & Kafe",
-    description: "Halaman restoran dengan menu andalan, cerita dapur, reservasi, dan jam buka.",
-    category: "landing",
-    tier: "free",
-    tags: ["restoran", "kafe", "makanan", "reservasi"],
-    theme: {
-      presets: {
-        style: "maia",
-        baseColor: "stone",
-        theme: "orange",
-        radius: "large",
-        font: "manrope",
-        fontHeading: "manrope",
-        fontMono: "jetbrains",
-        chart: "theme",
-        appearance: "light",
-      },
-      overrides: {},
-    },
-    createNodes: createRestoranLandingNodes,
-  },
-  {
-    id: "landing-event",
-    name: "Acara & Konferensi",
-    description: "Halaman acara dengan rundown singkat, tiket, pembicara, dokumentasi, dan FAQ.",
-    category: "landing",
-    tier: "free",
-    tags: ["event", "konferensi", "tiket", "workshop"],
-    theme: {
-      presets: {
-        style: "nova",
-        baseColor: "zinc",
-        theme: "violet",
-        radius: "medium",
-        font: "inter",
-        fontHeading: "figtree",
-        fontMono: "jetbrains",
-        chart: "theme",
-        appearance: "light",
-      },
-      overrides: {},
-    },
-    createNodes: createEventLandingNodes,
-  },
-  {
-    id: "landing-sekolah",
-    name: "Sekolah & Lembaga",
-    description: "Halaman sekolah dengan program, statistik, tenaga pengajar, dan pendaftaran murid baru.",
-    category: "landing",
-    tier: "free",
-    tags: ["sekolah", "pendidikan", "kursus", "lembaga"],
-    theme: {
-      presets: {
-        style: "vega",
-        baseColor: "mist",
-        theme: "blue",
-        radius: "medium",
-        font: "figtree",
-        fontHeading: "figtree",
-        fontMono: "jetbrains",
-        chart: "theme",
-        appearance: "light",
-      },
-      overrides: {},
-    },
-    createNodes: createSekolahLandingNodes,
-  },
-  {
-    id: "landing-properti",
-    name: "Properti & Real Estate",
-    description: "Halaman pengembang properti dengan unit tersedia, fasilitas, konsultasi KPR, dan denah.",
-    category: "landing",
-    tier: "free",
-    tags: ["properti", "real-estate", "rumah", "cluster"],
-    theme: {
-      presets: {
-        style: "vega",
-        baseColor: "stone",
-        theme: "emerald",
-        radius: "medium",
-        font: "inter",
-        fontHeading: "figtree",
-        fontMono: "jetbrains",
-        chart: "theme",
-        appearance: "light",
-      },
-      overrides: {},
-    },
-    createNodes: createPropertiLandingNodes,
-  },
-  {
-    id: "landing-travel",
-    name: "Travel & Wisata",
-    description: "Halaman agen perjalanan dengan paket wisata, statistik, cara pesan, dan testimoni.",
-    category: "landing",
-    tier: "free",
-    tags: ["travel", "wisata", "paket", "liburan"],
-    theme: {
-      presets: {
-        style: "maia",
-        baseColor: "mist",
-        theme: "sky",
-        radius: "large",
-        font: "dmsans",
-        fontHeading: "dmsans",
-        fontMono: "jetbrains",
-        chart: "theme",
-        appearance: "light",
-      },
-      overrides: {},
-    },
-    createNodes: createTravelLandingNodes,
-  },
-  {
-    id: "landing-app-showcase",
-    name: "Aplikasi Mobile",
-    description: "Halaman promosi aplikasi dengan fitur, paket harga, rating, dan unduhan.",
-    category: "landing",
-    tier: "free",
-    tags: ["aplikasi", "mobile", "saas", "promo"],
-    theme: {
-      presets: {
-        style: "nova",
-        baseColor: "mist",
-        theme: "indigo",
-        radius: "large",
-        font: "dmsans",
-        fontHeading: "dmsans",
-        fontMono: "jetbrains",
-        chart: "theme",
-        appearance: "light",
-      },
-      overrides: {},
-    },
-    createNodes: createAppShowcaseLandingNodes,
-  },
-  {
-    id: "landing-nonprofit",
-    name: "Yayasan & Sosial",
-    description: "Halaman yayasan dengan program sosial, donasi, dokumentasi kegiatan, dan relawan.",
-    category: "landing",
-    tier: "free",
-    tags: ["yayasan", "sosial", "donasi", "nonprofit"],
-    theme: {
-      presets: {
-        style: "maia",
-        baseColor: "stone",
-        theme: "emerald",
-        radius: "medium",
-        font: "figtree",
-        fontHeading: "figtree",
-        fontMono: "jetbrains",
-        chart: "theme",
-        appearance: "light",
-      },
-      overrides: {},
-    },
-    createNodes: createNonprofitLandingNodes,
-  },
-  {
-    id: "dashboard-ecommerce",
-    name: "Dashboard Toko",
-    description: "Dashboard toko online dengan pendapatan, pesanan, produk, dan aktivitas penjualan.",
-    category: "dashboard",
-    tier: "pro",
-    tags: ["dashboard", "toko", "ecommerce", "penjualan"],
-    theme: {
-      presets: {
-        style: "nova",
-        baseColor: "mist",
-        theme: "blue",
-        radius: "medium",
-        font: "inter",
-        fontHeading: "figtree",
-        fontMono: "jetbrains",
-        chart: "theme",
-        appearance: "light",
-      },
-      overrides: {},
-    },
-    createNodes: createEcommerceDashboardNodes,
-  },
-  {
-    id: "dashboard-project",
-    name: "Dashboard Proyek",
-    description: "Dashboard manajemen proyek dengan progres, tugas, tim, dan kalender deadline.",
-    category: "dashboard",
-    tier: "pro",
-    tags: ["dashboard", "proyek", "tugas", "tim"],
-    theme: {
-      presets: {
-        style: "nova",
-        baseColor: "zinc",
-        theme: "violet",
-        radius: "medium",
-        font: "inter",
-        fontHeading: "figtree",
-        fontMono: "jetbrains",
-        chart: "theme",
-        appearance: "light",
-      },
-      overrides: {},
-    },
-    createNodes: createProjectDashboardNodes,
-  },
-  {
-    id: "dashboard-keuangan",
-    name: "Dashboard Keuangan",
-    description: "Dashboard keuangan pribadi atau usaha dengan saldo, arus kas, anggaran, dan tagihan.",
-    category: "dashboard",
-    tier: "pro",
-    tags: ["dashboard", "keuangan", "anggaran", "tagihan"],
-    theme: {
-      presets: {
-        style: "nova",
-        baseColor: "stone",
-        theme: "emerald",
-        radius: "medium",
-        font: "inter",
-        fontHeading: "figtree",
-        fontMono: "jetbrains",
-        chart: "theme",
-        appearance: "light",
-      },
-      overrides: {},
-    },
-    createNodes: createKeuanganDashboardNodes,
-  },
-  {
-    id: "dashboard-helpdesk",
-    name: "Dashboard Helpdesk",
-    description: "Dashboard layanan bantuan dengan tiket, antrian, prioritas, dan jadwal shift tim.",
-    category: "dashboard",
-    tier: "pro",
-    tags: ["dashboard", "helpdesk", "tiket", "support"],
-    theme: {
-      presets: {
-        style: "nova",
-        baseColor: "mist",
-        theme: "sky",
-        radius: "medium",
-        font: "inter",
-        fontHeading: "figtree",
-        fontMono: "jetbrains",
-        chart: "theme",
-        appearance: "light",
-      },
-      overrides: {},
-    },
-    createNodes: createHelpdeskDashboardNodes,
+    tags: ["bino", "agensi", "kreatif", "zip asli"],
+    theme: importedTheme,
+    createNodes: () => firstPageNodes(createBinoPages),
+    createPages: createBinoPages,
   },
   {
     id: "landing-arsitek",
-    name: "Arsitek & Studio Desain",
-    description: "Landing page studio arsitektur dengan karya terpilih, proses kerja, tim, dan form diskusi proyek.",
+    name: "balay-master",
+    description: "Template ZIP asli balay-master untuk studio arsitektur.",
     category: "landing",
     tier: "free",
-    tags: ["arsitek", "studio", "interior", "desain"],
-    theme: {
-      presets: {
-        style: "vega",
-        baseColor: "stone",
-        theme: "blue",
-        radius: "medium",
-        font: "inter",
-        fontHeading: "figtree",
-        fontMono: "jetbrains",
-        chart: "theme",
-        appearance: "light",
-      },
-      overrides: {},
-    },
-    createNodes: createArsitekLandingNodes,
-  },
-  {
-    id: "landing-agensi-kreatif",
-    name: "Agensi Kreatif",
-    description: "Landing page agensi kreatif dengan layanan, karya, cerita klien, dan newsletter.",
-    category: "landing",
-    tier: "free",
-    tags: ["agensi", "kreatif", "brand", "digital"],
-    theme: {
-      presets: {
-        style: "nova",
-        baseColor: "mist",
-        theme: "indigo",
-        radius: "large",
-        font: "dmsans",
-        fontHeading: "dmsans",
-        fontMono: "jetbrains",
-        chart: "theme",
-        appearance: "light",
-      },
-      overrides: {},
-    },
-    createNodes: createAgensiKreatifNodes,
+    tags: ["balay-master", "arsitek", "studio", "zip asli"],
+    theme: importedTheme,
+    createNodes: () => firstPageNodes(createBalayMasterPages),
+    createPages: createBalayMasterPages,
   },
   {
     id: "landing-portofolio-onepage",
-    name: "Portofolio One-Page",
-    description: "Portofolio satu halaman gelap dengan karya, proses, dan ajakan kolaborasi.",
+    name: "flameonepage-gh-pages",
+    description: "Template ZIP asli flameonepage-gh-pages untuk portofolio satu halaman.",
     category: "landing",
     tier: "free",
-    tags: ["portofolio", "one-page", "freelance", "desainer"],
-    theme: {
-      presets: {
-        style: "maia",
-        baseColor: "zinc",
-        theme: "amber",
-        radius: "medium",
-        font: "manrope",
-        fontHeading: "figtree",
-        fontMono: "jetbrains",
-        chart: "theme",
-        appearance: "dark",
-      },
-      overrides: {},
-    },
-    createNodes: createPortofolioOnepageNodes,
+    tags: ["flameonepage-gh-pages", "portofolio", "one page", "zip asli"],
+    theme: importedTheme,
+    createNodes: () => firstPageNodes(createFlameonepagePages),
+    createPages: createFlameonepagePages,
   },
   {
     id: "landing-studio-kreatif",
-    name: "Studio Kreatif",
-    description: "Landing page studio kreatif berwarna dengan layanan, karya, tim, dan penghargaan.",
+    name: "made",
+    description: "Template ZIP asli made untuk studio kreatif dan portofolio.",
     category: "landing",
     tier: "free",
-    tags: ["studio", "kreatif", "desain", "penghargaan"],
-    theme: {
-      presets: {
-        style: "nova",
-        baseColor: "mist",
-        theme: "rose",
-        radius: "large",
-        font: "dmsans",
-        fontHeading: "dmsans",
-        fontMono: "jetbrains",
-        chart: "theme",
-        appearance: "light",
-      },
-      overrides: {},
-    },
-    createNodes: createStudioKreatifNodes,
+    tags: ["made", "studio", "kreatif", "zip asli"],
+    theme: importedTheme,
+    createNodes: () => firstPageNodes(createMadePages),
+    createPages: createMadePages,
   },
   {
     id: "landing-hotel",
-    name: "Hotel & Resort",
-    description: "Halaman hotel mewah dengan kamar, fasilitas, paket menginap, dan reservasi.",
+    name: "royal-master",
+    description: "Template ZIP asli royal-master untuk hotel dan resort.",
     category: "landing",
     tier: "free",
-    tags: ["hotel", "resort", "penginapan", "liburan"],
-    theme: {
-      presets: {
-        style: "maia",
-        baseColor: "stone",
-        theme: "amber",
-        radius: "large",
-        font: "dmsans",
-        fontHeading: "dmsans",
-        fontMono: "jetbrains",
-        chart: "theme",
-        appearance: "light",
-      },
-      overrides: {},
-    },
-    createNodes: createHotelLandingNodes,
+    tags: ["royal-master", "hotel", "resort", "zip asli"],
+    theme: importedTheme,
+    createNodes: () => firstPageNodes(createRoyalMasterPages),
+    createPages: createRoyalMasterPages,
   },
   {
     id: "landing-restoran-modern",
-    name: "Restoran Modern",
-    description: "Halaman restoran api kayu dengan menu musiman, suasana, ulasan, dan reservasi.",
+    name: "tasty-master",
+    description: "Template ZIP asli tasty-master untuk restoran modern.",
     category: "landing",
     tier: "free",
-    tags: ["restoran", "modern", "makanan", "reservasi"],
-    theme: {
-      presets: {
-        style: "nova",
-        baseColor: "stone",
-        theme: "orange",
-        radius: "medium",
-        font: "figtree",
-        fontHeading: "figtree",
-        fontMono: "jetbrains",
-        chart: "theme",
-        appearance: "light",
-      },
-      overrides: {},
-    },
-    createNodes: createRestoranModernNodes,
+    tags: ["tasty-master", "restoran", "makanan", "zip asli"],
+    theme: importedTheme,
+    createNodes: () => firstPageNodes(createTastyMasterPages),
+    createPages: createTastyMasterPages,
   },
   {
     id: "landing-kafe-menu",
-    name: "Menu Kafe Digital",
-    description: "Halaman menu kafe dengan daftar menu bergambar, promo, ulasan, dan newsletter.",
+    name: "website-menu-03",
+    description: "Template ZIP asli website-menu-03 untuk menu kafe.",
     category: "landing",
     tier: "free",
-    tags: ["kafe", "menu", "kopi", "minuman"],
-    theme: {
-      presets: {
-        style: "maia",
-        baseColor: "stone",
-        theme: "orange",
-        radius: "large",
-        font: "manrope",
-        fontHeading: "manrope",
-        fontMono: "jetbrains",
-        chart: "theme",
-        appearance: "light",
-      },
-      overrides: {},
-    },
-    createNodes: createKafeMenuNodes,
+    tags: ["website-menu-03", "kafe", "menu", "zip asli"],
+    theme: importedTheme,
+    createNodes: () => firstPageNodes(createWebsiteMenuPages),
+    createPages: createWebsiteMenuPages,
   },
   {
     id: "dashboard-admin",
-    name: "Dashboard Admin",
-    description: "Dashboard admin klasik dengan KPI, grafik, tabel pesanan, aktivitas, dan form data.",
+    name: "adminator",
+    description: "Template ZIP asli adminator untuk dashboard admin.",
     category: "dashboard",
-    tier: "pro",
-    tags: ["dashboard", "admin", "pesanan", "laporan"],
-    theme: {
-      presets: {
-        style: "nova",
-        baseColor: "zinc",
-        theme: "blue",
-        radius: "medium",
-        font: "inter",
-        fontHeading: "figtree",
-        fontMono: "jetbrains",
-        chart: "theme",
-        appearance: "light",
-      },
-      overrides: {},
-    },
-    createNodes: createAdminDashboardNodes,
+    tier: "free",
+    tags: ["adminator", "dashboard", "admin", "zip asli"],
+    theme: importedTheme,
+    createNodes: () => firstPageNodes(createAdminatorPages),
+    createPages: createAdminatorPages,
   },
   {
     id: "dashboard-operasional",
-    name: "Dashboard Operasional",
-    description: "Dashboard operasional modern dengan sidebar ikon, kalender, kehadiran, dan rekap tim.",
+    name: "shadcn-admin-main",
+    description: "Template ZIP asli shadcn-admin-main untuk dashboard operasional.",
     category: "dashboard",
-    tier: "pro",
-    tags: ["dashboard", "operasional", "kehadiran", "jadwal"],
-    theme: {
-      presets: {
-        style: "nova",
-        baseColor: "mist",
-        theme: "teal",
-        radius: "medium",
-        font: "inter",
-        fontHeading: "figtree",
-        fontMono: "jetbrains",
-        chart: "theme",
-        appearance: "light",
-      },
-      overrides: {},
-    },
-    createNodes: createOperasionalDashboardNodes,
+    tier: "free",
+    tags: ["shadcn-admin-main", "dashboard", "operasional", "zip asli"],
+    theme: importedTheme,
+    createNodes: () => firstPageNodes(createShadcnAdminPages),
+    createPages: createShadcnAdminPages,
   },
   {
     id: "auth-login-minimal",
-    name: "Login — Kartu Tengah",
-    description: "Halaman masuk minimalis dengan kartu kredensial di tengah layar.",
+    name: "login-form-02",
+    description: "Template ZIP asli login-form-02 untuk halaman login minimal.",
     category: "auth",
     tier: "free",
-    tags: ["login", "auth", "masuk", "minimal"],
-    theme: {
-      presets: {
-        style: "vega",
-        baseColor: "zinc",
-        theme: "blue",
-        radius: "medium",
-        font: "inter",
-        fontHeading: "figtree",
-        fontMono: "jetbrains",
-        chart: "theme",
-        appearance: "light",
-      },
-      overrides: {},
-    },
-    createNodes: createLoginMinimalNodes,
+    tags: ["login-form-02", "login", "auth", "zip asli"],
+    theme: importedTheme,
+    createNodes: () => firstPageNodes(createLoginForm02Pages),
+    createPages: createLoginForm02Pages,
   },
   {
     id: "auth-login-split",
-    name: "Login — Dua Kolom",
-    description: "Halaman masuk dua kolom dengan gambar dan panel kredensial di sisi kanan.",
+    name: "login-form-20",
+    description: "Template ZIP asli login-form-20 untuk halaman login dua kolom.",
     category: "auth",
     tier: "free",
-    tags: ["login", "auth", "masuk", "dua-kolom"],
-    theme: {
-      presets: {
-        style: "nova",
-        baseColor: "mist",
-        theme: "indigo",
-        radius: "large",
-        font: "dmsans",
-        fontHeading: "dmsans",
-        fontMono: "jetbrains",
-        chart: "theme",
-        appearance: "light",
-      },
-      overrides: {},
-    },
-    createNodes: createLoginSplitNodes,
+    tags: ["login-form-20", "login", "split", "zip asli"],
+    theme: importedTheme,
+    createNodes: () => firstPageNodes(createLoginForm20Pages),
+    createPages: createLoginForm20Pages,
   },
   {
     id: "auth-login-gradasi",
-    name: "Login — Latar Gradasi",
-    description: "Halaman masuk dengan latar gradasi warna dan kartu putih di tengah.",
+    name: "login-form-v16",
+    description: "Template ZIP asli login-form-v16 untuk halaman login bergradasi.",
     category: "auth",
     tier: "free",
-    tags: ["login", "auth", "masuk", "gradasi"],
-    theme: {
-      presets: {
-        style: "maia",
-        baseColor: "mist",
-        theme: "violet",
-        radius: "large",
-        font: "dmsans",
-        fontHeading: "dmsans",
-        fontMono: "jetbrains",
-        chart: "theme",
-        appearance: "light",
-      },
-      overrides: {},
-    },
-    createNodes: createLoginGradasiNodes,
+    tags: ["login-form-v16", "login", "gradient", "zip asli"],
+    theme: importedTheme,
+    createNodes: () => firstPageNodes(createLoginFormV16Pages),
+    createPages: createLoginFormV16Pages,
   },
 ];
 
@@ -749,20 +225,68 @@ export const TEMPLATE_CATEGORY_LABELS: Record<TemplateCategory, string> = {
   auth: "Login & autentikasi",
 };
 
-/** Arsip asli yang diekstrak ke src/template-sources. */
+/** Arsip dan entry asli yang diekstrak dari ZIP ke src/templates/imported-assets. */
 export const TEMPLATE_SOURCES: Record<string, TemplateSource> = {
-  "landing-agensi-kreatif": { folder: "bino", archive: "bino.zip", entry: "bino/index.html" },
-  "landing-arsitek": { folder: "balay-master", archive: "balay-master.zip", entry: "balay-master/index.html" },
-  "landing-portofolio-onepage": { folder: "flameonepage-gh-pages", archive: "flameonepage-gh-pages.zip", entry: "flameonepage-gh-pages/index.html" },
-  "landing-studio-kreatif": { folder: "made", archive: "made.zip", entry: "made/index.html" },
-  "landing-hotel": { folder: "royal-master", archive: "royal-master.zip", entry: "royal-master/index.html" },
-  "landing-restoran-modern": { folder: "tasty-master", archive: "tasty-master.zip", entry: "tasty-master/index.html" },
-  "landing-kafe-menu": { folder: "website-menu-03", archive: "website-menu-03.zip", entry: "website-menu-03/index.html" },
-  "dashboard-admin": { folder: "adminator", archive: "adminator.zip", entry: "index.html" },
-  "dashboard-operasional": { folder: "shadcn-admin-main", archive: "shadcn-admin-main.zip", entry: "shadcn-admin-main/index.html" },
-  "auth-login-minimal": { folder: "login-form-02", archive: "login-form-02.zip", entry: "login-form-02/index.html" },
-  "auth-login-split": { folder: "login-form-20", archive: "login-form-20.zip", entry: "login-form-20/index.html" },
-  "auth-login-gradasi": { folder: "login-form-v16", archive: "login-form-v16.zip", entry: "Login_v16/index.html" },
+  "landing-agensi-kreatif": {
+    folder: "bino",
+    archive: "bino.zip",
+    entry: "bino/index.html",
+  },
+  "landing-arsitek": {
+    folder: "balay-master",
+    archive: "balay-master.zip",
+    entry: "balay-master/index.html",
+  },
+  "landing-portofolio-onepage": {
+    folder: "flameonepage-gh-pages",
+    archive: "flameonepage-gh-pages.zip",
+    entry: "flameonepage-gh-pages/index.html",
+  },
+  "landing-studio-kreatif": {
+    folder: "made",
+    archive: "made.zip",
+    entry: "made/index.html",
+  },
+  "landing-hotel": {
+    folder: "royal-master",
+    archive: "royal-master.zip",
+    entry: "royal-master/index.html",
+  },
+  "landing-restoran-modern": {
+    folder: "tasty-master",
+    archive: "tasty-master.zip",
+    entry: "tasty-master/index.html",
+  },
+  "landing-kafe-menu": {
+    folder: "website-menu-03",
+    archive: "website-menu-03.zip",
+    entry: "website-menu-03/index.html",
+  },
+  "dashboard-admin": {
+    folder: "adminator",
+    archive: "adminator.zip",
+    entry: "index.html",
+  },
+  "dashboard-operasional": {
+    folder: "shadcn-admin-main",
+    archive: "shadcn-admin-main.zip",
+    entry: "shadcn-admin-main/index.html",
+  },
+  "auth-login-minimal": {
+    folder: "login-form-02",
+    archive: "login-form-02.zip",
+    entry: "login-form-02/index.html",
+  },
+  "auth-login-split": {
+    folder: "login-form-20",
+    archive: "login-form-20.zip",
+    entry: "login-form-20/index.html",
+  },
+  "auth-login-gradasi": {
+    folder: "login-form-v16",
+    archive: "login-form-v16.zip",
+    entry: "Login_v16/index.html",
+  },
 };
 
 export function getTemplateSource(templateId: string): TemplateSource | undefined {

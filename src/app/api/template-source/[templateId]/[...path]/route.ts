@@ -32,7 +32,13 @@ export async function GET(
   const source = getTemplateSource(templateId);
   if (!source) return new NextResponse("Template source tidak ditemukan", { status: 404 });
 
-  const sourceRoot = path.resolve(process.cwd(), "src", "template-sources", source.folder);
+  const sourceRoot = path.resolve(
+    process.cwd(),
+    "src",
+    "templates",
+    "imported-assets",
+    source.folder
+  );
   const requestedPath = pathParts.join("/") || source.entry;
   const filePath = requestedPath === "source.zip"
     ? path.resolve(process.cwd(), "src", source.archive)

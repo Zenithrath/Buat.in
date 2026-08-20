@@ -110,6 +110,8 @@ export interface SourceTemplateEdit {
   text?: string;
   src?: string;
   href?: string;
+  alt?: string;
+  value?: string;
 }
 
 export interface Asset {

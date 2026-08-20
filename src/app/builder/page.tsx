@@ -40,13 +40,17 @@ export default function NewProjectPage() {
   const router = useRouter();
   const [creating, setCreating] = useState<string | null>(null);
   const [filter, setFilter] = useState<TemplateFilter>("all");
+  const sourceTemplates = useMemo(
+    () => templateRegistry.filter((template) => Boolean(getTemplateSource(template.id))),
+    []
+  );
 
   const filteredTemplates = useMemo(
     () =>
-      templateRegistry
+      sourceTemplates
         .filter((template) => filter === "all" || template.category === filter)
         .sort((a, b) => Number(Boolean(getTemplateSource(b.id))) - Number(Boolean(getTemplateSource(a.id)))),
-    [filter]
+    [filter, sourceTemplates]
   );
 
   function openDocument(documentId: string) {
@@ -155,10 +159,10 @@ export default function NewProjectPage() {
             </div>
             <div className="flex items-center gap-1.5">
               {([
-                { id: "all", label: `Semua (${templateRegistry.length})` },
-                { id: "landing", label: `Landing Page (${templateRegistry.filter((t) => t.category === "landing").length})` },
-                { id: "dashboard", label: `Dashboard (${templateRegistry.filter((t) => t.category === "dashboard").length})` },
-                { id: "auth", label: `Login & Autentikasi (${templateRegistry.filter((t) => t.category === "auth").length})` },
+                { id: "all", label: `Semua (${sourceTemplates.length})` },
+                { id: "landing", label: `Landing Page (${sourceTemplates.filter((t) => t.category === "landing").length})` },
+                { id: "dashboard", label: `Dashboard (${sourceTemplates.filter((t) => t.category === "dashboard").length})` },
+                { id: "auth", label: `Login & Autentikasi (${sourceTemplates.filter((t) => t.category === "auth").length})` },
               ] as { id: TemplateFilter; label: string }[]).map((tab) => (
                 <button
                   key={tab.id}

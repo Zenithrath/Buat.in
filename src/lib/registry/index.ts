@@ -61,6 +61,10 @@ import {
   barFilterComponent,
   sparklineComponent,
   calendarWidgetComponent,
+  sourceTemplateComponent,
+  importedPageComponent,
+  importedElementComponent,
+  importedTextComponent,
 } from "@/asset-comp";
 
 export type { ComponentCategory };
@@ -121,6 +125,10 @@ export const componentRegistry: ComponentRegistryItem[] = [
   barFilterComponent,
   sparklineComponent,
   calendarWidgetComponent,
+  sourceTemplateComponent,
+  importedPageComponent,
+  importedElementComponent,
+  importedTextComponent,
 ];
 
 export const componentMap: Record<string, ComponentRegistryItem> =

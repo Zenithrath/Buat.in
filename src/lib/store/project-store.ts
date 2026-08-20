@@ -15,6 +15,7 @@ import {
   createBlankProject,
   createDefaultNode,
   materializeTemplateNodes,
+  materializeTemplatePages,
 } from "@/lib/schema/defaults";
 import { normalizePresets } from "@/lib/theme/presets";
 import { getComponent } from "@/lib/registry";
@@ -647,11 +648,27 @@ export const useBuilderStore = create<BuilderState>((set, get) => ({
     const tmpl = templateRegistry.find((t) => t.id === templateId);
     if (!tmpl) return;
     const { document, activePageId } = get();
-    const nodes = materializeTemplateNodes(tmpl.createNodes()).map((node) => ({
+    const rawPages = tmpl.createPages?.();
+    const nodes = materializeTemplateNodes(
+      rawPages?.[0]?.sections ?? tmpl.createNodes()
+    ).map((node) => ({
       ...node,
       props: { ...(getComponent(node.componentType)?.defaultProps ?? {}), ...node.props },
       layout: node.layout ?? {},
     }));
+    const importedPages = rawPages?.length
+      ? materializeTemplatePages(rawPages).map((page) => ({
+          ...page,
+          sections: page.sections.map((node) => ({
+            ...node,
+            props: {
+              ...(getComponent(node.componentType)?.defaultProps ?? {}),
+              ...node.props,
+            },
+            layout: node.layout ?? {},
+          })),
+        }))
+      : null;
     const hasAutomaticName =
       DEFAULT_PROJECT_NAMES.has(document.name) ||
       templateRegistry.some((template) => template.name === document.name);
@@ -665,11 +682,13 @@ export const useBuilderStore = create<BuilderState>((set, get) => ({
       projectType: categoryToProjectType(tmpl.category),
       sourceTemplateId: getTemplateSource(tmpl.id) ? tmpl.id : undefined,
       sourceEdits: getTemplateSource(tmpl.id) ? {} : undefined,
-      pages: document.pages.map((page) =>
-        page.id === getActivePage(document, activePageId).id
-          ? { ...page, sections: nodes }
-          : page
-      ),
+      pages:
+        importedPages ??
+        document.pages.map((page) =>
+          page.id === getActivePage(document, activePageId).id
+            ? { ...page, sections: nodes }
+            : page
+        ),
       theme: tmpl.theme
         ? {
             presets: { ...tmpl.theme.presets },
@@ -678,7 +697,13 @@ export const useBuilderStore = create<BuilderState>((set, get) => ({
         : document.theme,
     };
     commit(set, get, nextDoc);
-    set({ selectedId: null });
+    set({
+      selectedId: null,
+      activePageId:
+        importedPages?.find((page) => page.isHome)?.id ??
+        importedPages?.[0]?.id ??
+        getActivePage(nextDoc, activePageId).id,
+    });
   },
 
   undo: () => {

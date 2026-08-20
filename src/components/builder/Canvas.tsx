@@ -736,7 +736,13 @@ export function Canvas() {
 
   const zoomScale = zoomLevel / 100;
 
-  if (document.sourceTemplateId && getTemplateSource(document.sourceTemplateId)) {
+  const hasLegacySourceCanvas =
+    Boolean(document.sourceTemplateId && getTemplateSource(document.sourceTemplateId)) &&
+    document.pages.some((page) =>
+      page.sections.some((node) => node.componentType === "source-template")
+    );
+
+  if (hasLegacySourceCanvas) {
     return (
       <SourceTemplateCanvas
         document={document}

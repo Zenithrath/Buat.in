@@ -292,8 +292,12 @@ function TemplatesPanel() {
   const [filter, setFilter] = useState<"all" | "landing" | "dashboard" | "auth">("all");
   const applyTemplate = useBuilderStore((s) => s.applyTemplate);
   const [applied, setApplied] = useState<string | null>(null);
+  const sourceTemplates = useMemo(
+    () => templateRegistry.filter((template) => Boolean(getTemplateSource(template.id))),
+    []
+  );
 
-  const filtered = templateRegistry.filter((t) => {
+  const filtered = sourceTemplates.filter((t) => {
     const q = search.toLowerCase();
     const matchQ = !q || t.name.toLowerCase().includes(q) || t.tags.some((tag) => tag.includes(q));
     const matchFilter = filter === "all" || t.category === filter;
